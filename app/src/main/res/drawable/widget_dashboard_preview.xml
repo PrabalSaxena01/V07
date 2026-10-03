@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="280dp"
+    android:height="150dp"
+    android:viewportWidth="280"
+    android:viewportHeight="150">
+
+    <!-- Background card -->
+    <path
+        android:fillColor="#151821"
+        android:strokeColor="#262C3E"
+        android:strokeWidth="1.5"
+        android:pathData="M 12 4 L 268 4 A 12 12 0 0 1 280 16 L 280 134 A 12 12 0 0 1 268 146 L 12 146 A 12 12 0 0 1 0 134 L 0 16 A 12 12 0 0 1 12 4 Z" />
+
+    <!-- Left accent stripe -->
+    <path
+        android:fillColor="#4DE086"
+        android:pathData="M 0 16 A 12 12 0 0 1 6 6 L 6 144 A 12 12 0 0 1 0 134 Z" />
+
+    <!-- Header Icon -->
+    <path
+        android:fillColor="#FFB84D"
+        android:pathData="M 22 20 L 30 20 L 26 28 L 32 28 L 20 40 L 23 30 L 18 30 Z" />
+
+    <!-- Header Title Bar -->
+    <path
+        android:fillColor="#F1F5F9"
+        android:pathData="M 38 23 L 130 23 L 130 28 L 38 28 Z" />
+
+    <!-- Header Subtitle Bar -->
+    <path
+        android:fillColor="#64748B"
+        android:pathData="M 38 31 L 85 31 L 85 35 L 38 35 Z" />
+
+    <!-- Header Right Cog Icon -->
+    <path
+        android:fillColor="#94A3B8"
+        android:pathData="M 256 22 L 264 22 L 264 24 L 256 24 Z M 256 27 L 264 27 L 264 29 L 256 29 Z" />
+
+    <!-- 4-Tile Grid Backgrounds -->
+    <!-- Tile 1 -->
+    <path
+        android:fillColor="#191D28"
+        android:strokeColor="#262C3E"
+        android:strokeWidth="1"
+        android:pathData="M 16 48 L 74 48 A 6 6 0 0 1 80 54 L 80 94 A 6 6 0 0 1 74 100 L 16 100 A 6 6 0 0 1 10 94 L 10 54 A 6 6 0 0 1 16 48 Z" />
+    <!-- Tile 1 metric bar -->
+    <path
+        android:fillColor="#4DE086"
+        android:pathData="M 24 64 L 66 64 L 66 76 L 24 76 Z" />
+    <path
+        android:fillColor="#64748B"
+        android:pathData="M 28 82 L 62 82 L 62 87 L 28 87 Z" />
+
+    <!-- Tile 2 -->
+    <path
+        android:fillColor="#191D28"
+        android:strokeColor="#262C3E"
+        android:strokeWidth="1"
+        android:pathData="M 86 48 L 144 48 A 6 6 0 0 1 150 54 L 150 94 A 6 6 0 0 1 144 100 L 86 100 A 6 6 0 0 1 80 94 L 80 54 A 6 6 0 0 1 86 48 Z" />
+    <!-- Tile 2 metric bar -->
+    <path
+        android:fillColor="#FF5370"
+        android:pathData="M 94 64 L 136 64 L 136 76 L 94 76 Z" />
+    <path
+        android:fillColor="#64748B"
+        android:pathData="M 98 82 L 132 82 L 132 87 L 98 87 Z" />
+
+    <!-- Tile 3 -->
+    <path
+        android:fillColor="#191D28"
+        android:strokeColor="#262C3E"
+        android:strokeWidth="1"
+        android:pathData="M 156 48 L 214 48 A 6 6 0 0 1 220 54 L 220 94 A 6 6 0 0 1 214 100 L 156 100 A 6 6 0 0 1 150 94 L 150 54 A 6 6 0 0 1 156 48 Z" />
+    <!-- Tile 3 metric bar -->
+    <path
+        android:fillColor="#68A6FF"
+        android:pathData="M 164 64 L 206 64 L 206 76 L 164 76 Z" />
+    <path
+        android:fillColor="#64748B"
+        android:pathData="M 168 82 L 202 82 L 202 87 L 168 87 Z" />
+
+    <!-- Tile 4 -->
+    <path
+        android:fillColor="#191D28"
+        android:strokeColor="#262C3E"
+        android:strokeWidth="1"
+        android:pathData="M 226 48 L 264 48 A 6 6 0 0 1 270 54 L 270 94 A 6 6 0 0 1 264 100 L 226 100 A 6 6 0 0 1 220 94 L 220 54 A 6 6 0 0 1 226 48 Z" />
+    <!-- Tile 4 metric bar -->
+    <path
+        android:fillColor="#FFB84D"
+        android:pathData="M 230 64 L 260 64 L 260 76 L 230 76 Z" />
+    <path
+        android:fillColor="#64748B"
+        android:pathData="M 232 82 L 258 82 L 258 87 L 232 87 Z" />
+
+    <!-- Bottom Status Line Container -->
+    <path
+        android:fillColor="#10131A"
+        android:pathData="M 14 112 L 266 112 A 4 4 0 0 1 270 116 L 270 134 A 4 4 0 0 1 266 138 L 14 138 A 4 4 0 0 1 10 134 L 10 116 A 4 4 0 0 1 14 112 Z" />
+
+    <!-- Bottom Status Text Simulation -->
+    <path
+        android:fillColor="#94A3B8"
+        android:pathData="M 18 122 L 180 122 L 180 127 L 18 127 Z" />
+
+</vector>

@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Gamify Widget</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --text: #F1F5F9;
+    --muted: #94A3B8;
+    --bar-bg: rgba(255,255,255,0.08);
+    --chip-bg: rgba(255,255,255,0.04);
+    --chip-border: rgba(255,255,255,0.08);
+    --green: #4DE086;
+    --green-glow: rgba(77,224,134,0.15);
+  }
+  :root[data-theme="light"] {
+    --text: #0F172A;
+    --muted: #64748B;
+    --bar-bg: rgba(0,0,0,0.08);
+    --chip-bg: rgba(0,0,0,0.04);
+    --chip-border: rgba(0,0,0,0.08);
+    --green: #16A34A;
+    --green-glow: rgba(22,163,74,0.12);
+  }
+  body {
+    margin: 0;
+    padding: 8px 12px 10px;
+    background: transparent;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    color: var(--text);
+    overflow: hidden;
+    width: 100%;
+    cursor: pointer;
+    user-select: none;
+  }
+  .gw-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+  }
+  .gw-row1 {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .gw-lvl-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .gw-badge {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--green);
+    background: var(--green-glow);
+    border: 1px solid var(--green);
+    border-radius: 4px;
+    padding: 2px 6px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .gw-rank {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-size: 9.5px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .gw-total {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.05em;
+  }
+  .gw-bar-track {
+    width: 100%;
+    height: 5px;
+    background: var(--bar-bg);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .gw-bar-fill {
+    height: 100%;
+    background: var(--green);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+  }
+  .gw-chips {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .gw-chip {
+    font-size: 9px;
+    color: var(--muted);
+    background: var(--chip-bg);
+    border: 1px solid var(--chip-border);
+    border-radius: 4px;
+    padding: 3px 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+  }
+  .gw-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .gw-dot.on {
+    background: var(--green);
+    box-shadow: 0 0 5px var(--green);
+  }
+  .gw-dot.off {
+    background: var(--muted);
+  }
+  .gw-chip-val {
+    color: var(--text);
+    font-weight: 700;
+  }
+</style>
+<script>
+(function(){
+  function syncTheme(){
+    var t = 'dark';
+    try {
+      t = window.parent.document.documentElement.dataset.theme || localStorage.getItem('v07_theme') || 'dark';
+    } catch(e){
+      try { t = localStorage.getItem('v07_theme') || 'dark'; } catch(e2){}
+    }
+    if(t === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    else document.documentElement.removeAttribute('data-theme');
+  }
+  syncTheme();
+  window.addEventListener('storage', syncTheme);
+})();
+</script>
+</head>
+<body onclick="openGamifyPlugin()">
+<div id="w"></div>
+<script src="plugin.js"></script>
+<script>
+function rankTitle(lvl) {
+  if (lvl >= 8) return 'ARCHITECT';
+  if (lvl >= 7) return 'ELITE';
+  if (lvl >= 6) return 'MASTER';
+  if (lvl >= 5) return 'EXPERT';
+  if (lvl >= 4) return 'SPECIALIST';
+  if (lvl >= 3) return 'OPERATOR';
+  if (lvl >= 2) return 'APPRENTICE';
+  return 'NOVICE';
+}
+
+function openGamifyPlugin(){
+  try {
+    if(window.parent && window.parent.openPluginPage){
+      window.parent.openPluginPage('com.v07.gamify');
+      return;
+    }
+  } catch(e){}
+  location.href = 'index.html';
+}
+
+function getSize(){
+  try {
+    var s = new URLSearchParams(window.location.search).get('size');
+    if(s === 'compact' || s === '1*1') return 'compact';
+    if(s === 'small' || s === '2*1') return 'small';
+    if(s === 'medium' || s === '3*1') return 'medium';
+    if(s === 'large' || s === '4*2') return 'large';
+  } catch(e){}
+  var h = window.innerHeight;
+  if(h > 0 && h <= 85) return 'compact';
+  if(h > 85 && h <= 125) return 'small';
+  if(h > 125 && h <= 190) return 'medium';
+  if(h > 190) return 'large';
+  return 'medium';
+}
+
+window.addEventListener('resize', draw);
+window.addEventListener('message', function(e){
+  if(e.data && (e.data.type === 'setSize' || e.data.type === 'v07_refresh')){
+    draw();
+  }
+});
+
+function draw() {
+  var el = document.getElementById('w');
+  if (!el) return;
+  if (!window.v07Gamify) {
+    el.innerHTML = '<span style="font-size:10px;color:var(--muted)">loading gamify&hellip;</span>';
+    return;
+  }
+  var s = window.v07Gamify.stats();
+  var rank = rankTitle(s.level);
+  var progress = Math.min(100, Math.round(((s.total % 100) / 100) * 100)) || 20;
+  var toNext = 100 - (s.total % 100);
+  var size = getSize();
+
+  function renderMiniHeatmap(byDate, count) {
+    var html = '<div style="display:flex;gap:3px;align-items:center;margin-top:6px;padding:5px 6px;background:var(--chip-bg);border:1px solid var(--chip-border);border-radius:5px">';
+    var now = new Date();
+    for (var i = count - 1; i >= 0; i--) {
+      var d = new Date(now);
+      d.setDate(now.getDate() - i);
+      var m = ('0' + (d.getMonth() + 1)).slice(-2);
+      var day = ('0' + d.getDate()).slice(-2);
+      var dStr = d.getFullYear() + '-' + m + '-' + day;
+      var isToday = (i === 0);
+      var entry = byDate && byDate[dStr];
+      var xp = entry ? entry.xp : 0;
+      var bg = 'var(--bar-bg)';
+      if (xp > 0 && xp <= 20) bg = 'rgba(77,224,134,0.35)';
+      else if (xp > 20 && xp <= 50) bg = 'rgba(77,224,134,0.6)';
+      else if (xp > 50 && xp <= 90) bg = 'rgba(77,224,134,0.85)';
+      else if (xp > 90) bg = '#4DE086';
+
+      var style = 'flex:1;height:12px;border-radius:2px;background:' + bg + ';';
+      if (isToday) style += 'outline:1.5px solid var(--text);outline-offset:0.5px;';
+      html += '<div style="' + style + '" title="' + dStr + ': ' + xp + ' XP"></div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  if(size === 'compact'){
+    el.innerHTML =
+      '<div class="gw-wrap">' +
+        '<div class="gw-row1">' +
+          '<span class="gw-badge">LVL ' + s.level + '</span>' +
+          '<span class="gw-rank">' + rank + '</span>' +
+        '</div>' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin:2px 0">' +
+          '<span style="font-size:12px;font-weight:700;color:var(--text)">' + s.total.toLocaleString() + ' XP</span>' +
+          '<span style="font-size:9px;color:var(--muted)">' + progress + '% to L' + (s.level + 1) + '</span>' +
+        '</div>' +
+        '<div class="gw-bar-track"><div class="gw-bar-fill" style="width:' + progress + '%"></div></div>' +
+      '</div>';
+  } else if(size === 'small'){
+    el.innerHTML =
+      '<div class="gw-wrap">' +
+        '<div class="gw-row1">' +
+          '<div class="gw-lvl-group">' +
+            '<span class="gw-badge">LVL ' + s.level + '</span>' +
+            '<span class="gw-rank">' + rank + '</span>' +
+          '</div>' +
+          '<span class="gw-total">' + s.total.toLocaleString() + ' <span style="font-size:9px;color:var(--muted)">XP</span></span>' +
+        '</div>' +
+        '<div class="gw-bar-track"><div class="gw-bar-fill" style="width:' + progress + '%"></div></div>' +
+        '<div class="gw-chips">' +
+          '<span class="gw-chip"><span class="gw-dot ' + (s.today > 0 ? 'on' : 'off') + '"></span> +' + s.today + ' XP</span>' +
+          '<span class="gw-chip">STREAK <span class="gw-chip-val">' + s.streak + 'd</span></span>' +
+        '</div>' +
+      '</div>';
+  } else if(size === 'medium'){
+    el.innerHTML =
+      '<div class="gw-wrap">' +
+        '<div class="gw-row1">' +
+          '<div class="gw-lvl-group">' +
+            '<span class="gw-badge">LVL ' + s.level + ' · ' + rank + '</span>' +
+          '</div>' +
+          '<span class="gw-total">' + s.total.toLocaleString() + ' <span style="font-size:9px;color:var(--muted);font-weight:400">XP</span></span>' +
+        '</div>' +
+        '<div class="gw-bar-track">' +
+          '<div class="gw-bar-fill" style="width:' + progress + '%"></div>' +
+        '</div>' +
+        '<div class="gw-chips">' +
+          '<span class="gw-chip"><span class="gw-dot ' + (s.today > 0 ? 'on' : 'off') + '"></span> TODAY <span class="gw-chip-val">+' + s.today + '</span></span>' +
+          '<span class="gw-chip">STREAK <span class="gw-chip-val">' + s.streak + 'd</span></span>' +
+          '<span class="gw-chip">NEXT <span class="gw-chip-val">' + toNext + ' XP</span></span>' +
+        '</div>' +
+        renderMiniHeatmap(s.byDate, 7) +
+      '</div>';
+  } else {
+    // Large (250px)
+    el.innerHTML =
+      '<div class="gw-wrap">' +
+        '<div class="gw-row1">' +
+          '<div class="gw-lvl-group">' +
+            '<span class="gw-badge" style="font-size:11px;padding:3px 7px">LVL ' + s.level + '</span>' +
+            '<span class="gw-rank" style="font-size:11px">' + rank + '</span>' +
+          '</div>' +
+          '<span class="gw-total" style="font-size:15px">' + s.total.toLocaleString() + ' <span style="font-size:10px;color:var(--muted);font-weight:400">TOTAL XP</span></span>' +
+        '</div>' +
+        '<div class="gw-bar-track" style="height:6px;margin:4px 0">' +
+          '<div class="gw-bar-fill" style="width:' + progress + '%"></div>' +
+        '</div>' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;font-size:9px;color:var(--muted);margin-bottom:6px">' +
+          '<span>PROGRESS TO LEVEL ' + (s.level + 1) + '</span>' +
+          '<span style="color:var(--text);font-weight:700">' + progress + '% (' + toNext + ' XP needed)</span>' +
+        '</div>' +
+        '<div class="gw-chips" style="margin-bottom:6px">' +
+          '<span class="gw-chip"><span class="gw-dot ' + (s.today > 0 ? 'on' : 'off') + '"></span> TODAY <span class="gw-chip-val">+' + s.today + ' XP</span></span>' +
+          '<span class="gw-chip">STREAK <span class="gw-chip-val">' + s.streak + 'd</span></span>' +
+          '<span class="gw-chip">RANK <span class="gw-chip-val">' + rank + '</span></span>' +
+        '</div>' +
+        renderMiniHeatmap(s.byDate, 14) +
+      '</div>';
+  }
+}
+draw();
+setInterval(draw, 30000);
+</script>
+</body>
+</html>

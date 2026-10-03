@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Reader Settings</title>
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #12100E;
+    --surface: #1C1814;
+    --surface-parchment: #241F1A;
+    --border: #332B22;
+    --stitch: #B8860B;
+    --gold: #E5C158;
+    --gold-dark: #C5A059;
+    --leather: #2B1810;
+    --ink: #F5EFE6;
+    --ink-secondary: #C4B9A7;
+    --ink-muted: #8F8474;
+  }
+  :root[data-theme="light"] {
+    --bg: #FBF9F4;
+    --surface: #FFFFFF;
+    --surface-parchment: #F5EFE1;
+    --border: #E2D9C8;
+    --stitch: #C5A059;
+    --gold: #D4AF37;
+    --gold-dark: #997A24;
+    --leather: #4A2E1B;
+    --ink: #1F1C18;
+    --ink-secondary: #5C5549;
+    --ink-muted: #8C8272;
+  }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    padding: 16px 14px;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-size: 12px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+  .card {
+    background: var(--surface);
+    border: 1.5px dashed var(--stitch);
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 14px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  .card-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--gold-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .field {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 12px;
+  }
+  select, input[type="number"], input[type="time"], input[type="text"] {
+    background: var(--surface-parchment);
+    color: var(--ink);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-family: inherit;
+    font-size: 11px;
+    outline: none;
+  }
+  .widget-pills {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .pill-btn {
+    flex: 1;
+    min-width: 60px;
+    background: var(--surface-parchment);
+    border: 1px solid var(--border);
+    color: var(--ink-secondary);
+    padding: 7px 4px;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s ease;
+  }
+  .pill-btn.active {
+    background: var(--leather);
+    border-color: var(--gold);
+    color: #FFF;
+  }
+  .btn-action {
+    background: var(--leather);
+    color: #FFF;
+    border: 1px dashed var(--gold);
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .toast {
+    position: fixed;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--leather);
+    color: #FFF;
+    border: 1px dashed var(--gold);
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    z-index: 999;
+    opacity: 0;
+    transition: all 0.2s ease;
+  }
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+</style>
+<script>
+(function(){
+  function syncTheme(){
+    var t = 'dark';
+    try {
+      t = window.parent.document.documentElement.dataset.theme || localStorage.getItem('v07_theme') || 'dark';
+    } catch(e){
+      try { t = localStorage.getItem('v07_theme') || 'dark'; } catch(e2){}
+    }
+    if(t === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    else document.documentElement.removeAttribute('data-theme');
+  }
+  syncTheme();
+  window.addEventListener('storage', syncTheme);
+})();
+</script>
+</head>
+<body>
+
+<!-- Dashboard Widget Section -->
+<div class="card">
+  <div class="card-title">✦ HOME DASHBOARD WIDGET</div>
+  <p style="font-size:11px;color:var(--ink-secondary);margin-bottom:8px">
+    Choose the widget size shown on the Home dashboard:
+  </p>
+  <div class="widget-pills">
+    <button class="pill-btn" data-size="compact" onclick="setWidgetSize('compact')">COMPACT (1x1)</button>
+    <button class="pill-btn" data-size="small" onclick="setWidgetSize('small')">SMALL (2x1)</button>
+    <button class="pill-btn" data-size="medium" onclick="setWidgetSize('medium')">MEDIUM (3x1)</button>
+    <button class="pill-btn" data-size="large" onclick="setWidgetSize('large')">LARGE (4x2)</button>
+    <button class="pill-btn" data-size="hidden" onclick="setWidgetSize('hidden')">HIDE / OFF</button>
+  </div>
+</div>
+
+<!-- Notifications Section -->
+<div class="card">
+  <div class="card-title">🔔 DAILY READING REMINDER</div>
+  <div class="field">
+    <span>Enable Daily Reminder</span>
+    <input type="checkbox" id="notifToggle" onchange="saveNotifSettings()">
+  </div>
+  <div class="field">
+    <span>Reminder Time</span>
+    <input type="time" id="notifTime" value="20:30" onchange="saveNotifSettings()">
+  </div>
+  <div class="field">
+    <span>Title</span>
+    <input type="text" id="notifTitle" value="📖 Reading Time" style="width:160px" onchange="saveNotifSettings()">
+  </div>
+  <div style="display:flex;gap:8px;margin-top:10px">
+    <button class="btn-action" onclick="testNotif()" style="flex:1">TEST NOTIFICATION</button>
+    <button class="btn-action" onclick="saveNotifSettings()" style="flex:1;background:var(--surface-parchment);color:var(--ink);border:1px solid var(--border)">SAVE SCHEDULE</button>
+  </div>
+</div>
+
+<!-- Preferences -->
+<div class="card">
+  <div class="card-title">✦ COLLECTION PREFERENCES</div>
+  <div class="field">
+    <span>Default Shelf</span>
+    <select id="prefDefaultShelf">
+      <option value="reading">Currently Reading</option>
+      <option value="want">Want to Read</option>
+      <option value="finished">Finished</option>
+      <option value="all">All Books</option>
+    </select>
+  </div>
+  <div class="field">
+    <span>Annual Reading Goal</span>
+    <input type="number" id="prefAnnualGoal" min="1" max="200" value="12" style="width:70px">
+  </div>
+</div>
+
+<!-- Data & Sync -->
+<div class="card">
+  <div class="card-title">✦ ARCHIVE &amp; EXPORT</div>
+  <div style="display:flex;gap:8px">
+    <button class="btn-action" onclick="exportData()" style="flex:1">EXPORT JSON</button>
+    <button class="btn-action" onclick="importData()" style="flex:1;background:var(--surface-parchment);color:var(--ink);border:1px solid var(--border)">IMPORT JSON</button>
+  </div>
+</div>
+
+<div class="toast" id="toast">Saved</div>
+
+<script>
+var PLUGIN_ID = 'com.v07.reader';
+var SETTINGS_KEY = 'v07_plugin_settings_' + PLUGIN_ID;
+var STORAGE_KEY = 'v07_book_collection';
+
+function getSettings(){
+  try { return JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); } catch(e){ return {}; }
+}
+function saveSettings(s){
+  try {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+    window.dispatchEvent(new Event('storage'));
+  } catch(e){}
+}
+
+function loadUI(){
+  var s = getSettings();
+  var sz = s.widgetSize || 'medium';
+  document.querySelectorAll('.pill-btn').forEach(function(b){
+    b.classList.toggle('active', b.dataset.size === sz);
+  });
+
+  document.getElementById('notifToggle').checked = s.notifEnabled !== false;
+  document.getElementById('notifTime').value = s.notifTime || '20:30';
+  document.getElementById('notifTitle').value = s.notifTitle || '📖 Reading Time';
+
+  var dShelf = document.getElementById('prefDefaultShelf');
+  var goal = document.getElementById('prefAnnualGoal');
+  dShelf.value = localStorage.getItem('v07_book_default_shelf') || 'reading';
+  goal.value = localStorage.getItem('v07_book_annual_goal') || '12';
+  dShelf.onchange = function(){ localStorage.setItem('v07_book_default_shelf', dShelf.value); };
+  goal.onchange = function(){ localStorage.setItem('v07_book_annual_goal', goal.value); };
+}
+
+function setWidgetSize(sz){
+  var s = getSettings();
+  s.widgetSize = sz;
+  saveSettings(s);
+  document.querySelectorAll('.pill-btn').forEach(function(b){
+    b.classList.toggle('active', b.dataset.size === sz);
+  });
+  if(window.parent && window.parent.postMessage){
+    window.parent.postMessage({ type: 'setPluginWidgetSize', pluginId: PLUGIN_ID, size: sz }, '*');
+  }
+  toast('Widget set to: ' + sz.toUpperCase());
+}
+
+function saveNotifSettings(){
+  var s = getSettings();
+  s.notifEnabled = document.getElementById('notifToggle').checked;
+  s.notifTime = document.getElementById('notifTime').value || '20:30';
+  s.notifTitle = document.getElementById('notifTitle').value || '📖 Reading Time';
+  saveSettings(s);
+
+  if(s.notifEnabled){
+    var parts = s.notifTime.split(':');
+    var th = parseInt(parts[0], 10) || 20;
+    var tm = parseInt(parts[1], 10) || 30;
+    var now = new Date();
+    var target = new Date();
+    target.setHours(th, tm, 0, 0);
+    if(target.getTime() <= now.getTime()){
+      target.setDate(target.getDate() + 1);
+    }
+    var delayMs = target.getTime() - now.getTime();
+
+    var bridge = (window.parent && window.parent.AndroidV07) || window.AndroidV07;
+    if(bridge && bridge.call){
+      var res = bridge.call('scheduleReminder', JSON.stringify({
+        pluginId: PLUGIN_ID,
+        title: s.notifTitle,
+        body: 'Log your daily reading progress in your Book Collection',
+        delayMs: delayMs,
+        id: 'daily'
+      }));
+      if(res){
+        var parsed = typeof res === 'string' ? JSON.parse(res) : res;
+        if(parsed && parsed.ok === false){
+          toast(parsed.error || 'Failed to schedule reminder');
+          return;
+        }
+      }
+      toast('Reminder scheduled for ' + s.notifTime);
+    } else {
+      toast('Notification bridge unavailable');
+    }
+  } else {
+    var bridge = (window.parent && window.parent.AndroidV07) || window.AndroidV07;
+    if(bridge && bridge.call){
+      bridge.call('cancelReminder', JSON.stringify({ pluginId: PLUGIN_ID, id: 'daily' }));
+    }
+    toast('Reminder disabled');
+  }
+}
+
+function testNotif(){
+  var title = document.getElementById('notifTitle').value || '📖 Reading Time';
+  var body = 'Active test reminder from Book Collection';
+  try {
+    var bridge = (window.parent && window.parent.AndroidV07) || window.AndroidV07;
+    if(bridge && bridge.call){
+      var res = bridge.call('scheduleReminder', JSON.stringify({
+        pluginId: PLUGIN_ID,
+        title: title,
+        body: body,
+        delayMs: 0,
+        id: 'test_' + Date.now()
+      }));
+      if(res){
+        var parsed = typeof res === 'string' ? JSON.parse(res) : res;
+        if(parsed && parsed.ok === false){
+          toast(parsed.error || 'Failed to send notification');
+          return;
+        }
+      }
+      toast('Test notification sent');
+      return;
+    }
+    toast('Notification bridge unavailable in browser mode');
+  } catch(e){
+    toast('Failed: ' + (e.message || e));
+  }
+}
+
+function exportData(){
+  var data = localStorage.getItem(STORAGE_KEY) || '[]';
+  var blob = new Blob([data], { type: 'application/json' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'v07_book_collection.json';
+  a.click();
+}
+
+function importData(){
+  var json = prompt('Paste Book Collection JSON array:');
+  if(json){
+    try {
+      var arr = JSON.parse(json);
+      if(Array.isArray(arr)){
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+        toast('Library imported successfully');
+      } else {
+        alert('Invalid JSON: Must be an array of book objects');
+      }
+    } catch(e){
+      alert('Error parsing JSON');
+    }
+  }
+}
+
+function toast(msg){
+  var el = document.getElementById('toast');
+  if(!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(function(){ el.classList.remove('show'); }, 2000);
+}
+
+loadUI();
+</script>
+</body>
+</html>

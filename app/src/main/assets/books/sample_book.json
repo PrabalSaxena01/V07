@@ -1,0 +1,56 @@
+{
+  "$schema": "https://v07.app/schemas/book-skeleton.json",
+  "id": "stoic_handbook",
+  "title": "The Enchiridion",
+  "author": "Epictetus",
+  "translator": "Elizabeth Carter",
+  "description": "A short manual of Stoic ethical advice compiled by Arrian, a disciple of Epictetus.",
+  "totalItems": 5,
+  "items": [
+    {
+      "id": "1",
+      "chapter": "Chapter 1",
+      "title": "Things in Our Control",
+      "content": "Some things are in our control and others not. Things in our control are opinion, pursuit, desire, aversion, and, in a word, whatever are our own actions. Things not in our control are body, property, reputation, command, and, one word, whatever are not our own actions.",
+      "translation": "Focus all your energy on what you can influence — your thoughts, actions, and desires. Do not attach your peace of mind to external outcomes.",
+      "notes": "The fundamental dichotomy of control. Freedom begins with understanding what belongs to you and what belongs to the world.",
+      "tags": ["stoicism", "control", "peace"]
+    },
+    {
+      "id": "2",
+      "chapter": "Chapter 2",
+      "title": "Managing Desire",
+      "content": "Remember that desire demands the attainment of that of which you are desirous; and aversion demands the avoiding of that to which you are averse; that he who fails of the object of his desire is disappointed, and he who incurs the object of his aversion is wretched.",
+      "translation": "If you desire only what is dependent on circumstances, you will inevitably be frustrated. Direct your aversion only to errors of your own moral character.",
+      "notes": "Desire makes you fragile; mastering desire gives you tranquility.",
+      "tags": ["desire", "clarity"]
+    },
+    {
+      "id": "3",
+      "chapter": "Chapter 3",
+      "title": "The Nature of Things",
+      "content": "With regard to whatever objects either delight the mind, or contribute to use, or are tenderly beloved, remind yourself of what nature they are, beginning with the merest trifles.",
+      "translation": "Recognize the impermanence of objects and people you love, so that when change happens, you are not crushed.",
+      "notes": "Memento mori and love without possessiveness.",
+      "tags": ["nature", "impermanence"]
+    },
+    {
+      "id": "4",
+      "chapter": "Chapter 4",
+      "title": "Entering Any Action",
+      "content": "When you are about to take in hand any action, remind yourself what manner of thing it is. If you go to bathe, represent to yourself the things which usually happen in the bath: some people dash water about, others push, others use abusive language.",
+      "translation": "Before starting any task, anticipate interruptions, rudeness, and delays so your poise is never broken.",
+      "notes": "Premeditatio malorum: mental preparation prevents reactive frustration.",
+      "tags": ["action", "preparation"]
+    },
+    {
+      "id": "5",
+      "chapter": "Chapter 5",
+      "title": "Judgment of Events",
+      "content": "Men are disturbed, not by things, but by the principles and notions which they form concerning things. Death, for instance, is not terrible, else it would have appeared so to Socrates.",
+      "translation": "It is not what happens to you, but your judgment of what happens, that causes distress.",
+      "notes": "Cognitive reframing: you cannot control the event, only your narrative of it.",
+      "tags": ["perception", "judgment"]
+    }
+  ]
+}

@@ -1,0 +1,385 @@
+<!DOCTYPE html><html class="h-full" lang="en"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><meta content="mobile_stack" name="shell-type"><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;1,400&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "surface-container": "#e7f0e9", "surface": "#f3fbf5", "on-primary-fixed": "#002019", "on-error": "#ffffff", "surface-dim": "#d3dcd6", "on-primary-fixed-variant": "#015141", "inverse-primary": "#92d4be", "error": "#ba1a1a", "surface-container-lowest": "#ffffff", "surface-container-high": "#e2eae4", "on-surface-variant": "#3f4945", "on-secondary-container": "#79473b", "secondary-fixed": "#ffdad2", "tertiary-container": "#65716d", "on-secondary-fixed": "#341007", "primary-fixed": "#adf0da", "on-background": "#151d19", "outline-variant": "#bfc9c4", "outline": "#6f7975", "surface-bright": "#f3fbf5", "surface-container-low": "#edf6ef", "background": "#f3fbf5", "on-secondary-fixed-variant": "#693a2e", "tertiary-fixed": "#d8e5e0", "on-tertiary-fixed": "#121e1b", "tertiary": "#4d5955", "primary-fixed-dim": "#92d4be", "secondary-fixed-dim": "#fab6a6", "on-primary": "#ffffff", "secondary-container": "#fdb9a9", "primary": "#1c6150", "on-primary-container": "#c6ffeb", "primary-container": "#397a68", "on-surface": "#151d19", "on-secondary": "#ffffff", "on-error-container": "#93000a", "on-tertiary": "#ffffff", "surface-container-highest": "#dce5de", "inverse-on-surface": "#eaf3ec", "on-tertiary-container": "#e8f5f0", "error-container": "#ffdad6", "tertiary-fixed-dim": "#bcc9c5", "surface-tint": "#266958", "secondary": "#855144", "inverse-surface": "#2a322e", "surface-variant": "#dce5de", "on-tertiary-fixed-variant": "#3d4946" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-xs": "0.25rem", "margin": "3rem", "gutter-mobile": "1rem", "space-sm": "0.5rem", "space-md": "1rem", "space-lg": "1.5rem", "margin-mobile": "1.25rem", "margin-tablet": "2rem", "space-xl": "2.5rem", "gutter": "1.5rem" }, "fontFamily": { "display": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"], "headline-lg-mobile": ["Plus Jakarta Sans"], "label-lg": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"], "label-sm": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "display-mobile": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "body-sm": ["Plus Jakarta Sans"], "label-md": ["Plus Jakarta Sans"] }, "fontSize": { "display": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.025em", "fontWeight": "600" }], "headline-sm": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "500" }], "headline-lg-mobile": ["26px", { "lineHeight": "34px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500" }], "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600" }], "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.03em", "fontWeight": "600" }], "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "500" }], "body-lg": ["18px", { "lineHeight": "28px", "letterSpacing": "-0.005em", "fontWeight": "400" }], "display-mobile": ["34px", { "lineHeight": "42px", "letterSpacing": "-0.02em", "fontWeight": "600" }], "body-md": ["15px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400" }], "body-sm": ["13px", { "lineHeight": "20px", "letterSpacing": "0.005em", "fontWeight": "400" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500" }] } } } };</script><style>@layer base { html { -webkit-tap-highlight-color: transparent; } body { overscroll-behavior-y: none; } .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); } .pt-safe { padding-top: env(safe-area-inset-top, 0px); } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style></head><body class="bg-surface text-on-surface font-body-md min-h-full flex flex-col items-center antialiased"><div class="w-full max-w-[480px] min-h-screen flex flex-col relative bg-surface"><header class="fixed top-0 w-full max-w-[480px] z-50 bg-surface/85 backdrop-blur-xl pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.03)]"><div class="h-16 px-space-md flex items-center justify-between"><button aria-label="Go back" class="w-11 h-11 flex items-center justify-center rounded-lg text-on-surface hover:bg-surface-container-high/60 transition-colors" onclick="history.back()" type="button"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button><div class="flex flex-col items-center text-center px-space-xs"><h1 class="font-headline-sm text-headline-sm text-on-surface font-medium leading-none">Mood &amp; Energy</h1><p class="font-label-sm text-label-sm text-on-surface-variant font-normal mt-1">A quick check-in with yourself.</p></div><button aria-label="Close" class="w-11 h-11 flex items-center justify-center rounded-lg text-on-surface hover:bg-surface-container-high/60 transition-colors" type="button"><span class="material-symbols-outlined text-[20px]">close</span></button></div></header><main class="flex flex-col relative w-full pt-16 bg-surface px-margin-mobile pb-safe flex-1"><div class="flex flex-col w-full pb-10 space-y-5"><!-- Top Segmented Tabs: Mood & Energy vs. Panic Vault (Secured) -->
+<div class="flex items-center p-1 bg-surface-container-low rounded-xl mb-1 shadow-sm">
+<button class="flex-1 py-2.5 px-3 rounded-lg bg-surface-container-lowest text-primary font-medium font-label-lg text-label-lg shadow-sm transition-all flex items-center justify-center gap-1.5" id="tab-mood-btn" type="button">
+<span class="material-symbols-outlined text-[18px]">spa</span>
+<span class="">Mood &amp; Energy</span>
+</button>
+<button class="flex-1 py-2.5 px-3 rounded-lg text-on-surface-variant font-label-lg text-label-lg hover:text-on-surface transition-all flex items-center justify-center gap-1.5" id="tab-panic-btn" type="button">
+<span class="material-symbols-outlined text-[16px] text-secondary">lock</span>
+<span class="">Panic Vault</span>
+<span class="w-2 h-2 rounded-full bg-secondary shrink-0"></span>
+</button>
+</div>
+<!-- VIEW 1: MOOD & ENERGY CHECK-IN -->
+<div class="space-y-5 flex flex-col" id="view-mood">
+<!-- Combined Mood, Energy & Reflection Logging Card -->
+<section class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col space-y-5">
+<!-- Mood Selector -->
+<div>
+<div class="flex items-center justify-between mb-space-sm">
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-medium">How are you feeling?</h2>
+<span class="font-label-sm text-label-sm text-primary font-medium px-2 py-0.5 rounded-full bg-surface-container-low" id="selected-mood-name">Good &amp; Calm</span>
+</div>
+<div class="grid grid-cols-5 gap-space-xs" id="mood-selector">
+<button class="mood-pill flex flex-col items-center justify-center py-2.5 px-1 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container-high transition-colors" data-mood="low" type="button">
+<span class="text-[24px]">😞</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-1">Heavy</span>
+</button>
+<button class="mood-pill flex flex-col items-center justify-center py-2.5 px-1 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container-high transition-colors" data-mood="down" type="button">
+<span class="text-[24px]">😕</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-1">Uneasy</span>
+</button>
+<button class="mood-pill flex flex-col items-center justify-center py-2.5 px-1 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container-high transition-colors" data-mood="neutral" type="button">
+<span class="text-[24px]">😐</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-1">Steady</span>
+</button>
+<button class="mood-pill flex flex-col items-center justify-center py-2.5 px-1 rounded-lg bg-primary-fixed text-on-primary-fixed font-medium shadow-sm transition-colors" data-mood="good" type="button">
+<span class="text-[24px]">🙂</span>
+<span class="font-label-sm text-label-sm text-primary font-medium mt-1">Calm</span>
+</button>
+<button class="mood-pill flex flex-col items-center justify-center py-2.5 px-1 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container-high transition-colors" data-mood="great" type="button">
+<span class="text-[24px]">😄</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-1">Vibrant</span>
+</button>
+</div>
+</div>
+<!-- Energy Level -->
+<div class="pt-2 border-t border-surface-container-high/60">
+<div class="flex items-center justify-between mb-space-xs">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-primary">bolt</span>
+<span class="font-label-lg text-label-lg text-on-surface font-medium">Energy level</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="font-headline-sm text-headline-sm text-primary font-semibold" id="energy-value-display">7</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">/ 10</span>
+</div>
+</div>
+<div class="py-space-xs">
+<div class="relative flex items-center w-full py-2 cursor-pointer">
+<div class="w-full h-2 rounded-full bg-surface-container-high relative overflow-hidden">
+<div class="h-full bg-primary rounded-full transition-all duration-300" style="width: 70%;"></div>
+</div>
+<div class="absolute left-[70%] -translate-x-1/2 w-5 h-5 rounded-full bg-primary border-2 border-surface shadow-sm flex items-center justify-center"></div>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm pt-0.5">
+<span class="">Gentle (1)</span>
+<span class="font-medium text-primary">Moderate-High (7)</span>
+<span class="">Luminous (10)</span>
+</div>
+</div>
+</div>
+<!-- Reflection Note -->
+<div class="pt-2 border-t border-surface-container-high/60">
+<label class="block font-label-lg text-label-lg text-on-surface font-medium mb-1" for="checkin-note">Quiet reflection</label>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-space-sm">What's resting on your mind or behind this feeling?</p>
+<div class="relative">
+<textarea class="w-full rounded-lg bg-surface-container-low text-on-surface placeholder:text-on-surface-variant/70 p-space-md font-body-md text-body-md focus:outline-none focus:bg-surface-container resize-none transition-colors border border-transparent focus:border-outline-variant" id="checkin-note" placeholder="A line of gratitude, the sound of the wind, or thoughts resting lightly on paper..." rows="3"></textarea>
+<div class="flex items-center justify-between mt-space-xs">
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px]">lock</span>
+            End-to-end encrypted
+          </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant" id="char-counter">0 / 280</span>
+</div>
+</div>
+</div>
+<!-- Primary Action Button -->
+<button class="w-full py-3.5 px-space-md bg-primary hover:bg-primary-container text-on-primary rounded-lg font-label-lg text-label-lg font-medium transition-all shadow-sm flex items-center justify-center gap-space-xs active:scale-[0.99]" id="save-checkin-btn" type="button">
+<span class="material-symbols-outlined text-[18px]">check</span>
+<span class="">Log check-in</span>
+</button>
+<div class="hidden text-center font-label-sm text-label-sm text-primary font-medium" id="save-feedback">Reflections gently saved to your journal.</div>
+</section>
+<!-- 7-Day Equilibrium Trend (Retained gentle mood trend) -->
+
+<!-- Feed of Logged Emotions with Time and Text -->
+<section class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm">
+<div class="flex items-center justify-between mb-space-md">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-medium">Recent Reflections</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Your emotional notes &amp; timeline</p>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant px-2.5 py-1 rounded-full bg-surface-container-low">3 entries</span>
+</div>
+<div class="space-y-3.5" id="reflections-feed">
+<!-- Entry 1 -->
+<article class="p-space-md bg-surface-container-low rounded-xl flex flex-col space-y-2 border border-surface-container-high/40">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="text-[20px]">🙂</span>
+<span class="font-label-lg text-label-lg font-medium text-on-surface">Calm &amp; Content</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Today, 10:45 AM</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">bolt</span> Energy 7/10
+          </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">wb_sunny</span> Morning check-in
+          </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface leading-relaxed pt-0.5">
+          "Feeling centered after morning mint tea and a short walk under the trees. The mind feels unhurried today."
+        </p>
+</article>
+<!-- Entry 2 -->
+<article class="p-space-md bg-surface-container-low rounded-xl flex flex-col space-y-2 border border-surface-container-high/40">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="text-[20px]">😄</span>
+<span class="font-label-lg text-label-lg font-medium text-on-surface">Inspired</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Yesterday, 4:20 PM</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">bolt</span> Energy 8/10
+          </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">palette</span> Creative flow
+          </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface leading-relaxed pt-0.5">
+          "Wrapped up the design project chapter. A warm sense of completion and stillness in the studio."
+        </p>
+</article>
+<!-- Entry 3 -->
+<article class="p-space-md bg-surface-container-low rounded-xl flex flex-col space-y-2 border border-surface-container-high/40">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="text-[20px]">😐</span>
+<span class="font-label-lg text-label-lg font-medium text-on-surface">Steady</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Oct 24, 8:15 PM</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">bolt</span> Energy 5/10
+          </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">nightlight</span> Evening wind-down
+          </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface leading-relaxed pt-0.5">
+          "Quiet evening. Did 10 minutes of gentle stretches and unplugged from screens early."
+        </p>
+</article>
+</div>
+</section>
+</div>
+<!-- VIEW 2: PANIC & ACUTE DISTRESS VAULT (SECURED / LOCKED BY DEFAULT) -->
+<div class="space-y-5 hidden flex-col" id="view-panic">
+<!-- Grounding & Immediate Anchor Banner -->
+<section class="bg-surface-container-lowest border-2 border-secondary/20 rounded-xl p-space-lg shadow-sm">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-9 h-9 rounded-full bg-secondary-fixed flex items-center justify-center text-on-secondary-fixed shrink-0">
+<span class="material-symbols-outlined text-[20px]">air</span>
+</div>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-medium">You are safe right now</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Breathe gently with this quiet counter</p>
+</div>
+</div>
+<span class="px-2 py-0.5 bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm font-semibold rounded-full">4-7-8</span>
+</div>
+<!-- Breath Guide Circle / Bar -->
+<div class="mt-space-md p-space-md rounded-xl bg-surface-container-low flex flex-col items-center text-center">
+<div class="w-16 h-16 rounded-full border-4 border-secondary/40 flex items-center justify-center text-secondary font-headline-md text-headline-md font-semibold animate-pulse">
+        4s
+      </div>
+<p class="font-label-lg text-label-lg font-medium text-on-surface mt-2">Inhale slowly through the nose...</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-0.5">Feet firmly on the ground, drop your shoulders</p>
+</div>
+</section>
+<!-- Fast Capture Panic Log -->
+<section class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm space-y-4">
+<div class="flex items-center justify-between">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-medium">Log Panic Thoughts</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Unburden what feels overwhelming right now</p>
+</div>
+<span class="flex items-center gap-1 font-label-sm text-label-sm text-secondary font-medium px-2 py-0.5 rounded-full bg-secondary-fixed">
+<span class="material-symbols-outlined text-[14px]">shield</span> Private
+      </span>
+</div>
+<!-- Racing thoughts input -->
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-1" for="panic-note">What is racing through your mind?</label>
+<textarea class="w-full rounded-lg bg-surface-container-low text-on-surface placeholder:text-on-surface-variant/70 p-space-md font-body-md text-body-md focus:outline-none focus:bg-surface-container resize-none transition-colors border border-transparent focus:border-secondary" id="panic-note" placeholder="Write freely: 'My chest feels tight', 'I feel afraid that...' - nobody else will ever see this." rows="3"></textarea>
+</div>
+<!-- Body Sensations Tag Cloud -->
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-2">Physical sensations in the body:</label>
+<div class="flex flex-wrap gap-1.5" id="sensation-tags">
+<button class="px-2.5 py-1 rounded-full text-label-sm bg-surface-container-high text-on-surface hover:bg-secondary-fixed hover:text-on-secondary-fixed transition-colors" type="button">Racing heart</button>
+<button class="px-2.5 py-1 rounded-full text-label-sm bg-secondary-fixed text-on-secondary-fixed font-medium transition-colors" type="button">Shortness of breath</button>
+<button class="px-2.5 py-1 rounded-full text-label-sm bg-surface-container-high text-on-surface hover:bg-secondary-fixed hover:text-on-secondary-fixed transition-colors" type="button">Dizziness</button>
+<button class="px-2.5 py-1 rounded-full text-label-sm bg-secondary-fixed text-on-secondary-fixed font-medium transition-colors" type="button">Chest tightness</button>
+<button class="px-2.5 py-1 rounded-full text-label-sm bg-surface-container-high text-on-surface hover:bg-secondary-fixed hover:text-on-secondary-fixed transition-colors" type="button">Trembling / Shaking</button>
+<button class="px-2.5 py-1 rounded-full text-label-sm bg-surface-container-high text-on-surface hover:bg-secondary-fixed hover:text-on-secondary-fixed transition-colors" type="button">Tense shoulders</button>
+</div>
+</div>
+<!-- Panic Intensity Meter -->
+<div>
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Distress intensity:</span>
+<span class="font-label-sm text-label-sm text-secondary font-semibold">Severe (8 / 10)</span>
+</div>
+<div class="flex items-center gap-1.5">
+<button class="flex-1 h-7 rounded bg-secondary-fixed/50 hover:bg-secondary-fixed text-label-sm font-medium" type="button">1</button>
+<button class="flex-1 h-7 rounded bg-secondary-fixed/50 hover:bg-secondary-fixed text-label-sm font-medium" type="button">2</button>
+<button class="flex-1 h-7 rounded bg-secondary-fixed/50 hover:bg-secondary-fixed text-label-sm font-medium" type="button">3</button>
+<button class="flex-1 h-7 rounded bg-secondary-fixed/50 hover:bg-secondary-fixed text-label-sm font-medium" type="button">4</button>
+<button class="flex-1 h-7 rounded bg-secondary-fixed/50 hover:bg-secondary-fixed text-label-sm font-medium" type="button">5</button>
+<button class="flex-1 h-7 rounded bg-secondary-fixed/70 hover:bg-secondary-fixed text-label-sm font-medium" type="button">6</button>
+<button class="flex-1 h-7 rounded bg-secondary-fixed/80 hover:bg-secondary-fixed text-label-sm font-medium" type="button">7</button>
+<button class="flex-1 h-7 rounded bg-secondary text-on-secondary font-semibold text-label-sm" type="button">8</button>
+<button class="flex-1 h-7 rounded bg-secondary-fixed/50 hover:bg-secondary-fixed text-label-sm font-medium" type="button">9</button>
+<button class="flex-1 h-7 rounded bg-secondary-fixed/50 hover:bg-secondary-fixed text-label-sm font-medium" type="button">10</button>
+</div>
+</div>
+<button class="w-full py-3.5 px-space-md bg-secondary text-on-secondary rounded-lg font-label-lg text-label-lg font-medium hover:bg-secondary/90 transition-all shadow-sm flex items-center justify-center gap-1.5 active:scale-[0.99]" id="save-panic-btn" type="button">
+<span class="material-symbols-outlined text-[18px]">lock</span>
+<span class="">Securely store panic entry</span>
+</button>
+</section>
+<!-- SECURED / LOCKED PANIC VAULT HISTORY -->
+<section class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm border border-secondary/20">
+<div class="flex items-center justify-between mb-space-sm">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-secondary">enhanced_encryption</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-medium">Panic Vault</h3>
+</div>
+<span class="font-label-sm text-label-sm px-2.5 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-medium">Locked by default</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-space-md">
+      Panic thoughts are isolated and strictly hidden from shared history to protect your psychological safety.
+    </p>
+<!-- Locked State Prompt -->
+<div class="p-space-lg bg-surface-container-low rounded-xl border border-dashed border-outline-variant flex flex-col items-center text-center space-y-3" id="panic-vault-locked">
+<div class="w-12 h-12 rounded-full bg-secondary-fixed flex items-center justify-center text-on-secondary-fixed shadow-sm">
+<span class="material-symbols-outlined text-[24px]">lock</span>
+</div>
+<div>
+<p class="font-label-lg text-label-lg font-medium text-on-surface">2 panic episodes recorded</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-0.5">End-to-end encrypted · Tap with biometric ID to decrypt</p>
+</div>
+<button class="py-2 px-space-md rounded-lg bg-surface-container-lowest border border-outline-variant font-label-sm text-label-sm font-medium text-on-surface flex items-center gap-2 hover:bg-surface-container-high transition-colors shadow-sm" id="unlock-vault-btn" type="button">
+<span class="material-symbols-outlined text-[16px] text-primary">fingerprint</span>
+<span class="">Unlock with Face ID / Passcode</span>
+</button>
+</div>
+<!-- Unlocked State (Hidden by default) -->
+<div class="hidden space-y-3" id="panic-vault-unlocked">
+<div class="flex items-center justify-between pb-1">
+<span class="font-label-sm text-label-sm text-secondary font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">lock_open</span> Decrypted Session
+        </span>
+<button class="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface underline" id="relock-vault-btn" type="button">
+          Re-lock now
+        </button>
+</div>
+<!-- Encrypted Entry 1 -->
+<div class="p-space-md bg-surface-container-low rounded-lg space-y-1.5 border border-secondary/30">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-secondary font-medium">Intensity: 8/10 · Racing Heart</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">3 days ago, 11:14 PM</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface">
+          "Felt sudden shortness of breath while lying in bed. Did the 4-7-8 breathing drill for 6 minutes until heart slowed."
+        </p>
+</div>
+<!-- Encrypted Entry 2 -->
+<div class="p-space-md bg-surface-container-low rounded-lg space-y-1.5 border border-secondary/30">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-secondary font-medium">Intensity: 6/10 · Tight Chest</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Oct 18, 2:30 PM</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface">
+          "Work presentation anxiety surge. Drank ice water and sat quietly outside for 10 minutes."
+        </p>
+</div>
+</div>
+</section>
+</div></div>
+<script>
+  (function () {
+    const moodButtons = document.querySelectorAll('.mood-pill');
+    moodButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        moodButtons.forEach(b => {
+          b.classList.remove('bg-surface-container-high', 'opacity-100');
+          b.classList.add('bg-surface-container-low', 'opacity-80');
+          const dot = b.querySelector('.mood-dot');
+          if (dot) dot.classList.replace('opacity-100', 'opacity-0');
+        });
+        btn.classList.remove('bg-surface-container-low', 'opacity-80');
+        btn.classList.add('bg-surface-container-high', 'opacity-100');
+        const activeDot = btn.querySelector('.mood-dot');
+        if (activeDot) activeDot.classList.replace('opacity-0', 'opacity-100');
+      });
+    });
+
+    const energyButtons = document.querySelectorAll('.energy-pill');
+    const energyLabel = document.getElementById('energy-label');
+    const descriptions = {
+      'very-low': 'Deep resting mode',
+      'low': 'Slow & mindful cadence',
+      'moderate': 'Gentle & sustained',
+      'high': 'Vibrant presence',
+      'full': 'Abundantly luminous'
+    };
+
+    energyButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        energyButtons.forEach(b => {
+          b.className = 'energy-pill flex-1 py-space-sm px-space-xs flex flex-col items-center justify-center rounded-lg bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high transition-colors';
+          const indicator = b.querySelector('span:last-child');
+          if (indicator) {
+            indicator.className = 'w-1.5 h-1.5 rounded-full mt-1.5 bg-outline-variant';
+          }
+        });
+
+        btn.className = 'energy-pill flex-1 py-space-sm px-space-xs flex flex-col items-center justify-center rounded-lg bg-primary text-on-primary font-medium transition-colors';
+        const activeIndicator = btn.querySelector('span:last-child');
+        if (activeIndicator) {
+          activeIndicator.className = 'w-1.5 h-1.5 rounded-full mt-1.5 bg-on-primary';
+        }
+
+        const level = btn.getAttribute('data-energy');
+        if (energyLabel && descriptions[level]) {
+          energyLabel.textContent = descriptions[level];
+        }
+      });
+    });
+
+    const noteArea = document.getElementById('checkin-note');
+    const counter = document.getElementById('char-counter');
+    if (noteArea && counter) {
+      noteArea.addEventListener('input', (e) => {
+        const len = e.target.value.length;
+        counter.textContent = `${len} / 280`;
+      });
+    }
+
+    const saveBtn = document.getElementById('save-checkin-btn');
+    const feedback = document.getElementById('save-feedback');
+    if (saveBtn && feedback) {
+      saveBtn.addEventListener('click', () => {
+        saveBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">check_circle</span> Saved with care';
+        feedback.classList.remove('hidden');
+        setTimeout(() => {
+          saveBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">done</span> Save check-in';
+          feedback.classList.add('hidden');
+        }, 2500);
+      });
+    }
+  })();
+</script></main></div>
+
+
+</body></html>

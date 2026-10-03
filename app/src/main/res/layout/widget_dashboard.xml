@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widgetDashboardRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/widget_bg"
+    android:padding="12dp">
+
+    <!-- Header Row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="8dp">
+
+        <TextView
+            android:id="@+id/widgetDashboardIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="⚡"
+            android:textSize="14sp"
+            android:layout_marginEnd="6dp" />
+
+        <TextView
+            android:id="@+id/widgetDashboardTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="WEEKLY DIGEST"
+            android:textColor="@color/ink_text"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:fontFamily="monospace"
+            android:letterSpacing="0.04"
+            android:singleLine="true" />
+
+        <TextView
+            android:id="@+id/widgetDashboardSubtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="V07 · ⚙"
+            android:textColor="@color/crayon_muted"
+            android:textSize="10sp"
+            android:fontFamily="monospace"
+            android:letterSpacing="0.03" />
+    </LinearLayout>
+
+    <!-- 4-Stat Grid -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="6dp">
+
+        <!-- Tile 1 -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="@drawable/widget_item_bg"
+            android:padding="4dp"
+            android:layout_marginEnd="4dp">
+            <TextView
+                android:id="@+id/widgetTile1Val"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="--"
+                android:textColor="@color/crayon_green"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:fontFamily="monospace"
+                android:singleLine="true" />
+            <TextView
+                android:id="@+id/widgetTile1Lbl"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="FOCUS"
+                android:textColor="@color/crayon_muted"
+                android:textSize="8sp"
+                android:fontFamily="monospace"
+                android:letterSpacing="0.06"
+                android:singleLine="true" />
+        </LinearLayout>
+
+        <!-- Tile 2 -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="@drawable/widget_item_bg"
+            android:padding="4dp"
+            android:layout_marginEnd="4dp">
+            <TextView
+                android:id="@+id/widgetTile2Val"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="--"
+                android:textColor="@color/ink_text"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:fontFamily="monospace"
+                android:singleLine="true" />
+            <TextView
+                android:id="@+id/widgetTile2Lbl"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="TASKS"
+                android:textColor="@color/crayon_muted"
+                android:textSize="8sp"
+                android:fontFamily="monospace"
+                android:letterSpacing="0.06"
+                android:singleLine="true" />
+        </LinearLayout>
+
+        <!-- Tile 3 -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="@drawable/widget_item_bg"
+            android:padding="4dp"
+            android:layout_marginEnd="4dp">
+            <TextView
+                android:id="@+id/widgetTile3Val"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="--"
+                android:textColor="@color/ink_text"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:fontFamily="monospace"
+                android:singleLine="true" />
+            <TextView
+                android:id="@+id/widgetTile3Lbl"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="HABITS"
+                android:textColor="@color/crayon_muted"
+                android:textSize="8sp"
+                android:fontFamily="monospace"
+                android:letterSpacing="0.06"
+                android:singleLine="true" />
+        </LinearLayout>
+
+        <!-- Tile 4 -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="@drawable/widget_item_bg"
+            android:padding="4dp">
+            <TextView
+                android:id="@+id/widgetTile4Val"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="--"
+                android:textColor="@color/ink_text"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:fontFamily="monospace"
+                android:singleLine="true" />
+            <TextView
+                android:id="@+id/widgetTile4Lbl"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SCREEN"
+                android:textColor="@color/crayon_muted"
+                android:textSize="8sp"
+                android:fontFamily="monospace"
+                android:letterSpacing="0.06"
+                android:singleLine="true" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Bottom Status Text -->
+    <TextView
+        android:id="@+id/widgetDashboardStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tap to open V07 Dashboard"
+        android:textColor="@color/crayon_muted"
+        android:textSize="9sp"
+        android:fontFamily="monospace"
+        android:singleLine="true"
+        android:ellipsize="end" />
+
+</LinearLayout>

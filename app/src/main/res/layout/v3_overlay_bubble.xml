@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/v3_bubble_root"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:background="@drawable/v3_overlay_pill_bg"
+    android:elevation="12dp"
+    android:clickable="true"
+    android:focusable="true">
+
+    <ImageView
+        android:id="@+id/v3_bubble_icon"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:src="@drawable/v07_logo"
+        android:scaleType="fitCenter"
+        android:contentDescription="Active App" />
+
+    <TextView
+        android:id="@+id/v3_bubble_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="6dp"
+        android:textColor="#FFFFFF"
+        android:textSize="11sp"
+        android:fontFamily="sans-serif-medium"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:text="0m" />
+</LinearLayout>

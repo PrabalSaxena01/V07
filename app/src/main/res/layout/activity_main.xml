@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/coordinator"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F4F7F5">
+
+    <WebView
+        android:id="@id/webview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
+    <include layout="@layout/activity_setup" />
+
+    <LinearLayout
+        android:id="@+id/signinView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#EE0D0D10"
+        android:orientation="vertical"
+        android:padding="32dp"
+        android:visibility="gone"
+        android:gravity="center_horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="V07 SYNC"
+            android:textSize="34sp"
+            android:textStyle="bold"
+            android:textColor="#7c5bf5"
+            android:fontFamily="monospace"
+            android:layout_marginBottom="6dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sign in with your Firebase account\nto sync this phone with the companion site."
+            android:textSize="13sp"
+            android:textColor="#80FFFFFF"
+            android:gravity="center"
+            android:lineSpacingExtra="4dp"
+            android:layout_marginBottom="28dp" />
+
+        <EditText
+            android:id="@+id/signinEmail"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:hint="you@email.com"
+            android:textSize="14sp"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#66FFFFFF"
+            android:inputType="textEmailAddress"
+            android:background="@drawable/setup_btn_outline"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp" />
+
+        <EditText
+            android:id="@+id/signinPass"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:hint="Password (6+ chars)"
+            android:textSize="14sp"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#66FFFFFF"
+            android:inputType="textPassword"
+            android:background="@drawable/setup_btn_outline"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:id="@+id/signinBtn"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:gravity="center"
+            android:text="SIGN IN"
+            android:textSize="15sp"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:background="@drawable/setup_btn_accent"
+            android:layout_marginBottom="10dp"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <TextView
+            android:id="@+id/signinMode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="New here?  CREATE ACCOUNT"
+            android:textSize="13sp"
+            android:textColor="#8D6CFF"
+            android:fontFamily="monospace"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/signinStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:textColor="#ff6b6b"
+            android:gravity="center"
+            android:visibility="invisible" />
+
+        <TextView
+            android:id="@+id/signinSkip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="SKIP SYNCNOW  ›"
+            android:textSize="12sp"
+            android:textColor="#55FFFFFF"
+            android:fontFamily="monospace"
+            android:letterSpacing="0.1"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp" />
+
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

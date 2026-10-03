@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="background">#090909</color>
+    <color name="card">#151720</color>
+    <color name="accent">#7c5bf5</color>
+    <color name="text">#e1e2ea</color>
+    <color name="text_secondary">#8e8e93</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="paper_bg">#1E1E22</color>
+    <color name="paper_tile">#26262B</color>
+    <color name="paper_border">#35353D</color>
+    <color name="ink_text">#F2EFE9</color>
+    <color name="crayon_muted">#A4A198</color>
+    <color name="crayon_green">#4DE086</color>
+    <color name="crayon_blue">#A7C8FF</color>
+    <color name="crayon_purple">#8D6CFF</color>
+    <color name="crayon_orange">#FFA447</color>
+</resources>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/setupView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0e0e10"
+    android:visibility="gone">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:padding="40dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="V07"
+            android:textSize="48sp"
+            android:textStyle="bold"
+            android:textColor="#7c5bf5"
+            android:fontFamily="monospace"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Welcome to V07 Dashboard"
+            android:textSize="20sp"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Choose a folder for your data.\nThis will be your vault."
+            android:textSize="14sp"
+            android:textColor="#80FFFFFF"
+            android:gravity="center"
+            android:lineSpacingExtra="4dp"
+            android:layout_marginBottom="40dp" />
+
+        <TextView
+            android:id="@+id/btnSelectFolder"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:gravity="center"
+            android:text="📂  Select Vault Folder"
+            android:textSize="15sp"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:background="@drawable/setup_btn_accent"
+            android:layout_marginBottom="12dp"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <TextView
+            android:id="@+id/btnUseDefault"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:gravity="center"
+            android:text="📁  Use Default (V07Data)"
+            android:textSize="15sp"
+            android:textColor="#FFFFFF"
+            android:background="@drawable/setup_btn_outline"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <TextView
+            android:id="@+id/setupStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Creating vault..."
+            android:textSize="12sp"
+            android:textColor="#80FFFFFF"
+            android:layout_marginTop="20dp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+</FrameLayout>

@@ -1,0 +1,34 @@
+{
+  "id": "com.v07.template",
+  "name": "Custom Companion",
+  "version": "1.0.0",
+  "apiVersion": "3.0",
+  "description": "Boilerplate template demonstrating SQLite persistence, Ledger integration, and UI styling for modular sideloaded plugins.",
+  "publisher": {
+    "name": "Community Developer",
+    "url": "https://v07.app"
+  },
+  "permissions": [
+    "storage:isolated",
+    "events:write",
+    "events:read"
+  ],
+  "entry": "index.html",
+  "settings": "settings.html",
+  "nav": {
+    "icon": "extension",
+    "label": "TEMPLATE",
+    "color": "#4DE086"
+  },
+  "widgets": [
+    {
+      "id": "main_widget",
+      "title": "COMPANION",
+      "entry": "widget.html",
+      "icon": "extension",
+      "color": "#4DE086",
+      "supportedSizes": ["small", "medium"],
+      "defaultSize": "medium"
+    }
+  ]
+}

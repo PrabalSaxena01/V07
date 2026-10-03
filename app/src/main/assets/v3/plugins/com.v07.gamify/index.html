@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Gamify</title>
+<link rel="stylesheet" href="plugin.css">
+<script>
+(function(){
+  function syncTheme(){
+    var t = 'dark';
+    try {
+      t = window.parent.document.documentElement.dataset.theme || localStorage.getItem('v07_theme') || 'dark';
+    } catch(e){
+      try { t = localStorage.getItem('v07_theme') || 'dark'; } catch(e2){}
+    }
+    if(t === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    else document.documentElement.removeAttribute('data-theme');
+  }
+  syncTheme();
+  window.addEventListener('storage', syncTheme);
+})();
+</script>
+</head>
+<body>
+<div class="g-page">
+  <div id="gamify-root"></div>
+</div>
+<script src="plugin.js"></script>
+</body>
+</html>

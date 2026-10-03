@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:background="@drawable/notification_rounded_bg"
+    android:padding="12dp">
+
+    <!-- Activity Title and Label -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:layout_marginEnd="8dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="FOCUS SESSION"
+            android:textColor="#A4A198"
+            android:textSize="9sp"
+            android:fontFamily="monospace"
+            android:letterSpacing="0.08"
+            android:singleLine="true" />
+
+        <TextView
+            android:id="@+id/notif_activity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Working"
+            android:textColor="#F2EFE9"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:fontFamily="monospace"
+            android:singleLine="true" />
+    </LinearLayout>
+
+    <!-- Monospace Timer Countdown/Stopwatch -->
+    <TextView
+        android:id="@+id/notif_timer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="00:00"
+        android:textColor="#FFA447"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:fontFamily="monospace"
+        android:layout_marginEnd="10dp" />
+
+    <!-- Action Buttons -->
+    <TextView
+        android:id="@+id/btn_pause"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:gravity="center"
+        android:text="⏸"
+        android:textSize="14sp"
+        android:background="@drawable/notif_btn_pause"
+        android:textColor="#FFA447" />
+
+    <TextView
+        android:id="@+id/btn_stop"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:gravity="center"
+        android:text="⏹"
+        android:textSize="14sp"
+        android:background="@drawable/notif_btn_stop"
+        android:textColor="#E84040"
+        android:layout_marginStart="8dp" />
+
+</LinearLayout>

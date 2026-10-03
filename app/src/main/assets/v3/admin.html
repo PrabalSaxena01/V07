@@ -1,0 +1,3476 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>V07 Sovereign Admin · System & Data Management Console</title>
+
+  <!-- Typography: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+  <!-- Tailwind CSS & Local Fallback -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    if (typeof tailwind === 'undefined') {
+      document.write('<script src="tailwind.min.js"><\/script>');
+    }
+  </script>
+
+  <style>
+    :root {
+      --bg-base: #070A11;
+      --bg-canvas: #0B101D;
+      --bg-surface: #10172A;
+      --bg-surface-hover: #17223D;
+      --border-subtle: rgba(255, 255, 255, 0.07);
+      --border-strong: rgba(255, 255, 255, 0.14);
+      --primary: #3B82F6;
+      --primary-dim: rgba(59, 130, 246, 0.12);
+      --primary-hover: #2563EB;
+      --success: #10B981;
+      --success-dim: rgba(16, 185, 129, 0.12);
+      --warning: #F59E0B;
+      --warning-dim: rgba(245, 158, 11, 0.12);
+      --danger: #EF4444;
+      --danger-dim: rgba(239, 68, 68, 0.12);
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+      --text-subtle: #64748B;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      overflow-x: hidden;
+    }
+
+    .font-mono-code {
+      font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-base);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1E293B;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+
+    /* Sticky Data Grid Table */
+    .table-container {
+      max-height: calc(100vh - 280px);
+      overflow-y: auto;
+      overflow-x: auto;
+    }
+    table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--bg-surface);
+    }
+
+    .btn-press:active {
+      transform: scale(0.97);
+    }
+
+    .tab-active {
+      background-color: var(--primary-dim);
+      color: #60A5FA;
+      border-left: 3px solid var(--primary);
+    }
+
+    .tab-inactive {
+      color: var(--text-muted);
+      border-left: 3px solid transparent;
+    }
+    .tab-inactive:hover {
+      background-color: rgba(255, 255, 255, 0.03);
+      color: var(--text-main);
+    }
+
+    /* Custom Transitions */
+    .fade-in {
+      animation: fadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="h-screen flex flex-col antialiased select-none">
+
+  <!-- ==========================================================================
+       TOP GLOBAL HUD BAR
+       ========================================================================== -->
+  <header class="h-14 bg-[var(--bg-canvas)] border-b border-[var(--border-subtle)] px-4 flex items-center justify-between z-30 shrink-0">
+    <!-- Left: Brand Title & Mode -->
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+        <span class="material-symbols-outlined text-lg">admin_panel_settings</span>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="text-sm font-bold tracking-tight text-[var(--text-main)]">V07 SOVEREIGN ADMIN</span>
+          <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">SYSTEM CONSOLE</span>
+        </div>
+        <p class="text-[10px] text-[var(--text-subtle)] font-mono-code" id="hudSystemMeta">Connecting to 127.0.0.1:8000...</p>
+      </div>
+    </div>
+
+    <!-- Center: Profile Switcher Cockpit -->
+    <div class="hidden md:flex items-center gap-2 bg-[var(--bg-surface)] border border-[var(--border-subtle)] px-3 py-1 rounded-lg">
+      <span class="material-symbols-outlined text-xs text-blue-400">group</span>
+      <span class="text-xs text-[var(--text-subtle)] font-medium">Active Profile:</span>
+      <select id="hudProfileSelect" onchange="AdminApp.switchProfile(this.value)" class="bg-transparent text-xs font-semibold text-blue-400 focus:outline-none cursor-pointer">
+        <option value="guest" class="bg-[var(--bg-surface)] text-[var(--text-main)]">guest</option>
+      </select>
+      <button onclick="AdminApp.openModal('modalCreateProfile')" class="ml-1 text-[11px] text-[var(--text-muted)] hover:text-white flex items-center gap-0.5 px-1.5 py-0.5 rounded hover:bg-white/5 transition" title="Create New Profile">
+        <span class="material-symbols-outlined text-xs">add</span>
+        <span>New</span>
+      </button>
+      <button onclick="AdminApp.navigateTo('profiles')" class="text-[11px] text-blue-400 hover:text-blue-300 px-1 py-0.5 font-medium hover:underline" title="Manage Profiles">
+        Manage
+      </button>
+    </div>
+
+    <!-- Right: Status Pill & Action Buttons -->
+    <div class="flex items-center gap-2">
+      <!-- Latency & Connection Pill -->
+      <div id="hudConnectionPill" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono-code bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span id="hudConnectionText">Online (2ms)</span>
+      </div>
+
+      <!-- Quick Action: SQL Runner -->
+      <button onclick="AdminApp.navigateTo('sql-workbench')" class="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-[var(--bg-surface)] hover:bg-[var(--bg-surface-hover)] border border-[var(--border-subtle)] text-[var(--text-muted)] hover:text-white transition btn-press">
+        <span class="material-symbols-outlined text-sm text-yellow-400">terminal</span>
+        <span>SQL</span>
+      </button>
+
+      <!-- Quick Action: Database Backup -->
+      <button onclick="AdminApp.triggerBackup()" class="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-[var(--bg-surface)] hover:bg-[var(--bg-surface-hover)] border border-[var(--border-subtle)] text-[var(--text-muted)] hover:text-white transition btn-press" title="Instant Snapshot Backup">
+        <span class="material-symbols-outlined text-sm text-emerald-400">save</span>
+        <span>Backup</span>
+      </button>
+
+      <!-- Quick Action: Vacuum DB -->
+      <button onclick="AdminApp.triggerVacuum()" class="hidden md:flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-[var(--bg-surface)] hover:bg-[var(--bg-surface-hover)] border border-[var(--border-subtle)] text-[var(--text-muted)] hover:text-white transition btn-press" title="Vacuum & Optimize SQLite">
+        <span class="material-symbols-outlined text-sm text-blue-400">cleaning_services</span>
+        <span>Vacuum</span>
+      </button>
+
+      <!-- Open Companion App -->
+      <a href="/companion.html" target="_blank" class="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white shadow-sm transition btn-press" title="Open Web Companion Workspace in new tab">
+        <span class="material-symbols-outlined text-sm">open_in_new</span>
+        <span class="hidden sm:inline">Companion</span>
+      </a>
+
+      <!-- Server / Auth Config -->
+      <button onclick="AdminApp.openModal('modalConnectionSettings')" class="w-8 h-8 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--text-muted)] hover:text-white flex items-center justify-center transition btn-press" title="Connection Settings & Token">
+        <span class="material-symbols-outlined text-base">settings</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       MAIN WORKSPACE (SIDEBAR + CONTENT)
+       ========================================================================== -->
+  <div class="flex-1 flex overflow-hidden">
+
+    <!-- ── Left Navigation Sidebar ── -->
+    <aside class="w-64 bg-[var(--bg-canvas)] border-r border-[var(--border-subtle)] flex flex-col justify-between shrink-0 overflow-y-auto">
+      <div class="py-3">
+        <!-- Section: Administration & Health -->
+        <div class="px-4 pb-1 text-[10px] font-bold tracking-wider text-[var(--text-subtle)] uppercase">Cockpit</div>
+        <nav class="space-y-0.5">
+          <button onclick="AdminApp.navigateTo('overview')" id="nav-overview" class="w-full flex items-center gap-3 px-4 py-2 text-xs font-medium tab-active transition">
+            <span class="material-symbols-outlined text-base">dashboard</span>
+            <span>System Overview</span>
+          </button>
+          <button onclick="AdminApp.navigateTo('profiles')" id="nav-profiles" class="w-full flex items-center justify-between px-4 py-2 text-xs font-medium tab-inactive transition">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-base">badge</span>
+              <span>Profiles Manager</span>
+            </div>
+            <span id="badgeProfileCount" class="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-blue-500/20 text-blue-400">1</span>
+          </button>
+        </nav>
+
+        <!-- Section: Universal Data Engine -->
+        <div class="px-4 pt-4 pb-1 text-[10px] font-bold tracking-wider text-[var(--text-subtle)] uppercase">Database Explorer</div>
+        <nav class="space-y-0.5">
+          <button onclick="AdminApp.navigateTo('table-explorer')" id="nav-table-explorer" class="w-full flex items-center justify-between px-4 py-2 text-xs font-medium tab-inactive transition">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-base">table_chart</span>
+              <span>Table Explorer</span>
+            </div>
+            <span class="px-1.5 py-0.2 rounded-full text-[10px] font-mono-code bg-white/5 text-[var(--text-muted)]">SQL</span>
+          </button>
+          <button onclick="AdminApp.navigateTo('sql-workbench')" id="nav-sql-workbench" class="w-full flex items-center gap-3 px-4 py-2 text-xs font-medium tab-inactive transition">
+            <span class="material-symbols-outlined text-base">terminal</span>
+            <span>SQL Console</span>
+          </button>
+        </nav>
+
+        <!-- Section: Core Data Domains -->
+        <div class="px-4 pt-4 pb-1 text-[10px] font-bold tracking-wider text-[var(--text-subtle)] uppercase">Core Domains</div>
+        <nav class="space-y-0.5">
+          <button onclick="AdminApp.navigateTo('sessions')" id="nav-sessions" class="w-full flex items-center justify-between px-4 py-2 text-xs font-medium tab-inactive transition">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-base">timer</span>
+              <span>Focus Sessions</span>
+            </div>
+            <span id="badgeSessionsCount" class="text-[11px] font-mono-code text-[var(--text-subtle)]">-</span>
+          </button>
+          <button onclick="AdminApp.navigateTo('tasks')" id="nav-tasks" class="w-full flex items-center justify-between px-4 py-2 text-xs font-medium tab-inactive transition">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-base">checklist</span>
+              <span>Tasks & Discipline</span>
+            </div>
+            <span id="badgeTasksCount" class="text-[11px] font-mono-code text-[var(--text-subtle)]">-</span>
+          </button>
+          <button onclick="AdminApp.navigateTo('thoughts')" id="nav-thoughts" class="w-full flex items-center justify-between px-4 py-2 text-xs font-medium tab-inactive transition">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-base">psychology</span>
+              <span>Thoughts & Notes</span>
+            </div>
+            <span id="badgeThoughtsCount" class="text-[11px] font-mono-code text-[var(--text-subtle)]">-</span>
+          </button>
+          <button onclick="AdminApp.navigateTo('events')" id="nav-events" class="w-full flex items-center justify-between px-4 py-2 text-xs font-medium tab-inactive transition">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-base">receipt_long</span>
+              <span>Ledger & Cadence</span>
+            </div>
+            <span id="badgeEventsCount" class="text-[11px] font-mono-code text-[var(--text-subtle)]">-</span>
+          </button>
+          <button onclick="AdminApp.navigateTo('daytracker')" id="nav-daytracker" class="w-full flex items-center justify-between px-4 py-2 text-xs font-medium tab-inactive transition">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-base">target</span>
+              <span>Day Milestones</span>
+            </div>
+            <span id="badgeMilestonesCount" class="text-[11px] font-mono-code text-[var(--text-subtle)]">-</span>
+          </button>
+          <button onclick="AdminApp.navigateTo('screentime')" id="nav-screentime" class="w-full flex items-center justify-between px-4 py-2 text-xs font-medium tab-inactive transition">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-base">phone_android</span>
+              <span>Screen Time Logs</span>
+            </div>
+            <span id="badgeAppUsageCount" class="text-[11px] font-mono-code text-[var(--text-subtle)]">-</span>
+          </button>
+          <button onclick="AdminApp.navigateTo('plugins')" id="nav-plugins" class="w-full flex items-center justify-between px-4 py-2 text-xs font-medium tab-inactive transition">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-base">extension</span>
+              <span>Plugin Storage</span>
+            </div>
+            <span id="badgePluginsCount" class="text-[11px] font-mono-code text-[var(--text-subtle)]">-</span>
+          </button>
+        </nav>
+
+        <!-- Section: Diagnostics & Garbage Collection -->
+        <div class="px-4 pt-4 pb-1 text-[10px] font-bold tracking-wider text-[var(--text-subtle)] uppercase">Audit & Tools</div>
+        <nav class="space-y-0.5">
+          <button onclick="AdminApp.navigateTo('recyclebin')" id="nav-recyclebin" class="w-full flex items-center justify-between px-4 py-2 text-xs font-medium tab-inactive transition">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-base">delete</span>
+              <span>Recycle Bin</span>
+            </div>
+            <span id="badgeRecycleCount" class="px-1.5 py-0.2 rounded-full text-[10px] font-mono-code bg-red-500/20 text-red-400">0</span>
+          </button>
+          <button onclick="AdminApp.navigateTo('backups')" id="nav-backups" class="w-full flex items-center gap-3 px-4 py-2 text-xs font-medium tab-inactive transition">
+            <span class="material-symbols-outlined text-base">history</span>
+            <span>Snapshot Backups</span>
+          </button>
+          <button onclick="AdminApp.navigateTo('maintenance')" id="nav-maintenance" class="w-full flex items-center gap-3 px-4 py-2 text-xs font-medium tab-inactive transition">
+            <span class="material-symbols-outlined text-base">build</span>
+            <span>Diagnostics & Tools</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Bottom Profile Card & Storage Summary -->
+      <div class="p-3 border-t border-[var(--border-subtle)] bg-[var(--bg-base)]">
+        <div class="bg-[var(--bg-surface)] p-2.5 rounded-lg border border-[var(--border-subtle)]">
+          <div class="flex items-center justify-between text-xs mb-1">
+            <span class="text-[var(--text-subtle)]">Active DB Size</span>
+            <span id="sidebarDbSize" class="font-mono-code font-bold text-blue-400">0 KB</span>
+          </div>
+          <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mb-2">
+            <div id="sidebarDbBar" class="bg-blue-500 h-full w-[25%]"></div>
+          </div>
+          <div class="flex items-center justify-between text-[10px] text-[var(--text-subtle)] font-mono-code">
+            <span id="sidebarWalStatus">WAL: Enabled</span>
+            <span id="sidebarRecordTotal">0 records</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ── Center Content Workspace ── -->
+    <main class="flex-1 bg-[var(--bg-base)] overflow-y-auto p-5 relative" id="mainContainer">
+
+      <!-- ====================================================================
+           VIEW: OVERVIEW (SYSTEM & DATABASE HEALTH)
+           ==================================================================== -->
+      <section id="view-overview" class="fade-in space-y-6">
+        <!-- Top Banner -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[var(--bg-surface)] border border-[var(--border-subtle)] p-5 rounded-xl">
+          <div>
+            <h2 class="text-lg font-bold text-[var(--text-main)] flex items-center gap-2">
+              <span>Operational Cockpit</span>
+              <span id="overviewActiveProfileBadge" class="text-xs px-2 py-0.5 rounded-full font-mono-code bg-blue-500/20 text-blue-400 border border-blue-500/30">profile: guest</span>
+            </h2>
+            <p class="text-xs text-[var(--text-muted)] mt-1">
+              Authoritative V3 SQLite operational database running on local loopback. Inspect, modify, vacuum, or export any record.
+            </p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="AdminApp.refreshAllData()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[var(--bg-surface-hover)] hover:bg-slate-700 text-white border border-[var(--border-strong)] transition btn-press">
+              <span class="material-symbols-outlined text-sm">sync</span>
+              <span>Refresh Metrics</span>
+            </button>
+            <button onclick="AdminApp.triggerBackup()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition btn-press">
+              <span class="material-symbols-outlined text-sm">cloud_download</span>
+              <span>Create Backup</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 Stat Summary Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Card 1: Total Records -->
+          <div class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] p-4 rounded-xl">
+            <div class="flex items-center justify-between text-[var(--text-subtle)] mb-2">
+              <span class="text-xs font-medium uppercase tracking-wider">Total Records</span>
+              <span class="material-symbols-outlined text-blue-400">dataset</span>
+            </div>
+            <div class="text-2xl font-bold font-mono-code text-[var(--text-main)]" id="statTotalRecords">0</div>
+            <p class="text-[11px] text-[var(--text-muted)] mt-1" id="statTablesCount">across 11 SQLite tables</p>
+          </div>
+
+          <!-- Card 2: Database Size -->
+          <div class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] p-4 rounded-xl">
+            <div class="flex items-center justify-between text-[var(--text-subtle)] mb-2">
+              <span class="text-xs font-medium uppercase tracking-wider">Database Size</span>
+              <span class="material-symbols-outlined text-emerald-400">storage</span>
+            </div>
+            <div class="text-2xl font-bold font-mono-code text-[var(--text-main)]" id="statDbSize">0 KB</div>
+            <p class="text-[11px] text-emerald-400 mt-1 flex items-center gap-1">
+              <span class="material-symbols-outlined text-xs">check_circle</span>
+              <span id="statWalText">Write-Ahead Logging Active</span>
+            </p>
+          </div>
+
+          <!-- Card 3: Profiles -->
+          <div class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] p-4 rounded-xl">
+            <div class="flex items-center justify-between text-[var(--text-subtle)] mb-2">
+              <span class="text-xs font-medium uppercase tracking-wider">Profiles Isolated</span>
+              <span class="material-symbols-outlined text-amber-400">badge</span>
+            </div>
+            <div class="text-2xl font-bold font-mono-code text-[var(--text-main)]" id="statProfilesCount">1</div>
+            <p class="text-[11px] text-[var(--text-muted)] mt-1" id="statActiveProfileNote">Active: guest</p>
+          </div>
+
+          <!-- Card 4: System Latency & Integrity -->
+          <div class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] p-4 rounded-xl">
+            <div class="flex items-center justify-between text-[var(--text-subtle)] mb-2">
+              <span class="text-xs font-medium uppercase tracking-wider">DB Health Check</span>
+              <span class="material-symbols-outlined text-indigo-400">verified</span>
+            </div>
+            <div class="text-2xl font-bold text-emerald-400 font-mono-code" id="statIntegrity">OK</div>
+            <p class="text-[11px] text-[var(--text-subtle)] mt-1">PRAGMA integrity verified</p>
+          </div>
+        </div>
+
+        <!-- Two Column Grid: Profiles Cockpit & Table Ledger Summary -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Left: Profiles Quick Switcher (1 col) -->
+          <div class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] p-5 rounded-xl flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-bold text-[var(--text-main)] flex items-center gap-2">
+                  <span class="material-symbols-outlined text-base text-blue-400">group</span>
+                  <span>Database Profiles</span>
+                </h3>
+                <button onclick="AdminApp.openModal('modalCreateProfile')" class="text-xs text-blue-400 hover:underline flex items-center gap-1">
+                  <span class="material-symbols-outlined text-xs">add</span>
+                  <span>New</span>
+                </button>
+              </div>
+              <div id="overviewProfilesList" class="space-y-2">
+                <!-- Injected dynamically -->
+                <div class="text-xs text-[var(--text-muted)]">Loading profiles...</div>
+              </div>
+            </div>
+            <button onclick="AdminApp.navigateTo('profiles')" class="mt-4 w-full py-2 rounded-lg text-xs font-medium bg-[var(--bg-surface-hover)] hover:bg-slate-700 text-[var(--text-muted)] hover:text-white border border-[var(--border-subtle)] transition">
+              Open Complete Profiles Cockpit →
+            </button>
+          </div>
+
+          <!-- Right: Table Counts Ledger (2 cols) -->
+          <div class="lg:col-span-2 bg-[var(--bg-surface)] border border-[var(--border-subtle)] p-5 rounded-xl">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-sm font-bold text-[var(--text-main)] flex items-center gap-2">
+                <span class="material-symbols-outlined text-base text-yellow-400">table_chart</span>
+                <span>SQLite Table Breakdown</span>
+              </h3>
+              <button onclick="AdminApp.navigateTo('table-explorer')" class="text-xs text-blue-400 hover:underline">
+                Explore Tables →
+              </button>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3" id="overviewTableGrid">
+              <!-- Dynamically populated table cards -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           VIEW: PROFILES COCKPIT
+           ==================================================================== -->
+      <section id="view-profiles" class="hidden fade-in space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-bold text-[var(--text-main)] flex items-center gap-2">
+              <span class="material-symbols-outlined text-blue-400">group</span>
+              <span>Multi-Profile Administration</span>
+            </h2>
+            <p class="text-xs text-[var(--text-muted)] mt-1">
+              Switch, create, clone, or delete isolated profile database files. Each profile maintains its own dedicated SQLite database.
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="AdminApp.openModal('modalCreateProfile')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white transition btn-press">
+              <span class="material-symbols-outlined text-sm">add</span>
+              <span>Create New Profile</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Profiles Detailed Cards Grid -->
+        <div id="profilesCardsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Dynamically populated profiles -->
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           VIEW: TABLE DATA EXPLORER (UNIVERSAL CRUD)
+           ==================================================================== -->
+      <section id="view-table-explorer" class="hidden fade-in space-y-4">
+        <!-- Explorer Controls Bar -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-[var(--bg-surface)] border border-[var(--border-subtle)] p-3 rounded-xl">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-xs font-medium text-[var(--text-subtle)]">Table:</span>
+            <select id="explorerTableSelect" onchange="AdminApp.onSelectTable(this.value)" class="bg-[var(--bg-canvas)] border border-[var(--border-strong)] text-xs font-bold text-blue-400 px-3 py-1.5 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer">
+              <!-- Tables options -->
+            </select>
+
+            <!-- Search Filter -->
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-2.5 top-2 text-xs text-[var(--text-subtle)]">search</span>
+              <input type="text" id="explorerSearchInput" placeholder="Filter rows..." onkeyup="AdminApp.onTableSearchDebounced(this.value)" class="bg-[var(--bg-canvas)] border border-[var(--border-subtle)] text-xs text-white pl-7 pr-3 py-1.5 rounded-lg w-44 focus:w-64 transition-all focus:outline-none focus:border-blue-500">
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <span id="explorerTotalCountLabel" class="text-xs font-mono-code text-[var(--text-subtle)]">0 rows</span>
+            <button onclick="AdminApp.openInsertRowModal()" class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition btn-press">
+              <span class="material-symbols-outlined text-sm">add</span>
+              <span>Insert Row</span>
+            </button>
+            <button onclick="AdminApp.exportTableAsJson()" class="p-1.5 rounded-lg bg-[var(--bg-surface-hover)] text-[var(--text-muted)] hover:text-white border border-[var(--border-subtle)]" title="Export as JSON">
+              <span class="material-symbols-outlined text-sm">download</span>
+            </button>
+            <button onclick="AdminApp.exportTableAsCsv()" class="p-1.5 rounded-lg bg-[var(--bg-surface-hover)] text-[var(--text-muted)] hover:text-white border border-[var(--border-subtle)]" title="Export as CSV">
+              <span class="material-symbols-outlined text-sm">table_view</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Table Data Grid -->
+        <div class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl overflow-hidden shadow-sm">
+          <div class="table-container">
+            <table class="w-full text-left text-xs text-[var(--text-main)] border-collapse" id="explorerDataTable">
+              <thead>
+                <!-- Injected columns -->
+              </thead>
+              <tbody id="explorerTableBody" class="divide-y divide-[var(--border-subtle)] font-mono-code text-[11px]">
+                <!-- Injected rows -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination Bar -->
+          <div class="p-3 border-t border-[var(--border-subtle)] bg-[var(--bg-canvas)] flex items-center justify-between text-xs">
+            <div class="flex items-center gap-2 text-[var(--text-subtle)]">
+              <span>Rows per page:</span>
+              <select id="explorerLimitSelect" onchange="AdminApp.changePageLimit(this.value)" class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded px-2 py-0.5 text-white">
+                <option value="25">25</option>
+                <option value="50" selected>50</option>
+                <option value="100">100</option>
+                <option value="250">250</option>
+              </select>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="AdminApp.prevPage()" id="explorerPrevBtn" class="px-2.5 py-1 rounded bg-[var(--bg-surface)] hover:bg-slate-700 text-[var(--text-muted)] hover:text-white disabled:opacity-40 transition">
+                &larr; Previous
+              </button>
+              <span id="explorerPageDisplay" class="font-mono-code text-[var(--text-muted)]">Page 1 of 1</span>
+              <button onclick="AdminApp.nextPage()" id="explorerNextBtn" class="px-2.5 py-1 rounded bg-[var(--bg-surface)] hover:bg-slate-700 text-[var(--text-muted)] hover:text-white disabled:opacity-40 transition">
+                Next &rarr;
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           VIEW: FOCUS SESSIONS
+           ==================================================================== -->
+      <section id="view-sessions" class="hidden fade-in space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-bold text-[var(--text-main)] flex items-center gap-2">
+              <span class="material-symbols-outlined text-blue-400">timer</span>
+              <span>Focus Sessions Ledger</span>
+            </h2>
+            <p class="text-xs text-[var(--text-muted)] mt-1">
+              View, edit historical durations, modify activities, or insert backfilled focus sessions.
+            </p>
+          </div>
+          <button onclick="AdminApp.openModal('modalSessionEdit', { isNew: true })" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white transition btn-press">
+            <span class="material-symbols-outlined text-sm">add</span>
+            <span>Record New Session</span>
+          </button>
+        </div>
+
+        <!-- Sessions Table Container -->
+        <div class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl overflow-hidden">
+          <div class="table-container">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="text-[var(--text-subtle)] font-medium uppercase text-[10px] tracking-wider border-b border-[var(--border-subtle)]">
+                  <th class="p-3">Activity</th>
+                  <th class="p-3">Duration</th>
+                  <th class="p-3">Start Time</th>
+                  <th class="p-3">End Time</th>
+                  <th class="p-3">Notes</th>
+                  <th class="p-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="sessionsTableBody" class="divide-y divide-[var(--border-subtle)] font-mono-code text-[11px]">
+                <!-- Sessions rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           VIEW: TASKS DISCIPLINE
+           ==================================================================== -->
+      <section id="view-tasks" class="hidden fade-in space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-bold text-[var(--text-main)] flex items-center gap-2">
+              <span class="material-symbols-outlined text-emerald-400">checklist</span>
+              <span>Tasks & Priorities Manager</span>
+            </h2>
+            <p class="text-xs text-[var(--text-muted)] mt-1">
+              Edit task titles, change priority tiers, update deadlines, or re-order pending commitments.
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="flex items-center bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-lg p-0.5">
+              <button onclick="AdminApp.loadTasks('pending')" id="tasksFilterPending" class="px-2.5 py-1 text-xs font-semibold rounded-md bg-blue-600 text-white">Pending</button>
+              <button onclick="AdminApp.loadTasks('completed')" id="tasksFilterCompleted" class="px-2.5 py-1 text-xs font-semibold rounded-md text-[var(--text-muted)] hover:text-white">Completed</button>
+              <button onclick="AdminApp.loadTasks('all')" id="tasksFilterAll" class="px-2.5 py-1 text-xs font-semibold rounded-md text-[var(--text-muted)] hover:text-white">All</button>
+            </div>
+            <button onclick="AdminApp.openModal('modalTaskEdit', { isNew: true })" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition btn-press">
+              <span class="material-symbols-outlined text-sm">add</span>
+              <span>Add Task</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl overflow-hidden">
+          <div class="table-container">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="text-[var(--text-subtle)] font-medium uppercase text-[10px] tracking-wider border-b border-[var(--border-subtle)]">
+                  <th class="p-3">Status</th>
+                  <th class="p-3">Priority</th>
+                  <th class="p-3">Title</th>
+                  <th class="p-3">Deadline</th>
+                  <th class="p-3">Created</th>
+                  <th class="p-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tasksTableBody" class="divide-y divide-[var(--border-subtle)] text-[12px]">
+                <!-- Tasks rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           VIEW: THOUGHTS & REFLECTIONS
+           ==================================================================== -->
+      <section id="view-thoughts" class="hidden fade-in space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-bold text-[var(--text-main)] flex items-center gap-2">
+              <span class="material-symbols-outlined text-purple-400">psychology</span>
+              <span>Thoughts & Daily Reflections</span>
+            </h2>
+            <p class="text-xs text-[var(--text-muted)] mt-1">
+              Edit topics, modify reflection entries, manage tags, and toggle pinned items.
+            </p>
+          </div>
+          <button onclick="AdminApp.openModal('modalThoughtEdit', { isNew: true })" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-600 hover:bg-purple-500 text-white transition btn-press">
+            <span class="material-symbols-outlined text-sm">add</span>
+            <span>Write Thought</span>
+          </button>
+        </div>
+
+        <div class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl overflow-hidden">
+          <div class="table-container">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="text-[var(--text-subtle)] font-medium uppercase text-[10px] tracking-wider border-b border-[var(--border-subtle)]">
+                  <th class="p-3">Pinned</th>
+                  <th class="p-3">Date</th>
+                  <th class="p-3">Topic</th>
+                  <th class="p-3">Content</th>
+                  <th class="p-3">Tags</th>
+                  <th class="p-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="thoughtsTableBody" class="divide-y divide-[var(--border-subtle)] text-[12px]">
+                <!-- Thoughts rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           VIEW: LEDGER & CADENCE EVENTS
+           ==================================================================== -->
+      <section id="view-events" class="hidden fade-in space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-bold text-[var(--text-main)] flex items-center gap-2">
+              <span class="material-symbols-outlined text-amber-400">receipt_long</span>
+              <span>Cadence & Life OS Ledger</span>
+            </h2>
+            <p class="text-xs text-[var(--text-muted)] mt-1">
+              Check-ins, check-outs, wins, lessons, pushup milestones, and raw event captures.
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <input type="text" id="eventsFilterCategory" placeholder="Category (e.g. checkin)" onchange="AdminApp.loadEvents()" class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-xs text-white px-2.5 py-1.5 rounded-lg w-36 focus:outline-none">
+            <button onclick="AdminApp.openModal('modalEventEdit', { isNew: true })" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-600 hover:bg-amber-500 text-white transition btn-press">
+              <span class="material-symbols-outlined text-sm">add</span>
+              <span>Add Event</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl overflow-hidden">
+          <div class="table-container">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="text-[var(--text-subtle)] font-medium uppercase text-[10px] tracking-wider border-b border-[var(--border-subtle)]">
+                  <th class="p-3">Category</th>
+                  <th class="p-3">Date / Time</th>
+                  <th class="p-3">Title</th>
+                  <th class="p-3">Content / Notes</th>
+                  <th class="p-3">Score</th>
+                  <th class="p-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="eventsTableBody" class="divide-y divide-[var(--border-subtle)] text-[12px]">
+                <!-- Events rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           VIEW: DAY TRACKER (MILESTONES & TARGETS)
+           ==================================================================== -->
+      <section id="view-daytracker" class="hidden fade-in space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-bold text-[var(--text-main)] flex items-center gap-2">
+              <span class="material-symbols-outlined text-cyan-400">target</span>
+              <span>Day Milestones & Target Countdowns</span>
+            </h2>
+            <p class="text-xs text-[var(--text-muted)] mt-1">
+              Deadlines, countdowns, targets, and special milestone dates.
+            </p>
+          </div>
+          <button onclick="AdminApp.openModal('modalDayTrackerEdit', { isNew: true })" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-cyan-600 hover:bg-cyan-500 text-white transition btn-press">
+            <span class="material-symbols-outlined text-sm">add</span>
+            <span>New Milestone</span>
+          </button>
+        </div>
+
+        <div class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl overflow-hidden">
+          <div class="table-container">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="text-[var(--text-subtle)] font-medium uppercase text-[10px] tracking-wider border-b border-[var(--border-subtle)]">
+                  <th class="p-3">Pinned</th>
+                  <th class="p-3">Target Date</th>
+                  <th class="p-3">Title</th>
+                  <th class="p-3">Countdown</th>
+                  <th class="p-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="dayTrackerTableBody" class="divide-y divide-[var(--border-subtle)] text-[12px]">
+                <!-- Milestones rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           VIEW: SCREEN TIME & APP USAGE LOGS
+           ==================================================================== -->
+      <section id="view-screentime" class="hidden fade-in space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-bold text-[var(--text-main)] flex items-center gap-2">
+              <span class="material-symbols-outlined text-rose-400">phone_android</span>
+              <span>Passive Screen Time Telemetry</span>
+            </h2>
+            <p class="text-xs text-[var(--text-muted)] mt-1">
+              Historical passive app usage records logged in SQLite `app_usage` table.
+            </p>
+          </div>
+          <button onclick="AdminApp.purgeAppUsage()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white border border-red-500/30 transition btn-press">
+            Clear Logs
+          </button>
+        </div>
+
+        <div class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl overflow-hidden">
+          <div class="table-container">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="text-[var(--text-subtle)] font-medium uppercase text-[10px] tracking-wider border-b border-[var(--border-subtle)]">
+                  <th class="p-3">App Name</th>
+                  <th class="p-3">Package Name</th>
+                  <th class="p-3">Duration</th>
+                  <th class="p-3">Start Time</th>
+                  <th class="p-3">End Time</th>
+                  <th class="p-3">Category</th>
+                  <th class="p-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="appUsageTableBody" class="divide-y divide-[var(--border-subtle)] font-mono-code text-[11px]">
+                <!-- Usage rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           VIEW: PLUGINS & PLUGIN STORAGE
+           ==================================================================== -->
+      <section id="view-plugins" class="hidden fade-in space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-bold text-[var(--text-main)] flex items-center gap-2">
+              <span class="material-symbols-outlined text-indigo-400">extension</span>
+              <span>Plugin Registry & Key-Value Storage</span>
+            </h2>
+            <p class="text-xs text-[var(--text-muted)] mt-1">
+              Inspect sandboxed plugin states, toggle enabled status, view isolated key-value rows, or inspect plugin events.
+            </p>
+          </div>
+          <button onclick="AdminApp.refreshPlugins()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[var(--bg-surface)] hover:bg-[var(--bg-surface-hover)] text-white border border-[var(--border-subtle)] transition">
+            <span class="material-symbols-outlined text-sm">refresh</span>
+            <span>Rescan Plugins</span>
+          </button>
+        </div>
+
+        <!-- Plugins List Cards -->
+        <div id="pluginsListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Plugin cards injected here -->
+        </div>
+
+        <!-- Plugin Storage Inspector -->
+        <div class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] p-5 rounded-xl space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-medium text-[var(--text-subtle)]">Plugin Storage Partition:</span>
+              <select id="pluginStorageSelect" onchange="AdminApp.loadPluginStorage(this.value)" class="bg-[var(--bg-canvas)] border border-[var(--border-strong)] text-xs font-bold text-indigo-400 px-3 py-1.5 rounded-lg focus:outline-none">
+                <!-- Dynamically populated -->
+              </select>
+            </div>
+            <button onclick="AdminApp.openSetPluginKeyModal()" class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition btn-press">
+              <span class="material-symbols-outlined text-sm">add</span>
+              <span>Set Key-Value</span>
+            </button>
+          </div>
+
+          <div class="table-container">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="text-[var(--text-subtle)] font-medium uppercase text-[10px] tracking-wider border-b border-[var(--border-subtle)]">
+                  <th class="p-3">Key</th>
+                  <th class="p-3">Value</th>
+                  <th class="p-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="pluginStorageTableBody" class="divide-y divide-[var(--border-subtle)] font-mono-code text-[11px]">
+                <!-- KV rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           VIEW: RECYCLE BIN
+           ==================================================================== -->
+      <section id="view-recyclebin" class="hidden fade-in space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-bold text-[var(--text-main)] flex items-center gap-2">
+              <span class="material-symbols-outlined text-red-400">delete</span>
+              <span>Recycle Bin & Safe Soft-Delete</span>
+            </h2>
+            <p class="text-xs text-[var(--text-muted)] mt-1">
+              Soft-deleted records with original JSON snapshots. Restore items back to their operational tables or permanently purge.
+            </p>
+          </div>
+          <button onclick="AdminApp.emptyRecycleBin()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-600 hover:bg-red-500 text-white transition btn-press">
+            Empty Entire Recycle Bin
+          </button>
+        </div>
+
+        <div class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl overflow-hidden">
+          <div class="table-container">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="text-[var(--text-subtle)] font-medium uppercase text-[10px] tracking-wider border-b border-[var(--border-subtle)]">
+                  <th class="p-3">Category</th>
+                  <th class="p-3">Original ID</th>
+                  <th class="p-3">Deleted Date</th>
+                  <th class="p-3">Snapshot Data</th>
+                  <th class="p-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="recycleBinTableBody" class="divide-y divide-[var(--border-subtle)] font-mono-code text-[11px]">
+                <!-- Recycle items -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           VIEW: SQL WORKBENCH
+           ==================================================================== -->
+      <section id="view-sql-workbench" class="hidden fade-in space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-bold text-[var(--text-main)] flex items-center gap-2">
+              <span class="material-symbols-outlined text-yellow-400">terminal</span>
+              <span>SQL Workbench</span>
+            </h2>
+            <p class="text-xs text-[var(--text-muted)] mt-1">
+              Execute arbitrary SQL queries against the active profile's database. Supports SELECT, UPDATE, INSERT, DELETE, VACUUM, PRAGMA.
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="AdminApp.executeSqlFromEditor()" class="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-sm transition btn-press">
+              <span class="material-symbols-outlined text-sm">play_arrow</span>
+              <span>Run (Ctrl+Enter)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- SQL Editor Box & Snippets -->
+        <div class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl p-4 space-y-3">
+          <!-- Snippet Chips -->
+          <div class="flex flex-wrap items-center gap-1.5 text-xs text-[var(--text-subtle)]">
+            <span class="text-[10px] font-bold uppercase">Presets:</span>
+            <button onclick="AdminApp.setSqlSnippet('SELECT * FROM sessions ORDER BY start_time DESC LIMIT 50;')" class="px-2 py-0.5 rounded bg-[var(--bg-canvas)] hover:bg-slate-700 text-[11px] font-mono-code text-blue-400">Recent Sessions</button>
+            <button onclick="AdminApp.setSqlSnippet('SELECT * FROM tasks WHERE status=\'pending\' ORDER BY priority DESC;')" class="px-2 py-0.5 rounded bg-[var(--bg-canvas)] hover:bg-slate-700 text-[11px] font-mono-code text-emerald-400">Pending Tasks</button>
+            <button onclick="AdminApp.setSqlSnippet('SELECT category, count(*) FROM events GROUP BY category;')" class="px-2 py-0.5 rounded bg-[var(--bg-canvas)] hover:bg-slate-700 text-[11px] font-mono-code text-amber-400">Events by Category</button>
+            <button onclick="AdminApp.setSqlSnippet('PRAGMA table_info(sessions);')" class="px-2 py-0.5 rounded bg-[var(--bg-canvas)] hover:bg-slate-700 text-[11px] font-mono-code text-purple-400">PRAGMA table_info</button>
+            <button onclick="AdminApp.setSqlSnippet('PRAGMA integrity_check;')" class="px-2 py-0.5 rounded bg-[var(--bg-canvas)] hover:bg-slate-700 text-[11px] font-mono-code text-cyan-400">Integrity Check</button>
+          </div>
+
+          <textarea id="sqlQueryInput" rows="5" class="w-full bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-lg p-3 font-mono-code text-xs text-white focus:outline-none focus:border-blue-500" placeholder="SELECT * FROM sessions LIMIT 10;"></textarea>
+        </div>
+
+        <!-- SQL Results Container -->
+        <div id="sqlResultBox" class="hidden bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl overflow-hidden shadow-sm space-y-0">
+          <div class="p-3 bg-[var(--bg-canvas)] border-b border-[var(--border-subtle)] flex items-center justify-between text-xs">
+            <div class="flex items-center gap-3">
+              <span id="sqlExecutionStatus" class="font-bold text-emerald-400">Query Successful</span>
+              <span id="sqlExecutionMeta" class="font-mono-code text-[var(--text-subtle)]">0 rows in 4ms</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="AdminApp.exportSqlResultJson()" class="p-1 rounded bg-[var(--bg-surface)] hover:bg-slate-700 text-xs text-[var(--text-muted)] hover:text-white" title="Export Result JSON">
+                <span class="material-symbols-outlined text-xs">code</span>
+              </button>
+            </div>
+          </div>
+          <div class="table-container">
+            <table class="w-full text-left text-xs border-collapse" id="sqlResultTable">
+              <thead>
+                <!-- Injected headers -->
+              </thead>
+              <tbody id="sqlResultTableBody" class="divide-y divide-[var(--border-subtle)] font-mono-code text-[11px]">
+                <!-- Injected rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           VIEW: SNAPSHOT BACKUPS
+           ==================================================================== -->
+      <section id="view-backups" class="hidden fade-in space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-bold text-[var(--text-main)] flex items-center gap-2">
+              <span class="material-symbols-outlined text-emerald-400">history</span>
+              <span>Snapshot Database Backups</span>
+            </h2>
+            <p class="text-xs text-[var(--text-muted)] mt-1">
+              Create point-in-time SQLite backups or restore an existing backup into the operational database.
+            </p>
+          </div>
+          <button onclick="AdminApp.triggerBackup()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition btn-press">
+            <span class="material-symbols-outlined text-sm">save</span>
+            <span>Create New Backup Now</span>
+          </button>
+        </div>
+
+        <div class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl overflow-hidden">
+          <div class="table-container">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="text-[var(--text-subtle)] font-medium uppercase text-[10px] tracking-wider border-b border-[var(--border-subtle)]">
+                  <th class="p-3">File Name</th>
+                  <th class="p-3">File Size</th>
+                  <th class="p-3">Created Date</th>
+                  <th class="p-3">Path</th>
+                  <th class="p-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="backupsTableBody" class="divide-y divide-[var(--border-subtle)] font-mono-code text-[11px]">
+                <!-- Backups rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           VIEW: DIAGNOSTICS & MAINTENANCE
+           ==================================================================== -->
+      <section id="view-maintenance" class="hidden fade-in space-y-6">
+        <div>
+          <h2 class="text-lg font-bold text-[var(--text-main)] flex items-center gap-2">
+            <span class="material-symbols-outlined text-blue-400">build</span>
+            <span>System Diagnostics & Maintenance</span>
+          </h2>
+          <p class="text-xs text-[var(--text-muted)] mt-1">
+            Perform database VACUUM, run PRAGMA integrity verification, reindex search indexes, clear cache, or trigger Firestore companion synchronization.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Tool 1: VACUUM -->
+          <div class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] p-5 rounded-xl flex flex-col justify-between">
+            <div>
+              <div class="w-9 h-9 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center mb-3">
+                <span class="material-symbols-outlined text-xl">cleaning_services</span>
+              </div>
+              <h3 class="text-sm font-bold text-white">VACUUM Database</h3>
+              <p class="text-xs text-[var(--text-muted)] mt-1">
+                Defragments database pages, cleans up unused disk space, and repacks all tables into contiguous filesystem clusters.
+              </p>
+            </div>
+            <button onclick="AdminApp.triggerVacuum()" class="mt-4 w-full py-2 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white transition btn-press">
+              Run VACUUM
+            </button>
+          </div>
+
+          <!-- Tool 2: PRAGMA Integrity Check -->
+          <div class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] p-5 rounded-xl flex flex-col justify-between">
+            <div>
+              <div class="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mb-3">
+                <span class="material-symbols-outlined text-xl">verified</span>
+              </div>
+              <h3 class="text-sm font-bold text-white">Integrity Check</h3>
+              <p class="text-xs text-[var(--text-muted)] mt-1">
+                Executes PRAGMA integrity_check to audit B-tree balance, free list, and verify zero corruption on disk.
+              </p>
+            </div>
+            <button onclick="AdminApp.runIntegrityCheck()" class="mt-4 w-full py-2 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition btn-press">
+              Verify Integrity
+            </button>
+          </div>
+
+          <!-- Tool 3: REINDEX -->
+          <div class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] p-5 rounded-xl flex flex-col justify-between">
+            <div>
+              <div class="w-9 h-9 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center mb-3">
+                <span class="material-symbols-outlined text-xl">reorder</span>
+              </div>
+              <h3 class="text-sm font-bold text-white">Rebuild Indexes</h3>
+              <p class="text-xs text-[var(--text-muted)] mt-1">
+                Rebuilds all secondary lookup indexes across sessions, tasks, thoughts, and events for maximum query performance.
+              </p>
+            </div>
+            <button onclick="AdminApp.runReindex()" class="mt-4 w-full py-2 rounded-lg text-xs font-semibold bg-purple-600 hover:bg-purple-500 text-white transition btn-press">
+              Run REINDEX
+            </button>
+          </div>
+
+          <!-- Tool 4: Clear App Cache -->
+          <div class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] p-5 rounded-xl flex flex-col justify-between">
+            <div>
+              <div class="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mb-3">
+                <span class="material-symbols-outlined text-xl">delete_sweep</span>
+              </div>
+              <h3 class="text-sm font-bold text-white">Clear App Cache</h3>
+              <p class="text-xs text-[var(--text-muted)] mt-1">
+                Purges temporary webview caches, app icon bitmaps, and transient scratch buffers without touching database records.
+              </p>
+            </div>
+            <button onclick="AdminApp.clearCache()" class="mt-4 w-full py-2 rounded-lg text-xs font-semibold bg-amber-600 hover:bg-amber-500 text-white transition btn-press">
+              Clear Cache
+            </button>
+          </div>
+
+          <!-- Tool 5: Cloud Sync Trigger -->
+          <div class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] p-5 rounded-xl flex flex-col justify-between">
+            <div>
+              <div class="w-9 h-9 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center mb-3">
+                <span class="material-symbols-outlined text-xl">cloud_sync</span>
+              </div>
+              <h3 class="text-sm font-bold text-white">Firestore Companion Sync</h3>
+              <p class="text-xs text-[var(--text-muted)] mt-1">
+                Forces an immediate bidirectional sync with the companion cloud Firestore project (`v07-dashboard.firebaseapp.com`).
+              </p>
+            </div>
+            <button onclick="AdminApp.triggerCloudSync()" class="mt-4 w-full py-2 rounded-lg text-xs font-semibold bg-cyan-600 hover:bg-cyan-500 text-white transition btn-press">
+              Sync to Cloud Now
+            </button>
+          </div>
+
+          <!-- Tool 6: Legacy Data Importer -->
+          <div class="bg-[var(--bg-surface)] border border-[var(--border-subtle)] p-5 rounded-xl flex flex-col justify-between">
+            <div>
+              <div class="w-9 h-9 rounded-lg bg-slate-500/10 border border-slate-500/20 text-slate-400 flex items-center justify-center mb-3">
+                <span class="material-symbols-outlined text-xl">move_to_inbox</span>
+              </div>
+              <h3 class="text-sm font-bold text-white">Import Legacy V2 Vault</h3>
+              <p class="text-xs text-[var(--text-muted)] mt-1">
+                Scans public storage for legacy V2 text files and imports missing historical sessions, tasks, and notes into active profile.
+              </p>
+            </div>
+            <button onclick="AdminApp.importLegacyVault()" class="mt-4 w-full py-2 rounded-lg text-xs font-semibold bg-slate-700 hover:bg-slate-600 text-white transition btn-press">
+              Import Legacy Data
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL DIALOGS CONTAINER
+       ========================================================================== -->
+  <div id="modalOverlay" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4">
+
+    <!-- ── Modal 1: Create New Profile ── -->
+    <div id="modalCreateProfile" class="modal-card hidden w-full max-w-md bg-[var(--bg-surface)] border border-[var(--border-strong)] rounded-2xl shadow-2xl p-6 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <span class="material-symbols-outlined text-blue-400">badge</span>
+          <span>Create New Profile</span>
+        </h3>
+        <button onclick="AdminApp.closeModal('modalCreateProfile')" class="text-[var(--text-subtle)] hover:text-white">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <p class="text-xs text-[var(--text-muted)]">
+        Enter a unique alphanumeric profile identifier. A dedicated, sandboxed SQLite database file will be provisioned.
+      </p>
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-medium text-[var(--text-subtle)] mb-1">Profile Identifier</label>
+          <input type="text" id="newProfileIdInput" placeholder="e.g. work, study, project_x" class="w-full bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-lg px-3 py-2 text-xs font-mono-code text-white focus:outline-none focus:border-blue-500">
+        </div>
+        <div class="flex items-center gap-2">
+          <input type="checkbox" id="newProfileSwitchCheckbox" checked class="w-4 h-4 rounded text-blue-600">
+          <label for="newProfileSwitchCheckbox" class="text-xs text-[var(--text-muted)]">Switch active database to this profile immediately</label>
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button onclick="AdminApp.closeModal('modalCreateProfile')" class="px-4 py-2 rounded-lg text-xs font-semibold text-[var(--text-muted)] hover:text-white">Cancel</button>
+        <button onclick="AdminApp.submitCreateProfile()" class="px-4 py-2 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white">Create Profile</button>
+      </div>
+    </div>
+
+    <!-- ── Modal 2: Clone Profile ── -->
+    <div id="modalCloneProfile" class="modal-card hidden w-full max-w-md bg-[var(--bg-surface)] border border-[var(--border-strong)] rounded-2xl shadow-2xl p-6 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <span class="material-symbols-outlined text-purple-400">content_copy</span>
+          <span>Clone Profile</span>
+        </h3>
+        <button onclick="AdminApp.closeModal('modalCloneProfile')" class="text-[var(--text-subtle)] hover:text-white">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <p class="text-xs text-[var(--text-muted)]">
+        Creates a complete replica of the selected profile, copying all tables and records.
+      </p>
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-medium text-[var(--text-subtle)] mb-1">Source Profile</label>
+          <input type="text" id="cloneSourceProfileInput" readonly class="w-full bg-[var(--bg-canvas)]/50 border border-[var(--border-subtle)] rounded-lg px-3 py-2 text-xs font-mono-code text-gray-400">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-[var(--text-subtle)] mb-1">Target Profile Name</label>
+          <input type="text" id="cloneTargetProfileInput" placeholder="e.g. backup_guest" class="w-full bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-lg px-3 py-2 text-xs font-mono-code text-white focus:outline-none focus:border-blue-500">
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button onclick="AdminApp.closeModal('modalCloneProfile')" class="px-4 py-2 rounded-lg text-xs font-semibold text-[var(--text-muted)] hover:text-white">Cancel</button>
+        <button onclick="AdminApp.submitCloneProfile()" class="px-4 py-2 rounded-lg text-xs font-semibold bg-purple-600 hover:bg-purple-500 text-white">Clone Profile</button>
+      </div>
+    </div>
+
+    <!-- ── Modal 3: Universal Table Row Editor / Creator ── -->
+    <div id="modalTableRowEdit" class="modal-card hidden w-full max-w-2xl bg-[var(--bg-surface)] border border-[var(--border-strong)] rounded-2xl shadow-2xl p-6 space-y-4 max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between shrink-0">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <span class="material-symbols-outlined text-yellow-400">edit_note</span>
+          <span id="modalTableRowTitle">Edit Row</span>
+        </h3>
+        <button onclick="AdminApp.closeModal('modalTableRowEdit')" class="text-[var(--text-subtle)] hover:text-white">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div id="modalTableRowFormContainer" class="flex-1 overflow-y-auto space-y-3 pr-2">
+        <!-- Dynamically populated form fields -->
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-3 border-t border-[var(--border-subtle)] shrink-0">
+        <button onclick="AdminApp.closeModal('modalTableRowEdit')" class="px-4 py-2 rounded-lg text-xs font-semibold text-[var(--text-muted)] hover:text-white">Cancel</button>
+        <button onclick="AdminApp.submitTableRowSave()" class="px-5 py-2 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white shadow-sm">Save Changes</button>
+      </div>
+    </div>
+
+    <!-- ── Modal 4: Edit / Create Session ── -->
+    <div id="modalSessionEdit" class="modal-card hidden w-full max-w-lg bg-[var(--bg-surface)] border border-[var(--border-strong)] rounded-2xl shadow-2xl p-6 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <span class="material-symbols-outlined text-blue-400">timer</span>
+          <span id="modalSessionTitle">Edit Focus Session</span>
+        </h3>
+        <button onclick="AdminApp.closeModal('modalSessionEdit')" class="text-[var(--text-subtle)] hover:text-white">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <input type="hidden" id="sessEditId">
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block text-[var(--text-subtle)] mb-1">Activity / Label</label>
+          <input type="text" id="sessEditActivity" class="w-full bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-lg px-3 py-2 text-white">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[var(--text-subtle)] mb-1">Start Time (Timestamp or Date)</label>
+            <input type="text" id="sessEditStartTime" class="w-full bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-lg px-3 py-2 text-white font-mono-code">
+          </div>
+          <div>
+            <label class="block text-[var(--text-subtle)] mb-1">Duration (Seconds)</label>
+            <input type="number" id="sessEditDuration" class="w-full bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-lg px-3 py-2 text-white font-mono-code">
+          </div>
+        </div>
+        <div>
+          <label class="block text-[var(--text-subtle)] mb-1">Session Notes & Accomplishments</label>
+          <textarea id="sessEditNotes" rows="3" class="w-full bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-lg px-3 py-2 text-white"></textarea>
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button onclick="AdminApp.closeModal('modalSessionEdit')" class="px-4 py-2 rounded-lg text-xs font-semibold text-[var(--text-muted)] hover:text-white">Cancel</button>
+        <button onclick="AdminApp.submitSessionSave()" class="px-4 py-2 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white">Save Session</button>
+      </div>
+    </div>
+
+    <!-- ── Modal 5: Edit / Create Task ── -->
+    <div id="modalTaskEdit" class="modal-card hidden w-full max-w-lg bg-[var(--bg-surface)] border border-[var(--border-strong)] rounded-2xl shadow-2xl p-6 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <span class="material-symbols-outlined text-emerald-400">checklist</span>
+          <span id="modalTaskTitle">Edit Task</span>
+        </h3>
+        <button onclick="AdminApp.closeModal('modalTaskEdit')" class="text-[var(--text-subtle)] hover:text-white">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <input type="hidden" id="taskEditId">
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block text-[var(--text-subtle)] mb-1">Task Title</label>
+          <input type="text" id="taskEditTitle" class="w-full bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-lg px-3 py-2 text-white">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[var(--text-subtle)] mb-1">Priority Tier</label>
+            <select id="taskEditPriority" class="w-full bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-lg px-3 py-2 text-white">
+              <option value="CRITICAL">CRITICAL (Top 1)</option>
+              <option value="HIGH">HIGH (Important)</option>
+              <option value="MEDIUM" selected>MEDIUM (Standard)</option>
+              <option value="LOW">LOW (Backlog)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[var(--text-subtle)] mb-1">Status</label>
+            <select id="taskEditStatus" class="w-full bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-lg px-3 py-2 text-white">
+              <option value="pending">Pending</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-[var(--text-subtle)] mb-1">Deadline (YYYY-MM-DD or text)</label>
+          <input type="text" id="taskEditDeadline" placeholder="2026-10-31" class="w-full bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-lg px-3 py-2 text-white">
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button onclick="AdminApp.closeModal('modalTaskEdit')" class="px-4 py-2 rounded-lg text-xs font-semibold text-[var(--text-muted)] hover:text-white">Cancel</button>
+        <button onclick="AdminApp.submitTaskSave()" class="px-4 py-2 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white">Save Task</button>
+      </div>
+    </div>
+
+    <!-- ── Modal 6: Edit / Create Thought ── -->
+    <div id="modalThoughtEdit" class="modal-card hidden w-full max-w-lg bg-[var(--bg-surface)] border border-[var(--border-strong)] rounded-2xl shadow-2xl p-6 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <span class="material-symbols-outlined text-purple-400">psychology</span>
+          <span id="modalThoughtTitle">Edit Thought</span>
+        </h3>
+        <button onclick="AdminApp.closeModal('modalThoughtEdit')" class="text-[var(--text-subtle)] hover:text-white">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <input type="hidden" id="thoughtEditId">
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block text-[var(--text-subtle)] mb-1">Topic / Header</label>
+          <input type="text" id="thoughtEditTopic" placeholder="General" class="w-full bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-lg px-3 py-2 text-white">
+        </div>
+        <div>
+          <label class="block text-[var(--text-subtle)] mb-1">Reflection Content</label>
+          <textarea id="thoughtEditContent" rows="4" class="w-full bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-lg px-3 py-2 text-white"></textarea>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[var(--text-subtle)] mb-1">Tags (comma-separated)</label>
+            <input type="text" id="thoughtEditTags" placeholder="mindset, insight, architecture" class="w-full bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-lg px-3 py-2 text-white">
+          </div>
+          <div>
+            <label class="block text-[var(--text-subtle)] mb-1">Date</label>
+            <input type="text" id="thoughtEditDate" placeholder="YYYY-MM-DD" class="w-full bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-lg px-3 py-2 text-white font-mono-code">
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <input type="checkbox" id="thoughtEditPinned" class="w-4 h-4 rounded text-purple-600">
+          <label for="thoughtEditPinned" class="text-xs text-[var(--text-muted)]">Pin to top of sanctuary thoughts</label>
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button onclick="AdminApp.closeModal('modalThoughtEdit')" class="px-4 py-2 rounded-lg text-xs font-semibold text-[var(--text-muted)] hover:text-white">Cancel</button>
+        <button onclick="AdminApp.submitThoughtSave()" class="px-4 py-2 rounded-lg text-xs font-semibold bg-purple-600 hover:bg-purple-500 text-white">Save Thought</button>
+      </div>
+    </div>
+
+    <!-- ── Modal 7: Edit / Create Event / Ledger ── -->
+    <div id="modalEventEdit" class="modal-card hidden w-full max-w-lg bg-[var(--bg-surface)] border border-[var(--border-strong)] rounded-2xl shadow-2xl p-6 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <span class="material-symbols-outlined text-amber-400">receipt_long</span>
+          <span id="modalEventTitle">Edit Ledger Entry</span>
+        </h3>
+        <button onclick="AdminApp.closeModal('modalEventEdit')" class="text-[var(--text-subtle)] hover:text-white">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <input type="hidden" id="eventEditId">
+      <div class="space-y-3 text-xs">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[var(--text-subtle)] mb-1">Category</label>
+            <input type="text" id="eventEditCategory" placeholder="e.g. checkin, win, lesson" class="w-full bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-lg px-3 py-2 text-white">
+          </div>
+          <div>
+            <label class="block text-[var(--text-subtle)] mb-1">Score / Rating (0-100)</label>
+            <input type="number" id="eventEditScore" placeholder="85" class="w-full bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-lg px-3 py-2 text-white">
+          </div>
+        </div>
+        <div>
+          <label class="block text-[var(--text-subtle)] mb-1">Title</label>
+          <input type="text" id="eventEditTitle" class="w-full bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-lg px-3 py-2 text-white">
+        </div>
+        <div>
+          <label class="block text-[var(--text-subtle)] mb-1">Content / Notes</label>
+          <textarea id="eventEditContent" rows="3" class="w-full bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-lg px-3 py-2 text-white"></textarea>
+        </div>
+        <div>
+          <label class="block text-[var(--text-subtle)] mb-1">Metadata JSON</label>
+          <textarea id="eventEditMetadata" rows="2" class="w-full bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-lg px-3 py-2 text-white font-mono-code text-[11px]"></textarea>
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button onclick="AdminApp.closeModal('modalEventEdit')" class="px-4 py-2 rounded-lg text-xs font-semibold text-[var(--text-muted)] hover:text-white">Cancel</button>
+        <button onclick="AdminApp.submitEventSave()" class="px-4 py-2 rounded-lg text-xs font-semibold bg-amber-600 hover:bg-amber-500 text-white">Save Entry</button>
+      </div>
+    </div>
+
+    <!-- ── Modal 8: Edit / Create DayTracker Milestone ── -->
+    <div id="modalDayTrackerEdit" class="modal-card hidden w-full max-w-md bg-[var(--bg-surface)] border border-[var(--border-strong)] rounded-2xl shadow-2xl p-6 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <span class="material-symbols-outlined text-cyan-400">target</span>
+          <span id="modalDayTrackerTitle">Edit Milestone</span>
+        </h3>
+        <button onclick="AdminApp.closeModal('modalDayTrackerEdit')" class="text-[var(--text-subtle)] hover:text-white">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <input type="hidden" id="dayTrackerEditId">
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block text-[var(--text-subtle)] mb-1">Milestone Title</label>
+          <input type="text" id="dayTrackerEditTitle" class="w-full bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-lg px-3 py-2 text-white">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[var(--text-subtle)] mb-1">Target Date</label>
+            <input type="date" id="dayTrackerEditTargetDate" class="w-full bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-lg px-3 py-2 text-white font-mono-code">
+          </div>
+          <div>
+            <label class="block text-[var(--text-subtle)] mb-1">Target Hour (0-23)</label>
+            <input type="number" id="dayTrackerEditHour" min="0" max="23" value="0" class="w-full bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-lg px-3 py-2 text-white font-mono-code">
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <input type="checkbox" id="dayTrackerEditPinned" class="w-4 h-4 rounded text-cyan-600">
+          <label for="dayTrackerEditPinned" class="text-xs text-[var(--text-muted)]">Pin milestone to top</label>
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button onclick="AdminApp.closeModal('modalDayTrackerEdit')" class="px-4 py-2 rounded-lg text-xs font-semibold text-[var(--text-muted)] hover:text-white">Cancel</button>
+        <button onclick="AdminApp.submitDayTrackerSave()" class="px-4 py-2 rounded-lg text-xs font-semibold bg-cyan-600 hover:bg-cyan-500 text-white">Save Milestone</button>
+      </div>
+    </div>
+
+    <!-- ── Modal 9: Set Plugin Key-Value ── -->
+    <div id="modalPluginKeyEdit" class="modal-card hidden w-full max-w-lg bg-[var(--bg-surface)] border border-[var(--border-strong)] rounded-2xl shadow-2xl p-6 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <span class="material-symbols-outlined text-indigo-400">key</span>
+          <span>Set Plugin Key-Value</span>
+        </h3>
+        <button onclick="AdminApp.closeModal('modalPluginKeyEdit')" class="text-[var(--text-subtle)] hover:text-white">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block text-[var(--text-subtle)] mb-1">Plugin ID</label>
+          <input type="text" id="pluginKeyPluginId" readonly class="w-full bg-[var(--bg-canvas)]/50 border border-[var(--border-subtle)] rounded-lg px-3 py-2 text-white font-mono-code">
+        </div>
+        <div>
+          <label class="block text-[var(--text-subtle)] mb-1">Storage Key</label>
+          <input type="text" id="pluginKeyKey" placeholder="e.g. config_settings, last_read_page" class="w-full bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-lg px-3 py-2 text-white font-mono-code">
+        </div>
+        <div>
+          <label class="block text-[var(--text-subtle)] mb-1">Value (String or JSON)</label>
+          <textarea id="pluginKeyValue" rows="5" placeholder='{"theme":"dark"}' class="w-full bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-lg px-3 py-2 text-white font-mono-code text-[11px]"></textarea>
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button onclick="AdminApp.closeModal('modalPluginKeyEdit')" class="px-4 py-2 rounded-lg text-xs font-semibold text-[var(--text-muted)] hover:text-white">Cancel</button>
+        <button onclick="AdminApp.submitPluginKeySave()" class="px-4 py-2 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white">Save Key-Value</button>
+      </div>
+    </div>
+
+    <!-- ── Modal 10: Raw JSON Viewer ── -->
+    <div id="modalJsonViewer" class="modal-card hidden w-full max-w-2xl bg-[var(--bg-surface)] border border-[var(--border-strong)] rounded-2xl shadow-2xl p-6 space-y-4 flex flex-col max-h-[90vh]">
+      <div class="flex items-center justify-between shrink-0">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <span class="material-symbols-outlined text-blue-400">code</span>
+          <span id="modalJsonViewerTitle">Record Inspector (JSON)</span>
+        </h3>
+        <button onclick="AdminApp.closeModal('modalJsonViewer')" class="text-[var(--text-subtle)] hover:text-white">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <pre id="modalJsonContent" class="flex-1 bg-[var(--bg-canvas)] border border-[var(--border-subtle)] rounded-lg p-3 text-[11px] font-mono-code text-blue-300 overflow-y-auto select-text whitespace-pre-wrap"></pre>
+      <div class="flex items-center justify-between shrink-0 pt-2 border-t border-[var(--border-subtle)]">
+        <span class="text-[10px] text-[var(--text-subtle)]">Immutable snapshot of SQLite row</span>
+        <button onclick="AdminApp.copyJsonContent()" class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[var(--bg-surface-hover)] text-white hover:bg-slate-700 transition">
+          <span class="material-symbols-outlined text-xs">content_copy</span>
+          <span>Copy JSON</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ── Modal 11: Connection & Token Settings ── -->
+    <div id="modalConnectionSettings" class="modal-card hidden w-full max-w-md bg-[var(--bg-surface)] border border-[var(--border-strong)] rounded-2xl shadow-2xl p-6 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <span class="material-symbols-outlined text-blue-400">tune</span>
+          <span>Server Connection</span>
+        </h3>
+        <button onclick="AdminApp.closeModal('modalConnectionSettings')" class="text-[var(--text-subtle)] hover:text-white">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <p class="text-xs text-[var(--text-muted)]">
+        Overrides server loopback address and session token. Useful when administering remotely over ADB port-forwarding.
+      </p>
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block text-[var(--text-subtle)] mb-1">Server Base URL</label>
+          <input type="text" id="connBaseUrlInput" placeholder="http://127.0.0.1:8000" class="w-full bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-lg px-3 py-2 text-white font-mono-code">
+        </div>
+        <div>
+          <label class="block text-[var(--text-subtle)] mb-1">Session Token (X-V07-Token)</label>
+          <input type="text" id="connTokenInput" placeholder="Auto-discovered or manual token" class="w-full bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-lg px-3 py-2 text-white font-mono-code">
+        </div>
+      </div>
+      <div class="flex items-center justify-between pt-2">
+        <button onclick="AdminApp.autoDiscoverToken()" class="text-xs text-blue-400 hover:underline">Auto-detect from Status</button>
+        <button onclick="AdminApp.saveConnectionSettings()" class="px-4 py-2 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white">Save & Reconnect</button>
+      </div>
+    </div>
+
+    <!-- ── Modal 12: Confirm Delete Dialog ── -->
+    <div id="modalConfirmDelete" class="modal-card hidden w-full max-w-md bg-[var(--bg-surface)] border border-red-500/30 rounded-2xl shadow-2xl p-6 space-y-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-xl">warning</span>
+        </div>
+        <div>
+          <h3 class="text-sm font-bold text-white" id="confirmDeleteTitle">Confirm Deletion</h3>
+          <p class="text-xs text-[var(--text-muted)] mt-0.5" id="confirmDeleteMsg">Are you sure you want to permanently delete this item?</p>
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button onclick="AdminApp.closeModal('modalConfirmDelete')" class="px-4 py-2 rounded-lg text-xs font-semibold text-[var(--text-muted)] hover:text-white">Cancel</button>
+        <button id="confirmDeleteBtn" class="px-4 py-2 rounded-lg text-xs font-semibold bg-red-600 hover:bg-red-500 text-white shadow-sm">Confirm Delete</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ==========================================================================
+       TOAST FEEDBACK NOTIFICATION CONTAINER
+       ========================================================================== -->
+  <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- ==========================================================================
+       ADMIN APPLICATION JAVASCRIPT ENGINE
+       ========================================================================== -->
+  <script>
+    (function() {
+      'use strict';
+
+      class AdminApplication {
+        constructor() {
+          // Connection setup: prioritize injected bridge or location origin
+          const urlParams = new URLSearchParams(window.location.search);
+          const platform = window.V07Platform || {};
+          
+          this.baseUrl = localStorage.getItem('v07_admin_base_url') || platform.BASE_URL || (window.location.origin.startsWith('http') ? window.location.origin : 'http://127.0.0.1:8000');
+          this.token = urlParams.get('token') || localStorage.getItem('v07_admin_token') || platform.TOKEN || '';
+          
+          this.currentTab = 'overview';
+          this.activeProfile = 'guest';
+          this.profilesList = [];
+          this.tablesList = [];
+          
+          // Table explorer state
+          this.selectedTable = 'sessions';
+          this.tablePage = 1;
+          this.tableLimit = 50;
+          this.tableSearch = '';
+          this.tableSortCol = null;
+          this.tableSortDir = 'DESC';
+          this.currentTableData = null;
+
+          // Universal delete callback
+          this.pendingDeleteCallback = null;
+        }
+
+        async init() {
+          console.log('[V07Admin] Initializing Sovereign Admin Suite on', this.baseUrl);
+          
+          // Auto-discover session token if missing
+          if (!this.token) {
+            await this.autoDiscoverToken(false);
+          }
+
+          // Setup keyboard shortcuts
+          window.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+              if (this.currentTab === 'sql-workbench') {
+                e.preventDefault();
+                this.executeSqlFromEditor();
+              }
+            }
+            if (e.key === 'Escape') {
+              this.closeAllModals();
+            }
+          });
+
+          // Initial data hydration
+          await this.checkStatus();
+          await this.loadProfiles();
+          await this.loadTablesList();
+          await this.refreshActiveTab();
+        }
+
+        // --- Network & Security Gateway ---
+        async apiFetch(endpoint, options = {}) {
+          const url = this.baseUrl + (endpoint.startsWith('/') ? endpoint : '/' + endpoint);
+          const headers = {
+            'Content-Type': 'application/json',
+            ...(this.token ? { 'X-V07-Token': this.token } : {}),
+            ...(options.headers || {})
+          };
+
+          try {
+            const start = performance.now();
+            const res = await fetch(url, { ...options, headers });
+            const elapsed = Math.round(performance.now() - start);
+            this.updateLatencyHud(elapsed, true);
+
+            const json = await res.json();
+            if (!res.ok) {
+              throw new Error(json.error || `HTTP ${res.status}: ${res.statusText}`);
+            }
+            return json;
+          } catch (err) {
+            this.updateLatencyHud(0, false);
+            console.error(`[AdminApi] Error on ${endpoint}:`, err);
+            throw err;
+          }
+        }
+
+        async autoDiscoverToken(showToastOnSuccess = true) {
+          try {
+            const res = await fetch(this.baseUrl + '/api/v3/status');
+            const data = await res.json();
+            if (data.session_token) {
+              this.token = data.session_token;
+              localStorage.setItem('v07_admin_token', this.token);
+              if (showToastOnSuccess) this.showToast('Session token auto-discovered successfully', 'success');
+              return true;
+            }
+          } catch (e) {
+            console.warn('[V07Admin] Could not auto-discover session token:', e);
+          }
+          return false;
+        }
+
+        updateLatencyHud(ms, isOnline) {
+          const pill = document.getElementById('hudConnectionPill');
+          const text = document.getElementById('hudConnectionText');
+          if (!pill || !text) return;
+
+          if (isOnline) {
+            pill.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono-code bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+            text.textContent = `Online (${ms}ms)`;
+          } else {
+            pill.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono-code bg-red-500/10 text-red-400 border border-red-500/20';
+            text.textContent = 'Disconnected';
+          }
+        }
+
+        // --- System Status & Overview Hydration ---
+        async checkStatus() {
+          try {
+            const status = await this.apiFetch('/api/v3/status');
+            document.getElementById('hudSystemMeta').textContent = `${status.platform} v${status.version} · Port: ${window.location.port || '8000'}`;
+            
+            const stats = await this.apiFetch('/api/v3/database/stats');
+            document.getElementById('statDbSize').textContent = stats.db_size_formatted || '0 KB';
+            document.getElementById('sidebarDbSize').textContent = stats.db_size_formatted || '0 KB';
+            document.getElementById('sidebarWalStatus').textContent = stats.is_wal_enabled ? 'WAL: Active' : 'WAL: Off';
+
+            if (stats.tables) {
+              let total = 0;
+              stats.tables.forEach(t => total += (t.count || 0));
+              document.getElementById('statTotalRecords').textContent = total.toLocaleString();
+              document.getElementById('statTablesCount').textContent = `across ${stats.tables.length} SQLite tables`;
+              document.getElementById('sidebarRecordTotal').textContent = `${total.toLocaleString()} rows`;
+              this.renderOverviewTableGrid(stats.tables);
+            }
+          } catch (e) {
+            console.warn('Status check warning:', e);
+          }
+        }
+
+        renderOverviewTableGrid(tables) {
+          const container = document.getElementById('overviewTableGrid');
+          if (!container) return;
+          container.innerHTML = '';
+
+          tables.forEach(t => {
+            const card = document.createElement('div');
+            card.className = 'p-3 rounded-lg bg-[var(--bg-canvas)] border border-[var(--border-subtle)] hover:border-blue-500/30 transition cursor-pointer';
+            card.onclick = () => {
+              this.selectedTable = t.table;
+              this.navigateTo('table-explorer');
+            };
+            card.innerHTML = `
+              <div class="text-[10px] text-[var(--text-subtle)] font-mono-code uppercase truncate">${t.table}</div>
+              <div class="text-base font-bold font-mono-code text-white mt-0.5">${(t.count || 0).toLocaleString()}</div>
+            `;
+            container.appendChild(card);
+          });
+        }
+
+        // --- Profiles Management Cockpit ---
+        async loadProfiles() {
+          try {
+            const data = await this.apiFetch('/api/v3/admin/profiles');
+            this.activeProfile = data.active_profile || 'guest';
+            this.profilesList = data.profiles || [];
+
+            // Update badges & displays
+            document.getElementById('badgeProfileCount').textContent = this.profilesList.length;
+            document.getElementById('statProfilesCount').textContent = this.profilesList.length;
+            document.getElementById('statActiveProfileNote').textContent = `Active: ${this.activeProfile}`;
+            document.getElementById('overviewActiveProfileBadge').textContent = `profile: ${this.activeProfile}`;
+
+            // Populate top selector
+            const select = document.getElementById('hudProfileSelect');
+            select.innerHTML = '';
+            this.profilesList.forEach(p => {
+              const opt = document.createElement('option');
+              opt.value = p.profile_id;
+              opt.textContent = p.profile_id + (p.is_active ? ' (active)' : '');
+              opt.selected = p.is_active;
+              opt.className = 'bg-[var(--bg-surface)] text-white';
+              select.appendChild(opt);
+            });
+
+            this.renderProfilesOverview();
+            this.renderProfilesCockpit();
+          } catch (e) {
+            console.error('Failed to load profiles:', e);
+          }
+        }
+
+        renderProfilesOverview() {
+          const list = document.getElementById('overviewProfilesList');
+          if (!list) return;
+          list.innerHTML = '';
+
+          this.profilesList.forEach(p => {
+            const item = document.createElement('div');
+            item.className = `p-2.5 rounded-lg flex items-center justify-between border ${p.is_active ? 'bg-blue-500/10 border-blue-500/30' : 'bg-[var(--bg-canvas)] border-[var(--border-subtle)]'}`;
+            item.innerHTML = `
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full ${p.is_active ? 'bg-blue-400' : 'bg-gray-500'}"></span>
+                <div>
+                  <div class="text-xs font-bold ${p.is_active ? 'text-blue-300' : 'text-white'} font-mono-code">${p.profile_id}</div>
+                  <div class="text-[10px] text-[var(--text-subtle)]">${p.total_records || 0} records · ${p.file_size_formatted || '0 KB'}</div>
+                </div>
+              </div>
+              ${!p.is_active ? `
+                <button onclick="AdminApp.switchProfile('${p.profile_id}')" class="px-2 py-0.5 rounded text-[10px] font-semibold bg-[var(--bg-surface-hover)] text-blue-400 hover:bg-blue-600 hover:text-white transition">
+                  Switch
+                </button>
+              ` : `
+                <span class="text-[10px] font-bold text-blue-400 uppercase tracking-wider">ACTIVE</span>
+              `}
+            `;
+            list.appendChild(item);
+          });
+        }
+
+        renderProfilesCockpit() {
+          const container = document.getElementById('profilesCardsContainer');
+          if (!container) return;
+          container.innerHTML = '';
+
+          this.profilesList.forEach(p => {
+            const card = document.createElement('div');
+            card.className = `bg-[var(--bg-surface)] border ${p.is_active ? 'border-blue-500/50 shadow-lg shadow-blue-500/5' : 'border-[var(--border-subtle)]'} p-5 rounded-xl flex flex-col justify-between space-y-4`;
+            
+            let tableBreakdownHtml = '';
+            if (p.table_counts) {
+              const entries = Object.entries(p.table_counts).slice(0, 6);
+              tableBreakdownHtml = entries.map(([tbl, cnt]) => `
+                <div class="flex items-center justify-between text-[11px] font-mono-code">
+                  <span class="text-[var(--text-subtle)]">${tbl}</span>
+                  <span class="text-white">${cnt}</span>
+                </div>
+              `).join('');
+            }
+
+            card.innerHTML = `
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-lg ${p.is_active ? 'text-blue-400' : 'text-gray-400'}">badge</span>
+                    <h3 class="text-sm font-bold text-white font-mono-code">${p.profile_id}</h3>
+                  </div>
+                  ${p.is_active ? `
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30">ACTIVE</span>
+                  ` : `
+                    <span class="text-[10px] text-[var(--text-subtle)]">Inactive</span>
+                  `}
+                </div>
+                
+                <div class="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-[var(--bg-canvas)] border border-[var(--border-subtle)] mb-3 text-xs font-mono-code">
+                  <div>
+                    <span class="text-[10px] text-[var(--text-subtle)] block">Size</span>
+                    <span class="text-white font-bold">${p.file_size_formatted || '0 KB'}</span>
+                  </div>
+                  <div>
+                    <span class="text-[10px] text-[var(--text-subtle)] block">Records</span>
+                    <span class="text-white font-bold">${p.total_records || 0}</span>
+                  </div>
+                </div>
+
+                <div class="space-y-1 mb-2">
+                  <span class="text-[10px] text-[var(--text-subtle)] font-bold uppercase tracking-wider block mb-1">Key Tables:</span>
+                  ${tableBreakdownHtml}
+                </div>
+              </div>
+
+              <div class="pt-3 border-t border-[var(--border-subtle)] flex items-center justify-between gap-2">
+                <div class="flex items-center gap-1.5">
+                  <button onclick="AdminApp.openCloneProfileModal('${p.profile_id}')" class="p-1.5 rounded-lg bg-[var(--bg-surface-hover)] text-[var(--text-muted)] hover:text-white" title="Clone Profile">
+                    <span class="material-symbols-outlined text-sm">content_copy</span>
+                  </button>
+                  ${(!p.is_active && p.profile_id !== 'guest') ? `
+                    <button onclick="AdminApp.confirmDeleteProfile('${p.profile_id}')" class="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white" title="Delete Profile">
+                      <span class="material-symbols-outlined text-sm">delete</span>
+                    </button>
+                  ` : ''}
+                </div>
+
+                ${!p.is_active ? `
+                  <button onclick="AdminApp.switchProfile('${p.profile_id}')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white transition btn-press">
+                    Switch to Profile
+                  </button>
+                ` : `
+                  <span class="text-xs text-blue-400 font-medium">Currently Selected</span>
+                `}
+              </div>
+            `;
+            container.appendChild(card);
+          });
+        }
+
+        async switchProfile(profileId) {
+          try {
+            this.showToast(`Switching profile to ${profileId}...`, 'info');
+            const res = await this.apiFetch('/api/v3/admin/profiles/switch', {
+              method: 'POST',
+              body: JSON.stringify({ profileId })
+            });
+            if (res.ok) {
+              this.showToast(`Active profile switched to ${profileId}`, 'success');
+              await this.loadProfiles();
+              await this.checkStatus();
+              await this.refreshActiveTab();
+            }
+          } catch (e) {
+            this.showToast(`Failed to switch profile: ${e.message}`, 'error');
+          }
+        }
+
+        async submitCreateProfile() {
+          const input = document.getElementById('newProfileIdInput');
+          const switchAfter = document.getElementById('newProfileSwitchCheckbox').checked;
+          const id = (input.value || '').trim();
+          if (!id) {
+            this.showToast('Please enter a profile name', 'error');
+            return;
+          }
+
+          try {
+            const res = await this.apiFetch('/api/v3/admin/profiles/create', {
+              method: 'POST',
+              body: JSON.stringify({ profileId: id, switchAfterCreate: switchAfter })
+            });
+            if (res.ok) {
+              this.showToast(`Profile '${id}' created successfully`, 'success');
+              this.closeModal('modalCreateProfile');
+              input.value = '';
+              await this.loadProfiles();
+              await this.checkStatus();
+              await this.refreshActiveTab();
+            }
+          } catch (e) {
+            this.showToast(`Create profile error: ${e.message}`, 'error');
+          }
+        }
+
+        openCloneProfileModal(sourceProfile) {
+          document.getElementById('cloneSourceProfileInput').value = sourceProfile;
+          document.getElementById('cloneTargetProfileInput').value = `${sourceProfile}_clone`;
+          this.openModal('modalCloneProfile');
+        }
+
+        async submitCloneProfile() {
+          const src = document.getElementById('cloneSourceProfileInput').value;
+          const tgt = (document.getElementById('cloneTargetProfileInput').value || '').trim();
+          if (!tgt) {
+            this.showToast('Target profile name is required', 'error');
+            return;
+          }
+
+          try {
+            const res = await this.apiFetch('/api/v3/admin/profiles/clone', {
+              method: 'POST',
+              body: JSON.stringify({ sourceId: src, targetId: tgt, switchAfterClone: false })
+            });
+            if (res.ok) {
+              this.showToast(`Profile cloned to '${tgt}'`, 'success');
+              this.closeModal('modalCloneProfile');
+              await this.loadProfiles();
+            }
+          } catch (e) {
+            this.showToast(`Clone error: ${e.message}`, 'error');
+          }
+        }
+
+        confirmDeleteProfile(profileId) {
+          this.openConfirmDelete(
+            'Delete Profile',
+            `Are you sure you want to permanently delete profile '${profileId}' and all its SQLite data? This action cannot be undone.`,
+            async () => {
+              try {
+                const res = await this.apiFetch(`/api/v3/admin/profiles?profileId=${encodeURIComponent(profileId)}`, {
+                  method: 'DELETE'
+                });
+                if (res.ok) {
+                  this.showToast(`Profile '${profileId}' deleted`, 'success');
+                  await this.loadProfiles();
+                }
+              } catch (e) {
+                this.showToast(`Delete profile failed: ${e.message}`, 'error');
+              }
+            }
+          );
+        }
+
+        // --- Table Explorer & Universal CRUD ---
+        async loadTablesList() {
+          try {
+            const data = await this.apiFetch('/api/v3/admin/tables');
+            this.tablesList = data.tables || [];
+
+            const select = document.getElementById('explorerTableSelect');
+            select.innerHTML = '';
+            this.tablesList.forEach(t => {
+              const opt = document.createElement('option');
+              opt.value = t.name;
+              opt.textContent = `${t.name} (${t.row_count || 0})`;
+              opt.selected = t.name === this.selectedTable;
+              select.appendChild(opt);
+            });
+          } catch (e) {
+            console.warn('Could not load tables list:', e);
+          }
+        }
+
+        async onSelectTable(table) {
+          this.selectedTable = table;
+          this.tablePage = 1;
+          this.tableSearch = '';
+          document.getElementById('explorerSearchInput').value = '';
+          await this.loadTableData();
+        }
+
+        onTableSearchDebounced(val) {
+          clearTimeout(this._searchTimer);
+          this._searchTimer = setTimeout(() => {
+            this.tableSearch = val.trim();
+            this.tablePage = 1;
+            this.loadTableData();
+          }, 300);
+        }
+
+        changePageLimit(limit) {
+          this.tableLimit = parseInt(limit, 10) || 50;
+          this.tablePage = 1;
+          this.loadTableData();
+        }
+
+        prevPage() {
+          if (this.tablePage > 1) {
+            this.tablePage--;
+            this.loadTableData();
+          }
+        }
+
+        nextPage() {
+          if (this.currentTableData && (this.tablePage * this.tableLimit) < this.currentTableData.total_count) {
+            this.tablePage++;
+            this.loadTableData();
+          }
+        }
+
+        async loadTableData() {
+          try {
+            const offset = (this.tablePage - 1) * this.tableLimit;
+            let url = `/api/v3/admin/table/data?table=${encodeURIComponent(this.selectedTable)}&limit=${this.tableLimit}&offset=${offset}`;
+            if (this.tableSearch) url += `&search=${encodeURIComponent(this.tableSearch)}`;
+            if (this.tableSortCol) url += `&sortCol=${encodeURIComponent(this.tableSortCol)}&sortDir=${this.tableSortDir}`;
+
+            const data = await this.apiFetch(url);
+            this.currentTableData = data;
+            this.renderTableDataGrid(data);
+          } catch (e) {
+            this.showToast(`Error loading ${this.selectedTable}: ${e.message}`, 'error');
+          }
+        }
+
+        renderTableDataGrid(data) {
+          const thead = document.querySelector('#explorerDataTable thead');
+          const tbody = document.getElementById('explorerTableBody');
+          if (!thead || !tbody) return;
+
+          thead.innerHTML = '';
+          tbody.innerHTML = '';
+
+          const cols = data.columns || [];
+          const rows = data.rows || [];
+          const total = data.total_count || 0;
+
+          document.getElementById('explorerTotalCountLabel').textContent = `${total.toLocaleString()} rows`;
+          
+          const maxPages = Math.ceil(total / this.tableLimit) || 1;
+          document.getElementById('explorerPageDisplay').textContent = `Page ${this.tablePage} of ${maxPages}`;
+          document.getElementById('explorerPrevBtn').disabled = this.tablePage <= 1;
+          document.getElementById('explorerNextBtn').disabled = this.tablePage >= maxPages;
+
+          // Header Row
+          const trHead = document.createElement('tr');
+          trHead.className = 'text-[var(--text-subtle)] uppercase text-[10px] tracking-wider border-b border-[var(--border-subtle)]';
+
+          cols.forEach(col => {
+            const th = document.createElement('th');
+            th.className = 'p-3 font-medium cursor-pointer hover:text-white transition';
+            th.innerHTML = `
+              <div class="flex items-center gap-1">
+                <span>${col}</span>
+                ${this.tableSortCol === col ? (this.tableSortDir === 'ASC' ? '▲' : '▼') : ''}
+              </div>
+            `;
+            th.onclick = () => {
+              if (this.tableSortCol === col) {
+                this.tableSortDir = this.tableSortDir === 'ASC' ? 'DESC' : 'ASC';
+              } else {
+                this.tableSortCol = col;
+                this.tableSortDir = 'DESC';
+              }
+              this.loadTableData();
+            };
+            trHead.appendChild(th);
+          });
+
+          // Actions Column
+          const thActions = document.createElement('th');
+          thActions.className = 'p-3 text-right';
+          thActions.textContent = 'Actions';
+          trHead.appendChild(thActions);
+          thead.appendChild(trHead);
+
+          // Rows
+          if (rows.length === 0) {
+            const emptyTr = document.createElement('tr');
+            emptyTr.innerHTML = `<td colspan="${cols.length + 1}" class="p-8 text-center text-xs text-[var(--text-muted)]">No rows match criteria</td>`;
+            tbody.appendChild(emptyTr);
+            return;
+          }
+
+          rows.forEach((row, idx) => {
+            const tr = document.createElement('tr');
+            tr.className = 'hover:bg-white/[0.02] transition';
+
+            cols.forEach(col => {
+              const td = document.createElement('td');
+              td.className = 'p-3 text-[11px] max-w-xs truncate text-[var(--text-main)]';
+              const val = row[col];
+              if (val === null || val === undefined) {
+                td.innerHTML = '<span class="text-gray-500 italic">null</span>';
+              } else if (typeof val === 'object') {
+                td.textContent = JSON.stringify(val);
+              } else {
+                td.textContent = String(val);
+              }
+              tr.appendChild(td);
+            });
+
+            // Action buttons
+            const tdActions = document.createElement('td');
+            tdActions.className = 'p-3 text-right shrink-0';
+            
+            // Primary key detection
+            const pkCol = cols.find(c => c === 'id' || c === 'recycle_id' || c.endsWith('_id')) || cols[0];
+            const pkVal = row[pkCol];
+
+            tdActions.innerHTML = `
+              <div class="flex items-center justify-end gap-1">
+                <button onclick='AdminApp.openJsonViewer(${JSON.stringify(row).replace(/'/g, "&apos;")})' class="p-1 rounded hover:bg-slate-700 text-[var(--text-muted)] hover:text-white" title="Inspect JSON">
+                  <span class="material-symbols-outlined text-xs">code</span>
+                </button>
+                <button onclick='AdminApp.openEditRowModal("${this.selectedTable}", "${pkCol}", "${pkVal}", ${JSON.stringify(row).replace(/'/g, "&apos;")})' class="p-1 rounded hover:bg-slate-700 text-blue-400 hover:text-blue-300" title="Edit Row">
+                  <span class="material-symbols-outlined text-xs">edit</span>
+                </button>
+                <button onclick='AdminApp.confirmDeleteRow("${this.selectedTable}", "${pkCol}", "${pkVal}")' class="p-1 rounded hover:bg-red-500/20 text-red-400 hover:text-red-300" title="Delete Row">
+                  <span class="material-symbols-outlined text-xs">delete</span>
+                </button>
+              </div>
+            `;
+            tr.appendChild(tdActions);
+            tbody.appendChild(tr);
+          });
+        }
+
+        openInsertRowModal() {
+          document.getElementById('modalTableRowTitle').textContent = `Insert Row into '${this.selectedTable}'`;
+          const container = document.getElementById('modalTableRowFormContainer');
+          container.innerHTML = '';
+
+          const schema = this.currentTableData?.schema || [];
+          schema.forEach(col => {
+            const div = document.createElement('div');
+            div.className = 'space-y-1';
+            div.innerHTML = `
+              <label class="block text-xs font-mono-code text-[var(--text-subtle)]">${col.name} <span class="text-[10px] text-gray-500">(${col.type})</span></label>
+              ${col.name === 'id' ? `
+                <div class="flex items-center gap-1.5">
+                  <input type="text" data-col="${col.name}" value="${this.generateId('row')}" class="flex-1 bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-lg px-3 py-1.5 text-xs font-mono-code text-white">
+                  <button type="button" onclick="this.previousElementSibling.value = AdminApp.generateId('row')" class="text-xs px-2 py-1.5 bg-slate-800 text-[var(--text-muted)] rounded">Gen</button>
+                </div>
+              ` : col.type.includes('TEXT') || col.name.includes('json') || col.name.includes('content') ? `
+                <textarea data-col="${col.name}" rows="2" class="w-full bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-lg px-3 py-1.5 text-xs text-white"></textarea>
+              ` : `
+                <input type="text" data-col="${col.name}" class="w-full bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-lg px-3 py-1.5 text-xs text-white">
+              `}
+            `;
+            container.appendChild(div);
+          });
+
+          this._activeEditRow = { isNew: true, table: this.selectedTable };
+          this.openModal('modalTableRowEdit');
+        }
+
+        openEditRowModal(table, pkCol, pkVal, rowData) {
+          document.getElementById('modalTableRowTitle').textContent = `Edit Row in '${table}' (${pkCol}=${pkVal})`;
+          const container = document.getElementById('modalTableRowFormContainer');
+          container.innerHTML = '';
+
+          const schema = this.currentTableData?.schema || [];
+          schema.forEach(col => {
+            const val = rowData[col.name] !== undefined ? rowData[col.name] : '';
+            const isPk = col.name === pkCol;
+
+            const div = document.createElement('div');
+            div.className = 'space-y-1';
+            div.innerHTML = `
+              <label class="block text-xs font-mono-code text-[var(--text-subtle)]">${col.name} <span class="text-[10px] text-gray-500">(${col.type})</span> ${isPk ? '<span class="text-blue-400 font-bold">[PK]</span>' : ''}</label>
+              ${col.type.includes('TEXT') || col.name.includes('json') || col.name.includes('content') || col.name.includes('notes') ? `
+                <textarea data-col="${col.name}" rows="3" ${isPk ? 'readonly class="w-full bg-[var(--bg-canvas)]/50 border border-[var(--border-subtle)] rounded-lg px-3 py-1.5 text-xs text-gray-400 font-mono-code"' : 'class="w-full bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-lg px-3 py-1.5 text-xs text-white"'} >${val || ''}</textarea>
+              ` : `
+                <input type="text" data-col="${col.name}" value="${val !== null ? val : ''}" ${isPk ? 'readonly class="w-full bg-[var(--bg-canvas)]/50 border border-[var(--border-subtle)] rounded-lg px-3 py-1.5 text-xs text-gray-400 font-mono-code"' : 'class="w-full bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-lg px-3 py-1.5 text-xs text-white font-mono-code"'} >
+              `}
+            `;
+            container.appendChild(div);
+          });
+
+          this._activeEditRow = { isNew: false, table, pkCol, pkVal };
+          this.openModal('modalTableRowEdit');
+        }
+
+        async submitTableRowSave() {
+          if (!this._activeEditRow) return;
+          const container = document.getElementById('modalTableRowFormContainer');
+          const inputs = container.querySelectorAll('[data-col]');
+          const values = {};
+          inputs.forEach(inp => {
+            const col = inp.dataset.col;
+            let val = inp.value;
+            // Empty strings for numeric types converted to null or preserved
+            values[col] = val === '' ? null : val;
+          });
+
+          try {
+            if (this._activeEditRow.isNew) {
+              const res = await this.apiFetch('/api/v3/admin/table/row', {
+                method: 'POST',
+                body: JSON.stringify({ table: this._activeEditRow.table, values })
+              });
+              if (res.ok) {
+                this.showToast('Row inserted successfully', 'success');
+                this.closeModal('modalTableRowEdit');
+                await this.loadTableData();
+              }
+            } else {
+              const res = await this.apiFetch('/api/v3/admin/table/row', {
+                method: 'PUT',
+                body: JSON.stringify({
+                  table: this._activeEditRow.table,
+                  pkCol: this._activeEditRow.pkCol,
+                  pkVal: this._activeEditRow.pkVal,
+                  values
+                })
+              });
+              if (res.ok) {
+                this.showToast('Row updated successfully', 'success');
+                this.closeModal('modalTableRowEdit');
+                await this.loadTableData();
+              }
+            }
+          } catch (e) {
+            this.showToast(`Error saving row: ${e.message}`, 'error');
+          }
+        }
+
+        confirmDeleteRow(table, pkCol, pkVal) {
+          this.openConfirmDelete(
+            'Delete Row',
+            `Delete row from '${table}' where ${pkCol}='${pkVal}'?`,
+            async () => {
+              try {
+                const res = await this.apiFetch(`/api/v3/admin/table/row?table=${encodeURIComponent(table)}&pkCol=${encodeURIComponent(pkCol)}&pkVal=${encodeURIComponent(pkVal)}`, {
+                  method: 'DELETE'
+                });
+                if (res.ok) {
+                  this.showToast('Row deleted', 'success');
+                  await this.loadTableData();
+                }
+              } catch (e) {
+                this.showToast(`Delete failed: ${e.message}`, 'error');
+              }
+            }
+          );
+        }
+
+        exportTableAsJson() {
+          if (!this.currentTableData || !this.currentTableData.rows) return;
+          const jsonStr = JSON.stringify(this.currentTableData.rows, null, 2);
+          this.downloadFile(`${this.selectedTable}_export.json`, jsonStr, 'application/json');
+        }
+
+        exportTableAsCsv() {
+          if (!this.currentTableData || !this.currentTableData.rows || !this.currentTableData.columns) return;
+          const cols = this.currentTableData.columns;
+          let csv = cols.join(',') + '\n';
+          this.currentTableData.rows.forEach(r => {
+            const line = cols.map(c => {
+              const val = r[c] === null || r[c] === undefined ? '' : String(r[c]);
+              return `"${val.replace(/"/g, '""')}"`;
+            }).join(',');
+            csv += line + '\n';
+          });
+          this.downloadFile(`${this.selectedTable}_export.csv`, csv, 'text/csv');
+        }
+
+        // --- SQL Console & Workbench ---
+        setSqlSnippet(sql) {
+          document.getElementById('sqlQueryInput').value = sql;
+        }
+
+        async executeSqlFromEditor() {
+          const sql = (document.getElementById('sqlQueryInput').value || '').trim();
+          if (!sql) {
+            this.showToast('SQL statement is empty', 'warning');
+            return;
+          }
+
+          try {
+            this.showToast('Executing SQL...', 'info');
+            const res = await this.apiFetch('/api/v3/admin/sql', {
+              method: 'POST',
+              body: JSON.stringify({ sql })
+            });
+
+            const resultBox = document.getElementById('sqlResultBox');
+            resultBox.classList.remove('hidden');
+
+            if (!res.ok) {
+              document.getElementById('sqlExecutionStatus').className = 'font-bold text-red-400';
+              document.getElementById('sqlExecutionStatus').textContent = 'Execution Failed';
+              document.getElementById('sqlExecutionMeta').textContent = res.error || 'Syntax Error';
+              document.querySelector('#sqlResultTable thead').innerHTML = '';
+              document.getElementById('sqlResultTableBody').innerHTML = `<tr><td class="p-4 text-red-300">${res.error}</td></tr>`;
+              return;
+            }
+
+            document.getElementById('sqlExecutionStatus').className = 'font-bold text-emerald-400';
+            document.getElementById('sqlExecutionStatus').textContent = res.is_query ? 'Query Succeeded' : 'Statement Executed';
+            document.getElementById('sqlExecutionMeta').textContent = `${res.is_query ? (res.row_count + ' rows') : (res.rows_affected + ' rows affected')} in ${res.execution_time_ms}ms`;
+
+            if (res.is_query) {
+              this.renderSqlGrid(res.columns || [], res.rows || []);
+            } else {
+              document.querySelector('#sqlResultTable thead').innerHTML = '';
+              document.getElementById('sqlResultTableBody').innerHTML = `<tr><td class="p-4 text-emerald-300">Statement succeeded. ${res.rows_affected} rows affected.</td></tr>`;
+              await this.checkStatus();
+            }
+          } catch (e) {
+            this.showToast(`SQL Error: ${e.message}`, 'error');
+          }
+        }
+
+        renderSqlGrid(cols, rows) {
+          const thead = document.querySelector('#sqlResultTable thead');
+          const tbody = document.getElementById('sqlResultTableBody');
+          thead.innerHTML = '';
+          tbody.innerHTML = '';
+
+          const trHead = document.createElement('tr');
+          trHead.className = 'text-[var(--text-subtle)] uppercase text-[10px] tracking-wider border-b border-[var(--border-subtle)]';
+          cols.forEach(c => {
+            const th = document.createElement('th');
+            th.className = 'p-2.5 font-medium';
+            th.textContent = c;
+            trHead.appendChild(th);
+          });
+          thead.appendChild(trHead);
+
+          rows.forEach(r => {
+            const tr = document.createElement('tr');
+            tr.className = 'hover:bg-white/[0.02] transition';
+            cols.forEach(c => {
+              const td = document.createElement('td');
+              td.className = 'p-2.5 text-[11px] max-w-xs truncate';
+              td.textContent = r[c] !== null ? String(r[c]) : 'null';
+              tr.appendChild(td);
+            });
+            tbody.appendChild(tr);
+          });
+        }
+
+        // --- Core Domains: Sessions ---
+        async loadSessions() {
+          try {
+            const data = await this.apiFetch('/api/v3/sessions?limit=100');
+            const sessions = data.sessions || [];
+            document.getElementById('badgeSessionsCount').textContent = sessions.length;
+
+            const tbody = document.getElementById('sessionsTableBody');
+            tbody.innerHTML = '';
+
+            sessions.forEach(s => {
+              const tr = document.createElement('tr');
+              tr.className = 'hover:bg-white/[0.02] transition';
+              tr.innerHTML = `
+                <td class="p-3 font-bold text-white">${s.activity}</td>
+                <td class="p-3 text-blue-400 font-bold">${this.formatDuration(s.duration_sec)}</td>
+                <td class="p-3 text-[var(--text-subtle)]">${this.formatTimestamp(s.start_time)}</td>
+                <td class="p-3 text-[var(--text-subtle)]">${s.end_time ? this.formatTimestamp(s.end_time) : '<span class="text-emerald-400 font-bold animate-pulse">Running</span>'}</td>
+                <td class="p-3 text-[var(--text-muted)] max-w-xs truncate">${s.notes || '-'}</td>
+                <td class="p-3 text-right">
+                  <button onclick='AdminApp.openEditSession(${JSON.stringify(s).replace(/'/g, "&apos;")})' class="p-1 text-blue-400 hover:text-white" title="Edit Session">
+                    <span class="material-symbols-outlined text-xs">edit</span>
+                  </button>
+                  <button onclick="AdminApp.deleteSession('${s.id}')" class="p-1 text-red-400 hover:text-white" title="Delete Session">
+                    <span class="material-symbols-outlined text-xs">delete</span>
+                  </button>
+                </td>
+              `;
+              tbody.appendChild(tr);
+            });
+          } catch (e) {
+            console.warn('Sessions load warning:', e);
+          }
+        }
+
+        openEditSession(sess = null) {
+          const isNew = !sess;
+          document.getElementById('modalSessionTitle').textContent = isNew ? 'Record Focus Session' : 'Edit Focus Session';
+          document.getElementById('sessEditId').value = isNew ? this.generateId('sess') : sess.id;
+          document.getElementById('sessEditActivity').value = isNew ? 'Deep Work' : sess.activity;
+          document.getElementById('sessEditStartTime').value = isNew ? Date.now() : sess.start_time;
+          document.getElementById('sessEditDuration').value = isNew ? 1800 : sess.duration_sec;
+          document.getElementById('sessEditNotes').value = isNew ? '' : (sess.notes || '');
+          this._sessionIsNew = isNew;
+          this.openModal('modalSessionEdit');
+        }
+
+        async submitSessionSave() {
+          const id = document.getElementById('sessEditId').value;
+          const activity = document.getElementById('sessEditActivity').value.trim();
+          const start = parseInt(document.getElementById('sessEditStartTime').value, 10) || Date.now();
+          const dur = parseInt(document.getElementById('sessEditDuration').value, 10) || 0;
+          const notes = document.getElementById('sessEditNotes').value;
+
+          const payload = {
+            id,
+            activity,
+            start_time: start,
+            end_time: start + (dur * 1000),
+            duration_sec: dur,
+            notes
+          };
+
+          try {
+            if (this._sessionIsNew) {
+              await this.apiFetch('/api/v3/sessions/record', {
+                method: 'POST',
+                body: JSON.stringify(payload)
+              });
+              this.showToast('Session recorded successfully', 'success');
+            } else {
+              await this.apiFetch('/api/v3/sessions/record', {
+                method: 'PUT',
+                body: JSON.stringify(payload)
+              });
+              this.showToast('Session updated successfully', 'success');
+            }
+            this.closeModal('modalSessionEdit');
+            await this.loadSessions();
+          } catch (e) {
+            this.showToast(`Session error: ${e.message}`, 'error');
+          }
+        }
+
+        async deleteSession(id) {
+          this.openConfirmDelete('Delete Session', 'Recycle this session record?', async () => {
+            try {
+              await this.apiFetch(`/api/v3/sessions?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+              this.showToast('Session recycled', 'success');
+              await this.loadSessions();
+            } catch (e) {
+              this.showToast(`Delete failed: ${e.message}`, 'error');
+            }
+          });
+        }
+
+        // --- Core Domains: Tasks ---
+        async loadTasks(status = 'pending') {
+          try {
+            document.querySelectorAll('[id^="tasksFilter"]').forEach(b => {
+              b.className = 'px-2.5 py-1 text-xs font-semibold rounded-md text-[var(--text-muted)] hover:text-white';
+            });
+            const activeBtn = document.getElementById('tasksFilter' + status.charAt(0).toUpperCase() + status.slice(1));
+            if (activeBtn) activeBtn.className = 'px-2.5 py-1 text-xs font-semibold rounded-md bg-blue-600 text-white';
+
+            const data = await this.apiFetch(`/api/v3/tasks?status=${encodeURIComponent(status)}`);
+            const tasks = data.tasks || [];
+            document.getElementById('badgeTasksCount').textContent = tasks.length;
+
+            const tbody = document.getElementById('tasksTableBody');
+            tbody.innerHTML = '';
+
+            tasks.forEach(t => {
+              const tr = document.createElement('tr');
+              tr.className = 'hover:bg-white/[0.02] transition';
+              tr.innerHTML = `
+                <td class="p-3">
+                  <button onclick="AdminApp.toggleTask('${t.id}')" class="px-2 py-0.5 rounded text-[10px] font-bold ${t.status === 'completed' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}">
+                    ${t.status.toUpperCase()}
+                  </button>
+                </td>
+                <td class="p-3">
+                  <span class="px-1.5 py-0.5 rounded text-[10px] font-mono-code font-bold ${t.priority === 'CRITICAL' ? 'bg-red-500/20 text-red-400' : t.priority === 'HIGH' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-700 text-gray-300'}">
+                    ${t.priority}
+                  </span>
+                </td>
+                <td class="p-3 font-medium text-white">${t.title}</td>
+                <td class="p-3 font-mono-code text-[11px] text-[var(--text-subtle)]">${t.deadline || '-'}</td>
+                <td class="p-3 font-mono-code text-[11px] text-[var(--text-subtle)]">${this.formatTimestamp(t.created_at)}</td>
+                <td class="p-3 text-right">
+                  <button onclick='AdminApp.openEditTask(${JSON.stringify(t).replace(/'/g, "&apos;")})' class="p-1 text-blue-400 hover:text-white" title="Edit Task">
+                    <span class="material-symbols-outlined text-xs">edit</span>
+                  </button>
+                  <button onclick="AdminApp.deleteTask('${t.id}')" class="p-1 text-red-400 hover:text-white" title="Delete Task">
+                    <span class="material-symbols-outlined text-xs">delete</span>
+                  </button>
+                </td>
+              `;
+              tbody.appendChild(tr);
+            });
+          } catch (e) {
+            console.warn('Tasks load warning:', e);
+          }
+        }
+
+        async toggleTask(id) {
+          try {
+            await this.apiFetch('/api/v3/tasks', {
+              method: 'PUT',
+              body: JSON.stringify({ id, toggle_status: true })
+            });
+            this.showToast('Task status toggled', 'success');
+            await this.loadTasks();
+          } catch (e) {
+            this.showToast(`Toggle failed: ${e.message}`, 'error');
+          }
+        }
+
+        openEditTask(task = null) {
+          const isNew = !task;
+          document.getElementById('modalTaskTitle').textContent = isNew ? 'Create New Task' : 'Edit Task';
+          document.getElementById('taskEditId').value = isNew ? this.generateId('task') : task.id;
+          document.getElementById('taskEditTitle').value = isNew ? '' : task.title;
+          document.getElementById('taskEditPriority').value = isNew ? 'MEDIUM' : task.priority;
+          document.getElementById('taskEditStatus').value = isNew ? 'pending' : task.status;
+          document.getElementById('taskEditDeadline').value = isNew ? '' : (task.deadline || '');
+          this._taskIsNew = isNew;
+          this.openModal('modalTaskEdit');
+        }
+
+        async submitTaskSave() {
+          const id = document.getElementById('taskEditId').value;
+          const title = document.getElementById('taskEditTitle').value.trim();
+          const priority = document.getElementById('taskEditPriority').value;
+          const status = document.getElementById('taskEditStatus').value;
+          const deadline = document.getElementById('taskEditDeadline').value.trim();
+
+          if (!title) {
+            this.showToast('Task title is required', 'error');
+            return;
+          }
+
+          try {
+            if (this._taskIsNew) {
+              await this.apiFetch('/api/v3/tasks', {
+                method: 'POST',
+                body: JSON.stringify({ title, priority, deadline })
+              });
+              this.showToast('Task created', 'success');
+            } else {
+              await this.apiFetch('/api/v3/tasks', {
+                method: 'PUT',
+                body: JSON.stringify({ id, title, priority, status, deadline })
+              });
+              this.showToast('Task updated', 'success');
+            }
+            this.closeModal('modalTaskEdit');
+            await this.loadTasks();
+          } catch (e) {
+            this.showToast(`Task save error: ${e.message}`, 'error');
+          }
+        }
+
+        async deleteTask(id) {
+          this.openConfirmDelete('Delete Task', 'Recycle this task?', async () => {
+            try {
+              await this.apiFetch(`/api/v3/tasks?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+              this.showToast('Task recycled', 'success');
+              await this.loadTasks();
+            } catch (e) {
+              this.showToast(`Delete task error: ${e.message}`, 'error');
+            }
+          });
+        }
+
+        // --- Core Domains: Thoughts ---
+        async loadThoughts() {
+          try {
+            const data = await this.apiFetch('/api/v3/thoughts?limit=100');
+            const thoughts = data.thoughts || [];
+            document.getElementById('badgeThoughtsCount').textContent = thoughts.length;
+
+            const tbody = document.getElementById('thoughtsTableBody');
+            tbody.innerHTML = '';
+
+            thoughts.forEach(th => {
+              const tr = document.createElement('tr');
+              tr.className = 'hover:bg-white/[0.02] transition';
+              tr.innerHTML = `
+                <td class="p-3">
+                  <button onclick="AdminApp.toggleThoughtPinned('${th.id}')" class="text-xs ${th.pinned ? 'text-amber-400' : 'text-gray-600 hover:text-gray-400'}">
+                    <span class="material-symbols-outlined text-sm">push_pin</span>
+                  </button>
+                </td>
+                <td class="p-3 font-mono-code text-[11px] text-[var(--text-subtle)]">${th.date}</td>
+                <td class="p-3 font-bold text-purple-300 font-mono-code">${th.topic}</td>
+                <td class="p-3 text-[var(--text-main)] max-w-sm truncate">${th.content}</td>
+                <td class="p-3 text-[11px] text-[var(--text-subtle)]">${th.tags || '-'}</td>
+                <td class="p-3 text-right">
+                  <button onclick='AdminApp.openEditThought(${JSON.stringify(th).replace(/'/g, "&apos;")})' class="p-1 text-blue-400 hover:text-white" title="Edit Thought">
+                    <span class="material-symbols-outlined text-xs">edit</span>
+                  </button>
+                  <button onclick="AdminApp.deleteThought('${th.id}')" class="p-1 text-red-400 hover:text-white" title="Delete Thought">
+                    <span class="material-symbols-outlined text-xs">delete</span>
+                  </button>
+                </td>
+              `;
+              tbody.appendChild(tr);
+            });
+          } catch (e) {
+            console.warn('Thoughts load warning:', e);
+          }
+        }
+
+        async toggleThoughtPinned(id) {
+          try {
+            await this.apiFetch('/api/v3/thoughts', {
+              method: 'PUT',
+              body: JSON.stringify({ id, toggle_pinned: true })
+            });
+            this.showToast('Thought pin toggled', 'success');
+            await this.loadThoughts();
+          } catch (e) {
+            this.showToast(`Pin toggle error: ${e.message}`, 'error');
+          }
+        }
+
+        openEditThought(thought = null) {
+          const isNew = !thought;
+          document.getElementById('modalThoughtTitle').textContent = isNew ? 'Write Thought' : 'Edit Thought';
+          document.getElementById('thoughtEditId').value = isNew ? this.generateId('th') : thought.id;
+          document.getElementById('thoughtEditTopic').value = isNew ? 'General' : thought.topic;
+          document.getElementById('thoughtEditContent').value = isNew ? '' : thought.content;
+          document.getElementById('thoughtEditTags').value = isNew ? '' : (thought.tags || '');
+          document.getElementById('thoughtEditDate').value = isNew ? new Date().toISOString().slice(0, 10) : thought.date;
+          document.getElementById('thoughtEditPinned').checked = isNew ? false : !!thought.pinned;
+          this._thoughtIsNew = isNew;
+          this.openModal('modalThoughtEdit');
+        }
+
+        async submitThoughtSave() {
+          const id = document.getElementById('thoughtEditId').value;
+          const topic = document.getElementById('thoughtEditTopic').value.trim() || 'General';
+          const content = document.getElementById('thoughtEditContent').value.trim();
+          const tags = document.getElementById('thoughtEditTags').value.trim();
+          const date = document.getElementById('thoughtEditDate').value.trim();
+          const pinned = document.getElementById('thoughtEditPinned').checked;
+
+          if (!content) {
+            this.showToast('Thought content cannot be blank', 'error');
+            return;
+          }
+
+          try {
+            if (this._thoughtIsNew) {
+              await this.apiFetch('/api/v3/thoughts', {
+                method: 'POST',
+                body: JSON.stringify({ topic, content, tags, pinned })
+              });
+              this.showToast('Thought created', 'success');
+            } else {
+              await this.apiFetch('/api/v3/thoughts', {
+                method: 'PUT',
+                body: JSON.stringify({ id, topic, content, tags, date, pinned })
+              });
+              this.showToast('Thought updated', 'success');
+            }
+            this.closeModal('modalThoughtEdit');
+            await this.loadThoughts();
+          } catch (e) {
+            this.showToast(`Thought save error: ${e.message}`, 'error');
+          }
+        }
+
+        async deleteThought(id) {
+          this.openConfirmDelete('Delete Thought', 'Recycle this reflection?', async () => {
+            try {
+              await this.apiFetch(`/api/v3/thoughts?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+              this.showToast('Thought recycled', 'success');
+              await this.loadThoughts();
+            } catch (e) {
+              this.showToast(`Delete thought failed: ${e.message}`, 'error');
+            }
+          });
+        }
+
+        // --- Core Domains: Ledger & Events ---
+        async loadEvents() {
+          try {
+            const cat = document.getElementById('eventsFilterCategory').value.trim();
+            let url = '/api/v3/entries?limit=100';
+            if (cat) url += `&category=${encodeURIComponent(cat)}`;
+
+            const data = await this.apiFetch(url);
+            const events = data.entries || [];
+            document.getElementById('badgeEventsCount').textContent = events.length;
+
+            const tbody = document.getElementById('eventsTableBody');
+            tbody.innerHTML = '';
+
+            events.forEach(ev => {
+              const tr = document.createElement('tr');
+              tr.className = 'hover:bg-white/[0.02] transition';
+              tr.innerHTML = `
+                <td class="p-3">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-mono-code font-bold bg-amber-500/20 text-amber-400">
+                    ${ev.category}
+                  </span>
+                </td>
+                <td class="p-3 font-mono-code text-[11px] text-[var(--text-subtle)]">${ev.date} ${ev.timeFormatted || ''}</td>
+                <td class="p-3 font-bold text-white">${ev.title || '-'}</td>
+                <td class="p-3 text-[var(--text-muted)] max-w-sm truncate">${ev.content || '-'}</td>
+                <td class="p-3 font-mono-code text-[11px]">${ev.score !== undefined && ev.score !== null ? ev.score : '-'}</td>
+                <td class="p-3 text-right">
+                  <button onclick='AdminApp.openEditEvent(${JSON.stringify(ev).replace(/'/g, "&apos;")})' class="p-1 text-blue-400 hover:text-white" title="Edit Event">
+                    <span class="material-symbols-outlined text-xs">edit</span>
+                  </button>
+                  <button onclick="AdminApp.deleteEvent('${ev.id}')" class="p-1 text-red-400 hover:text-white" title="Delete Event">
+                    <span class="material-symbols-outlined text-xs">delete</span>
+                  </button>
+                </td>
+              `;
+              tbody.appendChild(tr);
+            });
+          } catch (e) {
+            console.warn('Events load warning:', e);
+          }
+        }
+
+        openEditEvent(ev = null) {
+          const isNew = !ev;
+          document.getElementById('modalEventTitle').textContent = isNew ? 'Create Ledger Entry' : 'Edit Ledger Entry';
+          document.getElementById('eventEditId').value = isNew ? this.generateId('evt') : ev.id;
+          document.getElementById('eventEditCategory').value = isNew ? 'general' : ev.category;
+          document.getElementById('eventEditScore').value = isNew ? '0' : (ev.score || 0);
+          document.getElementById('eventEditTitle').value = isNew ? '' : (ev.title || '');
+          document.getElementById('eventEditContent').value = isNew ? '' : (ev.content || '');
+          document.getElementById('eventEditMetadata').value = isNew ? '{}' : (ev.rawJson || '{}');
+          this._eventIsNew = isNew;
+          this.openModal('modalEventEdit');
+        }
+
+        async submitEventSave() {
+          const id = document.getElementById('eventEditId').value;
+          const category = document.getElementById('eventEditCategory').value.trim() || 'general';
+          const score = parseInt(document.getElementById('eventEditScore').value, 10) || 0;
+          const title = document.getElementById('eventEditTitle').value.trim();
+          const content = document.getElementById('eventEditContent').value.trim();
+          const metadataJson = document.getElementById('eventEditMetadata').value.trim() || '{}';
+
+          const payload = { id, category, score, title, content, metadataJson };
+
+          try {
+            if (this._eventIsNew) {
+              await this.apiFetch('/api/v3/entries', {
+                method: 'POST',
+                body: JSON.stringify(payload)
+              });
+              this.showToast('Event created', 'success');
+            } else {
+              await this.apiFetch('/api/v3/entries', {
+                method: 'PUT',
+                body: JSON.stringify(payload)
+              });
+              this.showToast('Event updated', 'success');
+            }
+            this.closeModal('modalEventEdit');
+            await this.loadEvents();
+          } catch (e) {
+            this.showToast(`Event save error: ${e.message}`, 'error');
+          }
+        }
+
+        async deleteEvent(id) {
+          this.openConfirmDelete('Delete Event', 'Permanently remove this event record?', async () => {
+            try {
+              await this.apiFetch(`/api/v3/entries?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+              this.showToast('Event removed', 'success');
+              await this.loadEvents();
+            } catch (e) {
+              this.showToast(`Delete event error: ${e.message}`, 'error');
+            }
+          });
+        }
+
+        // --- Core Domains: Day Tracker ---
+        async loadDayTracker() {
+          try {
+            const data = await this.apiFetch('/api/v3/daytracker');
+            const items = data.items || [];
+            document.getElementById('badgeMilestonesCount').textContent = items.length;
+
+            const tbody = document.getElementById('dayTrackerTableBody');
+            tbody.innerHTML = '';
+
+            const today = new Date();
+            items.forEach(m => {
+              const target = new Date(m.target_date);
+              const diffDays = Math.ceil((target - today) / (1000 * 60 * 60 * 24));
+              const countdownStr = diffDays > 0 ? `${diffDays} days remaining` : diffDays === 0 ? 'Today!' : `${Math.abs(diffDays)} days ago`;
+
+              const tr = document.createElement('tr');
+              tr.className = 'hover:bg-white/[0.02] transition';
+              tr.innerHTML = `
+                <td class="p-3">
+                  <span class="material-symbols-outlined text-sm ${m.pinned ? 'text-cyan-400' : 'text-gray-600'}">push_pin</span>
+                </td>
+                <td class="p-3 font-mono-code text-[11px] text-[var(--text-subtle)]">${m.target_date}</td>
+                <td class="p-3 font-bold text-white">${m.title}</td>
+                <td class="p-3 font-mono-code text-[11px] ${diffDays <= 3 ? 'text-amber-400 font-bold' : 'text-cyan-300'}">${countdownStr}</td>
+                <td class="p-3 text-right">
+                  <button onclick='AdminApp.openEditDayTracker(${JSON.stringify(m).replace(/'/g, "&apos;")})' class="p-1 text-blue-400 hover:text-white" title="Edit Milestone">
+                    <span class="material-symbols-outlined text-xs">edit</span>
+                  </button>
+                  <button onclick="AdminApp.deleteDayTracker('${m.id}')" class="p-1 text-red-400 hover:text-white" title="Delete Milestone">
+                    <span class="material-symbols-outlined text-xs">delete</span>
+                  </button>
+                </td>
+              `;
+              tbody.appendChild(tr);
+            });
+          } catch (e) {
+            console.warn('DayTracker load warning:', e);
+          }
+        }
+
+        openEditDayTracker(item = null) {
+          const isNew = !item;
+          document.getElementById('modalDayTrackerTitle').textContent = isNew ? 'New Milestone' : 'Edit Milestone';
+          document.getElementById('dayTrackerEditId').value = isNew ? this.generateId('dt') : item.id;
+          document.getElementById('dayTrackerEditTitle').value = isNew ? '' : item.title;
+          document.getElementById('dayTrackerEditTargetDate').value = isNew ? new Date().toISOString().slice(0, 10) : item.target_date;
+          document.getElementById('dayTrackerEditHour').value = isNew ? 0 : (item.hour || 0);
+          document.getElementById('dayTrackerEditPinned').checked = isNew ? false : !!item.pinned;
+          this._dayTrackerIsNew = isNew;
+          this.openModal('modalDayTrackerEdit');
+        }
+
+        async submitDayTrackerSave() {
+          const id = document.getElementById('dayTrackerEditId').value;
+          const title = document.getElementById('dayTrackerEditTitle').value.trim();
+          const target_date = document.getElementById('dayTrackerEditTargetDate').value;
+          const hour = parseInt(document.getElementById('dayTrackerEditHour').value, 10) || 0;
+          const pinned = document.getElementById('dayTrackerEditPinned').checked;
+
+          if (!title || !target_date) {
+            this.showToast('Title and target date required', 'error');
+            return;
+          }
+
+          const payload = { id, title, target_date, hour, pinned };
+
+          try {
+            if (this._dayTrackerIsNew) {
+              await this.apiFetch('/api/v3/daytracker', {
+                method: 'POST',
+                body: JSON.stringify(payload)
+              });
+              this.showToast('Milestone created', 'success');
+            } else {
+              await this.apiFetch('/api/v3/daytracker', {
+                method: 'PUT',
+                body: JSON.stringify(payload)
+              });
+              this.showToast('Milestone updated', 'success');
+            }
+            this.closeModal('modalDayTrackerEdit');
+            await this.loadDayTracker();
+          } catch (e) {
+            this.showToast(`Milestone error: ${e.message}`, 'error');
+          }
+        }
+
+        async deleteDayTracker(id) {
+          this.openConfirmDelete('Delete Milestone', 'Remove this countdown milestone?', async () => {
+            try {
+              await this.apiFetch(`/api/v3/daytracker?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+              this.showToast('Milestone deleted', 'success');
+              await this.loadDayTracker();
+            } catch (e) {
+              this.showToast(`Delete milestone failed: ${e.message}`, 'error');
+            }
+          });
+        }
+
+        // --- Core Domains: Screen Time Logs ---
+        async loadAppUsage() {
+          try {
+            const data = await this.apiFetch('/api/v3/admin/appusage?limit=100');
+            const logs = data.logs || [];
+            document.getElementById('badgeAppUsageCount').textContent = logs.length;
+
+            const tbody = document.getElementById('appUsageTableBody');
+            tbody.innerHTML = '';
+
+            logs.forEach(u => {
+              const tr = document.createElement('tr');
+              tr.className = 'hover:bg-white/[0.02] transition';
+              tr.innerHTML = `
+                <td class="p-3 font-bold text-white">${u.app_name}</td>
+                <td class="p-3 text-[var(--text-subtle)]">${u.package_name}</td>
+                <td class="p-3 text-rose-400 font-bold">${this.formatDuration(u.duration_sec)}</td>
+                <td class="p-3 text-[var(--text-subtle)]">${this.formatTimestamp(u.start_time)}</td>
+                <td class="p-3 text-[var(--text-subtle)]">${this.formatTimestamp(u.end_time)}</td>
+                <td class="p-3 text-[var(--text-subtle)]">${u.category}</td>
+                <td class="p-3 text-right">
+                  <button onclick="AdminApp.deleteAppUsageRow('${u.id}')" class="p-1 text-red-400 hover:text-white" title="Delete Log">
+                    <span class="material-symbols-outlined text-xs">delete</span>
+                  </button>
+                </td>
+              `;
+              tbody.appendChild(tr);
+            });
+          } catch (e) {
+            console.warn('App usage load warning:', e);
+          }
+        }
+
+        async deleteAppUsageRow(id) {
+          try {
+            await this.apiFetch(`/api/v3/admin/appusage?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+            this.showToast('Usage log row deleted', 'success');
+            await this.loadAppUsage();
+          } catch (e) {
+            this.showToast(`Delete error: ${e.message}`, 'error');
+          }
+        }
+
+        async purgeAppUsage() {
+          this.openConfirmDelete('Purge Screen Time', 'Clear all app usage logs in this profile?', async () => {
+            try {
+              await this.apiFetch('/api/v3/admin/appusage', { method: 'DELETE' });
+              this.showToast('App usage logs cleared', 'success');
+              await this.loadAppUsage();
+            } catch (e) {
+              this.showToast(`Clear error: ${e.message}`, 'error');
+            }
+          });
+        }
+
+        // --- Core Domains: Plugins & Key-Value Storage ---
+        async loadPlugins() {
+          try {
+            const data = await this.apiFetch('/api/v3/plugins');
+            const plugins = data.plugins || [];
+            document.getElementById('badgePluginsCount').textContent = plugins.length;
+
+            const container = document.getElementById('pluginsListContainer');
+            container.innerHTML = '';
+
+            const select = document.getElementById('pluginStorageSelect');
+            select.innerHTML = '';
+
+            plugins.forEach(p => {
+              // Populate Storage selector
+              const opt = document.createElement('option');
+              opt.value = p.id;
+              opt.textContent = `${p.name} (${p.id})`;
+              select.appendChild(opt);
+
+              // Render Plugin Card
+              const card = document.createElement('div');
+              card.className = 'bg-[var(--bg-canvas)] border border-[var(--border-subtle)] p-4 rounded-xl flex flex-col justify-between space-y-3';
+              card.innerHTML = `
+                <div>
+                  <div class="flex items-center justify-between mb-1.5">
+                    <div class="flex items-center gap-2">
+                      <span class="material-symbols-outlined text-base text-indigo-400">${p.icon || 'extension'}</span>
+                      <h4 class="text-xs font-bold text-white">${p.name}</h4>
+                    </div>
+                    <span class="px-1.5 py-0.2 rounded text-[10px] font-mono-code font-bold ${p.enabled ? 'bg-emerald-500/20 text-emerald-400' : 'bg-gray-700 text-gray-400'}">
+                      ${p.state}
+                    </span>
+                  </div>
+                  <p class="text-[11px] text-[var(--text-subtle)] line-clamp-2">${p.description || 'Custom plugin extension'}</p>
+                  <div class="text-[10px] font-mono-code text-[var(--text-subtle)] mt-2">
+                    ID: ${p.id} · v${p.version} ${p.is_builtin ? '· Built-in' : ''}
+                  </div>
+                </div>
+
+                <div class="pt-2 border-t border-[var(--border-subtle)] flex items-center justify-between">
+                  <button onclick="AdminApp.togglePluginState('${p.id}', ${!p.enabled})" class="px-2.5 py-1 rounded text-xs font-semibold ${p.enabled ? 'bg-red-500/20 text-red-300 hover:bg-red-600 hover:text-white' : 'bg-emerald-500/20 text-emerald-300 hover:bg-emerald-600 hover:text-white'} transition">
+                    ${p.enabled ? 'Disable' : 'Enable'}
+                  </button>
+                  <button onclick="AdminApp.inspectPluginStorage('${p.id}')" class="text-xs text-indigo-400 hover:underline">
+                    View Data →
+                  </button>
+                </div>
+              `;
+              container.appendChild(card);
+            });
+
+            if (plugins.length > 0) {
+              await this.loadPluginStorage(plugins[0].id);
+            }
+          } catch (e) {
+            console.warn('Plugins load warning:', e);
+          }
+        }
+
+        async togglePluginState(id, enabled) {
+          try {
+            await this.apiFetch('/api/v3/plugins/toggle', {
+              method: 'POST',
+              body: JSON.stringify({ id, enabled })
+            });
+            this.showToast(`Plugin '${id}' ${enabled ? 'enabled' : 'disabled'}`, 'success');
+            await this.loadPlugins();
+          } catch (e) {
+            this.showToast(`Plugin toggle error: ${e.message}`, 'error');
+          }
+        }
+
+        async inspectPluginStorage(pluginId) {
+          document.getElementById('pluginStorageSelect').value = pluginId;
+          await this.loadPluginStorage(pluginId);
+          document.getElementById('pluginStorageSelect').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        async loadPluginStorage(pluginId) {
+          try {
+            const data = await this.apiFetch(`/api/v3/plugins/${encodeURIComponent(pluginId)}/data`);
+            const tbody = document.getElementById('pluginStorageTableBody');
+            tbody.innerHTML = '';
+
+            const obj = data.data || {};
+            const keys = Object.keys(obj);
+
+            if (keys.length === 0) {
+              tbody.innerHTML = '<tr><td colspan="3" class="p-6 text-center text-xs text-[var(--text-subtle)]">No key-value records for this plugin</td></tr>';
+              return;
+            }
+
+            keys.forEach(k => {
+              const val = obj[k];
+              const tr = document.createElement('tr');
+              tr.className = 'hover:bg-white/[0.02] transition';
+              tr.innerHTML = `
+                <td class="p-3 text-indigo-300 font-bold font-mono-code">${k}</td>
+                <td class="p-3 text-white max-w-md truncate font-mono-code">${typeof val === 'object' ? JSON.stringify(val) : String(val)}</td>
+                <td class="p-3 text-right">
+                  <button onclick='AdminApp.openEditPluginKey("${pluginId}", "${k}", ${JSON.stringify(val).replace(/'/g, "&apos;")})' class="p-1 text-blue-400 hover:text-white" title="Edit Value">
+                    <span class="material-symbols-outlined text-xs">edit</span>
+                  </button>
+                  <button onclick="AdminApp.deletePluginKey('${pluginId}', '${k}')" class="p-1 text-red-400 hover:text-white" title="Delete Key">
+                    <span class="material-symbols-outlined text-xs">delete</span>
+                  </button>
+                </td>
+              `;
+              tbody.appendChild(tr);
+            });
+          } catch (e) {
+            console.warn('Plugin storage load warning:', e);
+          }
+        }
+
+        openSetPluginKeyModal() {
+          const pluginId = document.getElementById('pluginStorageSelect').value;
+          document.getElementById('pluginKeyPluginId').value = pluginId;
+          document.getElementById('pluginKeyKey').value = '';
+          document.getElementById('pluginKeyValue').value = '';
+          this.openModal('modalPluginKeyEdit');
+        }
+
+        openEditPluginKey(pluginId, key, val) {
+          document.getElementById('pluginKeyPluginId').value = pluginId;
+          document.getElementById('pluginKeyKey').value = key;
+          document.getElementById('pluginKeyValue').value = typeof val === 'object' ? JSON.stringify(val, null, 2) : String(val);
+          this.openModal('modalPluginKeyEdit');
+        }
+
+        async submitPluginKeySave() {
+          const pluginId = document.getElementById('pluginKeyPluginId').value;
+          const key = document.getElementById('pluginKeyKey').value.trim();
+          const value = document.getElementById('pluginKeyValue').value;
+
+          if (!key) {
+            this.showToast('Storage key required', 'error');
+            return;
+          }
+
+          try {
+            await this.apiFetch(`/api/v3/plugins/${encodeURIComponent(pluginId)}/data`, {
+              method: 'POST',
+              body: JSON.stringify({ key, value })
+            });
+            this.showToast(`Key '${key}' saved`, 'success');
+            this.closeModal('modalPluginKeyEdit');
+            await this.loadPluginStorage(pluginId);
+          } catch (e) {
+            this.showToast(`Save key error: ${e.message}`, 'error');
+          }
+        }
+
+        async deletePluginKey(pluginId, key) {
+          try {
+            await this.apiFetch(`/api/v3/plugins/${encodeURIComponent(pluginId)}/data?key=${encodeURIComponent(key)}`, {
+              method: 'DELETE'
+            });
+            this.showToast(`Key '${key}' deleted`, 'success');
+            await this.loadPluginStorage(pluginId);
+          } catch (e) {
+            this.showToast(`Delete key error: ${e.message}`, 'error');
+          }
+        }
+
+        // --- Core Domains: Recycle Bin ---
+        async loadRecycleBin() {
+          try {
+            const data = await this.apiFetch('/api/v3/recyclebin');
+            const items = data.items || [];
+            document.getElementById('badgeRecycleCount').textContent = items.length;
+
+            const tbody = document.getElementById('recycleBinTableBody');
+            tbody.innerHTML = '';
+
+            items.forEach(r => {
+              const tr = document.createElement('tr');
+              tr.className = 'hover:bg-white/[0.02] transition';
+              tr.innerHTML = `
+                <td class="p-3">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-700 text-white">
+                    ${r.category}
+                  </span>
+                </td>
+                <td class="p-3 font-mono-code text-[11px] text-[var(--text-subtle)]">${r.original_id}</td>
+                <td class="p-3 font-mono-code text-[11px] text-[var(--text-subtle)]">${this.formatTimestamp(r.deleted_at)}</td>
+                <td class="p-3 text-[var(--text-muted)] max-w-sm truncate">${r.data_json || '-'}</td>
+                <td class="p-3 text-right">
+                  <button onclick="AdminApp.restoreRecycleItem('${r.recycle_id}')" class="px-2.5 py-1 rounded text-xs font-semibold bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white transition" title="Restore back to operational table">
+                    Restore
+                  </button>
+                  <button onclick="AdminApp.purgeRecycleItem('${r.recycle_id}')" class="p-1 text-red-400 hover:text-white ml-1" title="Permanent Purge">
+                    <span class="material-symbols-outlined text-xs">delete_forever</span>
+                  </button>
+                </td>
+              `;
+              tbody.appendChild(tr);
+            });
+          } catch (e) {
+            console.warn('Recycle bin load warning:', e);
+          }
+        }
+
+        async restoreRecycleItem(recycleId) {
+          try {
+            const res = await this.apiFetch('/api/v3/recyclebin', {
+              method: 'POST',
+              body: JSON.stringify({ recycle_id: recycleId })
+            });
+            if (res.ok) {
+              this.showToast('Item restored successfully', 'success');
+              await this.loadRecycleBin();
+              await this.checkStatus();
+            }
+          } catch (e) {
+            this.showToast(`Restore error: ${e.message}`, 'error');
+          }
+        }
+
+        async purgeRecycleItem(recycleId) {
+          try {
+            await this.apiFetch(`/api/v3/recyclebin?recycle_id=${encodeURIComponent(recycleId)}`, {
+              method: 'DELETE'
+            });
+            this.showToast('Item permanently purged', 'success');
+            await this.loadRecycleBin();
+          } catch (e) {
+            this.showToast(`Purge error: ${e.message}`, 'error');
+          }
+        }
+
+        async emptyRecycleBin() {
+          this.openConfirmDelete('Empty Recycle Bin', 'Permanently purge all recycled items in this database?', async () => {
+            try {
+              await this.apiFetch('/api/v3/recyclebin', { method: 'DELETE' });
+              this.showToast('Recycle bin emptied', 'success');
+              await this.loadRecycleBin();
+            } catch (e) {
+              this.showToast(`Empty recycle bin failed: ${e.message}`, 'error');
+            }
+          });
+        }
+
+        // --- Backups Management ---
+        async loadBackups() {
+          try {
+            const data = await this.apiFetch('/api/v3/admin/backups');
+            const backups = data.backups || [];
+
+            const tbody = document.getElementById('backupsTableBody');
+            tbody.innerHTML = '';
+
+            backups.forEach(b => {
+              const tr = document.createElement('tr');
+              tr.className = 'hover:bg-white/[0.02] transition';
+              tr.innerHTML = `
+                <td class="p-3 font-bold text-white font-mono-code">${b.filename}</td>
+                <td class="p-3 text-emerald-400 font-bold">${b.file_size_formatted}</td>
+                <td class="p-3 text-[var(--text-subtle)]">${b.date_formatted}</td>
+                <td class="p-3 text-[var(--text-subtle)] max-w-xs truncate">${b.path}</td>
+                <td class="p-3 text-right">
+                  <button onclick="AdminApp.restoreFromBackupFile('${b.path.replace(/\\/g, '\\\\')}')" class="px-2.5 py-1 rounded text-xs font-semibold bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white transition">
+                    Restore to Active DB
+                  </button>
+                </td>
+              `;
+              tbody.appendChild(tr);
+            });
+          } catch (e) {
+            console.warn('Backups load warning:', e);
+          }
+        }
+
+        async triggerBackup() {
+          try {
+            this.showToast('Creating database snapshot...', 'info');
+            const res = await this.apiFetch('/api/v3/database/backup', { method: 'POST' });
+            if (res.ok) {
+              this.showToast(`Snapshot created at: ${res.backup_path}`, 'success');
+              await this.loadBackups();
+            }
+          } catch (e) {
+            this.showToast(`Backup error: ${e.message}`, 'error');
+          }
+        }
+
+        async restoreFromBackupFile(path) {
+          this.openConfirmDelete(
+            'Restore Database from Snapshot',
+            `Restore database from '${path}'? Current data in the active profile will be overwritten by this backup.`,
+            async () => {
+              try {
+                this.showToast('Restoring database...', 'info');
+                const res = await this.apiFetch('/api/v3/admin/backup/restore', {
+                  method: 'POST',
+                  body: JSON.stringify({ path })
+                });
+                if (res.ok) {
+                  this.showToast('Database successfully restored', 'success');
+                  await this.checkStatus();
+                  await this.refreshActiveTab();
+                }
+              } catch (e) {
+                this.showToast(`Restore failed: ${e.message}`, 'error');
+              }
+            }
+          );
+        }
+
+        // --- Maintenance Commands ---
+        async triggerVacuum() {
+          try {
+            this.showToast('Running VACUUM optimization...', 'info');
+            const res = await this.apiFetch('/api/v3/database/vacuum', { method: 'POST' });
+            if (res.ok) {
+              this.showToast('Database VACUUM completed successfully', 'success');
+              await this.checkStatus();
+            }
+          } catch (e) {
+            this.showToast(`VACUUM error: ${e.message}`, 'error');
+          }
+        }
+
+        async runIntegrityCheck() {
+          try {
+            this.showToast('Running PRAGMA integrity_check...', 'info');
+            const res = await this.apiFetch('/api/v3/database/integrity');
+            if (res.ok) {
+              this.showToast(`Integrity check result: ${res.integrity}`, res.integrity === 'ok' ? 'success' : 'warning');
+            }
+          } catch (e) {
+            this.showToast(`Integrity check error: ${e.message}`, 'error');
+          }
+        }
+
+        async runReindex() {
+          try {
+            this.showToast('Rebuilding secondary indexes...', 'info');
+            const res = await this.apiFetch('/api/v3/database/reindex', { method: 'POST' });
+            if (res.ok) {
+              this.showToast('REINDEX completed successfully', 'success');
+            }
+          } catch (e) {
+            this.showToast(`REINDEX error: ${e.message}`, 'error');
+          }
+        }
+
+        async clearCache() {
+          try {
+            const res = await this.apiFetch('/api/v3/admin/cache/clear', { method: 'POST' });
+            this.showToast(`App cache cleared: ${res.formatted}`, 'success');
+          } catch (e) {
+            this.showToast(`Clear cache error: ${e.message}`, 'error');
+          }
+        }
+
+        async triggerCloudSync() {
+          try {
+            this.showToast('Triggering Firestore companion cloud sync...', 'info');
+            const res = await this.apiFetch('/api/v3/companion/sync', { method: 'POST' });
+            if (res.ok) {
+              this.showToast('Cloud sync completed', 'success');
+              await this.checkStatus();
+            }
+          } catch (e) {
+            this.showToast(`Cloud sync error: ${e.message}`, 'error');
+          }
+        }
+
+        async importLegacyVault() {
+          this.openConfirmDelete('Import Legacy Data', 'Scan shared storage and import legacy V2 markdown/text logs?', async () => {
+            try {
+              this.showToast('Scanning and importing legacy data...', 'info');
+              const res = await this.apiFetch('/api/v3/database/import-legacy', { method: 'POST' });
+              this.showToast(`Imported ${res.sessions_imported} sessions, ${res.tasks_imported} tasks, ${res.thoughts_imported} thoughts`, 'success');
+              await this.checkStatus();
+              await this.refreshActiveTab();
+            } catch (e) {
+              this.showToast(`Import legacy error: ${e.message}`, 'error');
+            }
+          });
+        }
+
+        // --- Navigation Router ---
+        navigateTo(tabId) {
+          this.currentTab = tabId;
+
+          // Update sidebar highlights
+          document.querySelectorAll('aside nav button').forEach(b => {
+            b.className = 'w-full flex items-center justify-between px-4 py-2 text-xs font-medium tab-inactive transition';
+          });
+          const activeNav = document.getElementById('nav-' + tabId);
+          if (activeNav) {
+            activeNav.className = 'w-full flex items-center justify-between px-4 py-2 text-xs font-medium tab-active transition';
+          }
+
+          // Show corresponding view section
+          document.querySelectorAll('main section').forEach(sec => sec.classList.add('hidden'));
+          const targetSection = document.getElementById('view-' + tabId);
+          if (targetSection) {
+            targetSection.classList.remove('hidden');
+          }
+
+          this.refreshActiveTab();
+        }
+
+        async refreshActiveTab() {
+          switch (this.currentTab) {
+            case 'overview':
+              await this.checkStatus();
+              await this.loadProfiles();
+              break;
+            case 'profiles':
+              await this.loadProfiles();
+              break;
+            case 'table-explorer':
+              await this.loadTablesList();
+              await this.loadTableData();
+              break;
+            case 'sessions':
+              await this.loadSessions();
+              break;
+            case 'tasks':
+              await this.loadTasks();
+              break;
+            case 'thoughts':
+              await this.loadThoughts();
+              break;
+            case 'events':
+              await this.loadEvents();
+              break;
+            case 'daytracker':
+              await this.loadDayTracker();
+              break;
+            case 'screentime':
+              await this.loadAppUsage();
+              break;
+            case 'plugins':
+              await this.loadPlugins();
+              break;
+            case 'recyclebin':
+              await this.loadRecycleBin();
+              break;
+            case 'backups':
+              await this.loadBackups();
+              break;
+            case 'maintenance':
+              await this.checkStatus();
+              break;
+          }
+        }
+
+        async refreshAllData() {
+          this.showToast('Refreshing system state...', 'info');
+          await this.checkStatus();
+          await this.loadProfiles();
+          await this.refreshActiveTab();
+          this.showToast('System metrics up-to-date', 'success');
+        }
+
+        // --- Modal System ---
+        openModal(modalId, options = {}) {
+          const overlay = document.getElementById('modalOverlay');
+          overlay.classList.remove('hidden');
+          overlay.classList.add('flex');
+
+          document.querySelectorAll('.modal-card').forEach(m => m.classList.add('hidden'));
+          const target = document.getElementById(modalId);
+          if (target) {
+            target.classList.remove('hidden');
+          }
+
+          if (modalId === 'modalConnectionSettings') {
+            document.getElementById('connBaseUrlInput').value = this.baseUrl;
+            document.getElementById('connTokenInput').value = this.token;
+          }
+        }
+
+        closeModal(modalId) {
+          const target = document.getElementById(modalId);
+          if (target) target.classList.add('hidden');
+
+          const overlay = document.getElementById('modalOverlay');
+          overlay.classList.remove('flex');
+          overlay.classList.add('hidden');
+        }
+
+        closeAllModals() {
+          document.querySelectorAll('.modal-card').forEach(m => m.classList.add('hidden'));
+          const overlay = document.getElementById('modalOverlay');
+          overlay.classList.remove('flex');
+          overlay.classList.add('hidden');
+        }
+
+        openConfirmDelete(title, msg, onConfirm) {
+          document.getElementById('confirmDeleteTitle').textContent = title;
+          document.getElementById('confirmDeleteMsg').textContent = msg;
+          const btn = document.getElementById('confirmDeleteBtn');
+          btn.onclick = () => {
+            this.closeModal('modalConfirmDelete');
+            if (typeof onConfirm === 'function') onConfirm();
+          };
+          this.openModal('modalConfirmDelete');
+        }
+
+        openJsonViewer(obj, title = 'Record Inspector') {
+          document.getElementById('modalJsonViewerTitle').textContent = title;
+          document.getElementById('modalJsonContent').textContent = JSON.stringify(obj, null, 2);
+          this.openModal('modalJsonViewer');
+        }
+
+        copyJsonContent() {
+          const content = document.getElementById('modalJsonContent').textContent;
+          navigator.clipboard.writeText(content);
+          this.showToast('JSON copied to clipboard', 'success');
+        }
+
+        saveConnectionSettings() {
+          const url = (document.getElementById('connBaseUrlInput').value || '').trim();
+          const tok = (document.getElementById('connTokenInput').value || '').trim();
+          if (url) {
+            this.baseUrl = url;
+            localStorage.setItem('v07_admin_base_url', url);
+          }
+          if (tok) {
+            this.token = tok;
+            localStorage.setItem('v07_admin_token', tok);
+          }
+          this.showToast('Connection parameters saved', 'success');
+          this.closeModal('modalConnectionSettings');
+          this.refreshAllData();
+        }
+
+        // --- Toast Engine ---
+        showToast(message, type = 'info') {
+          const container = document.getElementById('toastContainer');
+          if (!container) return;
+
+          const toast = document.createElement('div');
+          const bgClass = type === 'success' ? 'bg-emerald-600 text-white' :
+                          type === 'error' ? 'bg-red-600 text-white' :
+                          type === 'warning' ? 'bg-amber-600 text-white' :
+                          'bg-slate-800 text-white border border-[var(--border-strong)]';
+
+          const icon = type === 'success' ? 'check_circle' :
+                       type === 'error' ? 'error' :
+                       type === 'warning' ? 'warning' : 'info';
+
+          toast.className = `flex items-center gap-2.5 px-4 py-2.5 rounded-xl shadow-xl text-xs font-semibold pointer-events-auto fade-in ${bgClass}`;
+          toast.innerHTML = `
+            <span class="material-symbols-outlined text-base">${icon}</span>
+            <span>${message}</span>
+          `;
+
+          container.appendChild(toast);
+          setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 0.25s ease';
+            setTimeout(() => toast.remove(), 250);
+          }, 3500);
+        }
+
+        // --- Helpers ---
+        formatDuration(sec) {
+          const total = parseInt(sec, 10) || 0;
+          const h = Math.floor(total / 3600);
+          const m = Math.floor((total % 3600) / 60);
+          const s = total % 60;
+          if (h > 0) return `${h}h ${m}m`;
+          return `${m}m ${s}s`;
+        }
+
+        formatTimestamp(ts) {
+          if (!ts) return '-';
+          const n = parseInt(ts, 10);
+          if (isNaN(n) || n <= 0) return String(ts);
+          const d = new Date(n > 1000000000000 ? n : n * 1000);
+          return d.toISOString().slice(0, 16).replace('T', ' ');
+        }
+
+        generateId(prefix = 'id') {
+          return prefix + '_' + Math.random().toString(36).substring(2, 9);
+        }
+
+        downloadFile(filename, content, type) {
+          const blob = new Blob([content], { type });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          this.showToast(`Downloaded ${filename}`, 'success');
+        }
+      }
+
+      // Bootstrap on load
+      window.AdminApp = new AdminApplication();
+      document.addEventListener('DOMContentLoaded', () => window.AdminApp.init());
+    })();
+  </script>
+</body>
+</html>

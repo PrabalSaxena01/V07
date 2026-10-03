@@ -1,0 +1,399 @@
+/* Habits plugin styles — Paper & Crayon / V07 Dark & Light tokens */
+:root {
+  --bg: #090909;
+  --surface: #111319;
+  --surface-low: #16181d;
+  --surface-container: #1b1e26;
+  --border: #2C2C2C;
+  --text: #e1e2ea;
+  --muted: #8a8f98;
+  --accent: #FFB454;
+  --accent-glow: rgba(255, 180, 84, 0.2);
+  --success: #4DE086;
+  --radius: 10px;
+}
+
+:root[data-theme="light"] {
+  --bg: #FBF9F5;
+  --surface: #FFFFFF;
+  --surface-low: #F5F2EB;
+  --surface-container: #EDE8DE;
+  --border: #E8E4DC;
+  --text: #1C1B1A;
+  --muted: #5C5852;
+  --accent: #C67D0A;
+  --accent-glow: rgba(198, 125, 10, 0.15);
+  --success: #278345;
+  --radius: 10px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  padding: 14px;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+.h-page { width: 100%; max-width: 100%; margin: 0 auto; box-sizing: border-box; }
+
+.h-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.h-title {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+}
+
+.h-chips { display: flex; gap: 6px; }
+
+.h-chip {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  background: var(--accent-glow);
+  border: 1px solid var(--accent);
+  border-radius: 20px;
+  padding: 3px 9px;
+  font-weight: 700;
+}
+
+.h-chip-dim { color: var(--muted); border-color: var(--border); background: transparent; font-weight: 400; }
+
+.h-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 14px;
+  box-shadow: 2px 2px 0px rgba(0,0,0,0.03);
+}
+
+.h-sec {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-size: 10.5px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ─── 1. HABIT MATRIX ───────────────────────────────────────────────────────── */
+.h-matrix-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.h-matrix-wrap::-webkit-scrollbar { display: none; }
+
+.h-matrix-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 320px;
+}
+
+.h-matrix-th {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+  text-align: center;
+  padding: 6px 4px;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border);
+}
+.h-matrix-th.today-th {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.h-matrix-row {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+.h-matrix-row:last-child {
+  border-bottom: none;
+}
+
+.h-matrix-label-td {
+  padding: 8px 6px;
+  max-width: 130px;
+  min-width: 100px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.h-matrix-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.h-matrix-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.h-matrix-cell {
+  text-align: center;
+  padding: 6px 2px;
+  cursor: pointer;
+  user-select: none;
+}
+.h-matrix-cell.today-col {
+  background: rgba(255, 180, 84, 0.04);
+}
+
+.h-block-cell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  font-size: 15px;
+  line-height: 1;
+  transition: transform 0.1s, background 0.15s, box-shadow 0.15s;
+}
+.h-block-cell:active {
+  transform: scale(0.9);
+}
+
+.h-block-filled {
+  color: #fff;
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent-glow);
+}
+:root[data-theme="light"] .h-block-filled {
+  color: #fff;
+  background: var(--accent);
+}
+
+.h-block-empty {
+  color: var(--muted);
+  opacity: 0.35;
+  background: var(--surface-low);
+  border: 1px dashed var(--border);
+  font-size: 18px;
+}
+
+.h-block-today-ring {
+  box-shadow: 0 0 0 1.5px var(--accent);
+}
+
+/* ─── 2. 🔥 HABIT STREAK CARDS ─────────────────────────────────────────────── */
+.h-streaks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.h-streak-card {
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 12px 10px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  position: relative;
+  transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+  box-shadow: 1px 1px 0px rgba(0,0,0,0.03);
+}
+.h-streak-card:active {
+  transform: translateY(1px);
+}
+.h-streak-card.done-today {
+  border-color: var(--accent);
+}
+
+.h-streak-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.h-streak-title {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.h-streak-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 0;
+  text-align: center;
+}
+.h-streak-fire-num {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.h-streak-fire-label {
+  font-size: 9px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 4px;
+}
+
+.h-streak-footer {
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.h-streak-meta-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  color: var(--muted);
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+.h-streak-best {
+  color: var(--muted);
+}
+.h-streak-ratio {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.h-streak-bar-track {
+  width: 100%;
+  height: 3.5px;
+  background: var(--surface-low);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 2px;
+}
+.h-streak-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+
+.h-streak-check-btn {
+  margin-top: 8px;
+  width: 100%;
+  border: 1px solid var(--border);
+  background: var(--surface-low);
+  color: var(--text);
+  border-radius: 5px;
+  padding: 5px 6px;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: all 0.15s;
+}
+.h-streak-check-btn.checked {
+  background: var(--accent);
+  color: #000;
+  border-color: var(--accent);
+}
+
+/* ─── Buttons & Inputs ──────────────────────────────────────────────────────── */
+.h-btn {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  background: transparent;
+  border-radius: 6px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.h-btn-accent {
+  color: #000;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.h-add-row { display: flex; gap: 8px; margin-top: 10px; }
+
+.h-input {
+  flex: 1;
+  background: var(--surface-low);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-size: 12px;
+  padding: 8px 10px;
+  outline: none;
+}
+.h-input:focus { border-color: var(--accent); }
+
+.h-mgr-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.h-mgr-name {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-size: 12px;
+  color: var(--text);
+}
+.h-mgr-created { font-size: 9px; color: var(--muted); margin-left: 2px; }
+.h-del {
+  margin-left: auto;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 2px 6px;
+}
+.h-del:hover { color: #FF5370; }
+
+.h-empty { color: var(--muted); font-size: 12px; padding: 12px 0; text-align: center; }

@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/think_backdrop"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#D9000000">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="vertical"
+        android:background="@drawable/overlay_think_bg"
+        android:elevation="12dp"
+        android:layout_margin="16dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="10dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:background="#1A191C21">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="// THINK_BUFFER"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="#8D6CFF"
+                android:fontFamily="monospace"
+                android:letterSpacing="0.15" />
+
+            <TextView
+                android:id="@+id/btn_cancel"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:gravity="center"
+                android:text="\u2715"
+                android:textSize="10sp"
+                android:textColor="#717171"
+                android:clickable="true"
+                android:focusable="true"
+                android:contentDescription="Dismiss" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/think_topic_wrapper"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="4dp">
+
+            <LinearLayout
+                android:id="@+id/think_topic_chips"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </LinearLayout>
+
+        <EditText
+            android:id="@+id/think_custom_topic"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="custom topic..."
+            android:textColorHint="#40717171"
+            android:textColor="#E1E2EA"
+            android:textSize="12sp"
+            android:fontFamily="monospace"
+            android:background="@drawable/overlay_input_bg"
+            android:singleLine="true"
+            android:inputType="text"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="4dp"
+            android:visibility="gone" />
+
+        <EditText
+            android:id="@+id/think_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="capture signal..."
+            android:textColorHint="#40717171"
+            android:textColor="#E1E2EA"
+            android:textSize="14sp"
+            android:fontFamily="monospace"
+            android:background="@drawable/overlay_input_bg"
+            android:minLines="3"
+            android:gravity="top"
+            android:imeOptions="actionSend"
+            android:inputType="textMultiLine"
+            android:maxLines="8"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginTop="4dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="10dp">
+
+            <TextView
+                android:id="@+id/btn_save"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="> SEND"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:fontFamily="monospace"
+                android:letterSpacing="0.15"
+                android:background="@drawable/overlay_send_btn_bg"
+                android:clickable="true"
+                android:focusable="true"
+                android:contentDescription="Send" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

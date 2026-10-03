@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Book Collection</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --bg: #0D0F14;
+    --surface: #151821;
+    --surface-card: #191D28;
+    --surface-elevated: #202534;
+    --border: #262C3E;
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --accent: #8D6CFF;
+    --accent-light: #A78BFA;
+    --accent-glow: rgba(141, 108, 255, 0.18);
+    --text-primary: #F1F5F9;
+    --text-secondary: #94A3B8;
+    --text-muted: #64748B;
+    --green: #4DE086;
+    --amber: #FFB84D;
+    --rose: #FF5370;
+    --radius: 8px;
+    --radius-sm: 4px;
+    --radius-lg: 12px;
+  }
+
+  :root[data-theme="light"] {
+    --bg: #F8FAFC;
+    --surface: #FFFFFF;
+    --surface-card: #F1F5F9;
+    --surface-elevated: #E2E8F0;
+    --border: #CBD5E1;
+    --border-subtle: rgba(0, 0, 0, 0.08);
+    --accent: #7C3AED;
+    --accent-light: #6D28D9;
+    --accent-glow: rgba(124, 58, 237, 0.12);
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --text-muted: #94A3B8;
+    --green: #16A34A;
+    --amber: #D97706;
+    --rose: #E11D48;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    padding: 16px 14px 80px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--accent-glow);
+    border: 1px solid var(--accent);
+    color: var(--accent-light);
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .header-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin-bottom: 4px;
+  }
+  .header-sub {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .header-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 14px;
+    font-size: 11px;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.15s ease;
+    user-select: none;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary {
+    background: var(--accent);
+    color: #FFFFFF;
+    border-color: var(--accent);
+  }
+  .btn-outline {
+    background: var(--surface-card);
+    color: var(--text-primary);
+    border-color: var(--border);
+  }
+  .btn-outline:hover { background: var(--surface-elevated); }
+  .btn-small {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+  .btn-danger {
+    background: transparent;
+    color: var(--rose);
+    border-color: var(--rose);
+  }
+
+  /* ── Stats Strip ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 6px;
+    text-align: center;
+  }
+  .stat-val {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: block;
+    line-height: 1.2;
+  }
+  .stat-lbl {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-size: 9px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 2px;
+  }
+
+  /* ── Hero Active Book ── */
+  .hero-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius-lg);
+    padding: 14px;
+    margin-bottom: 16px;
+    display: flex;
+    gap: 14px;
+  }
+  .hero-cover {
+    width: 82px;
+    height: 120px;
+    border-radius: var(--radius-sm);
+    object-fit: cover;
+    background: var(--surface-elevated);
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+  }
+  .hero-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .hero-tag {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--accent-light);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .hero-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.25;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .hero-author {
+    font-size: 12px;
+    color: var(--text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .progress-wrap {
+    margin: 8px 0 6px;
+  }
+  .progress-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-size: 10px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+  }
+  .progress-bar-bg {
+    width: 100%;
+    height: 6px;
+    background: var(--surface-card);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+  }
+  .quick-step-row {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+    align-items: center;
+  }
+
+  /* ── Shelf Tabs & Filter ── */
+  .shelf-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .shelf-tabs {
+    display: flex;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 2px;
+    gap: 2px;
+  }
+  .shelf-tab {
+    padding: 6px 12px;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-muted);
+    border-radius: 3px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    user-select: none;
+  }
+  .shelf-tab.active {
+    background: var(--accent);
+    color: #FFFFFF;
+  }
+  .search-input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 7px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    outline: none;
+    flex: 1;
+    min-width: 130px;
+  }
+  .search-input:focus { border-color: var(--accent); }
+
+  /* ── Book Grid ── */
+  .books-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+  }
+  .book-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+  }
+  .book-card:active { transform: scale(0.98); }
+  .book-cover-wrap {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: var(--surface-card);
+    margin-bottom: 8px;
+    position: relative;
+    border: 1px solid var(--border);
+  }
+  .book-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .shelf-tag {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: rgba(0,0,0,0.75);
+    color: #FFF;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-size: 8px;
+    font-weight: 700;
+    padding: 2px 5px;
+    border-radius: 3px;
+    text-transform: uppercase;
+  }
+  .book-card-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.25;
+    margin-bottom: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  .book-card-author {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* ── Modals ── */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    overflow-y: auto;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 480px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 18px;
+    position: relative;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+  }
+  .modal-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+  }
+  .form-group {
+    margin-bottom: 12px;
+  }
+  .form-label {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 4px;
+    letter-spacing: 0.04em;
+  }
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    background: var(--surface-card);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    outline: none;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--accent);
+  }
+  .form-textarea {
+    min-height: 60px;
+    resize: vertical;
+  }
+
+  /* Search list rows */
+  .search-result-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    background: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    margin-bottom: 6px;
+    cursor: pointer;
+  }
+  .search-result-row:hover { background: var(--surface-elevated); }
+  .search-cover-thumb {
+    width: 36px;
+    height: 52px;
+    object-fit: cover;
+    border-radius: 2px;
+    background: var(--surface-elevated);
+    flex-shrink: 0;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--surface-elevated);
+    border: 1px solid var(--accent);
+    color: var(--text-primary);
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-size: 11px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    z-index: 2000;
+    display: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .toast.show { display: block; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-badge">📖 BOOK COLLECTION</div>
+  <div class="header-title">Reading Library</div>
+  <div class="header-sub">Track daily pages, monitor pacing, and manage your reading shelves.</div>
+  <div class="header-actions">
+    <button class="btn btn-primary" onclick="openSearchModal()">+ Search &amp; Add Book</button>
+    <button class="btn btn-outline" onclick="openManualAddModal()">+ Quick Add</button>
+  </div>
+</div>
+
+<!-- Stats Strip -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <span class="stat-val" id="statReading">0</span>
+    <span class="stat-lbl">Reading</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-val" id="statToRead">0</span>
+    <span class="stat-lbl">To Read</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-val" id="statFinished">0</span>
+    <span class="stat-lbl">Finished</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-val" id="statTotalPages">0</span>
+    <span class="stat-lbl">Pages</span>
+  </div>
+</div>
+
+<!-- Active Book Hero -->
+<div class="hero-card" id="heroBookCard" style="display:none">
+  <img class="hero-cover" id="heroCover" src="" alt="Book Cover" onclick="openActiveBookDetail()">
+  <div class="hero-content">
+    <div>
+      <div class="hero-tag">⚡ Currently Reading</div>
+      <div class="hero-title" id="heroTitle">Untitled Book</div>
+      <div class="hero-author" id="heroAuthor">Unknown Author</div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-meta">
+        <span id="heroProgressPages">Page 0 of 0</span>
+        <span id="heroProgressPercent">0%</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="heroProgressBar" style="width:0%"></div>
+      </div>
+      <div class="quick-step-row">
+        <button class="btn btn-outline btn-small" onclick="stepActivePages(5)">+5p</button>
+        <button class="btn btn-outline btn-small" onclick="stepActivePages(10)">+10p</button>
+        <button class="btn btn-outline btn-small" onclick="stepActivePages(25)">+25p</button>
+        <button class="btn btn-outline btn-small" onclick="promptEditPage()">Edit</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Shelf Filter & Search -->
+<div class="shelf-bar">
+  <div class="shelf-tabs">
+    <div class="shelf-tab active" data-shelf="reading" onclick="selectShelf('reading')">Reading</div>
+    <div class="shelf-tab" data-shelf="toread" onclick="selectShelf('toread')">To Read</div>
+    <div class="shelf-tab" data-shelf="finished" onclick="selectShelf('finished')">Finished</div>
+    <div class="shelf-tab" data-shelf="all" onclick="selectShelf('all')">All</div>
+  </div>
+  <input type="text" class="search-input" id="libFilter" placeholder="Filter library..." oninput="filterBooks()">
+</div>
+
+<!-- Books Grid -->
+<div class="books-grid" id="booksGrid"></div>
+
+<!-- Search Books Modal -->
+<div class="modal-overlay" id="searchModal">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="modal-title" style="margin-bottom:0">Search Book Databases</div>
+      <button class="btn btn-outline btn-small" onclick="closeSearchModal()">✕</button>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:12px">
+      <input type="text" class="form-input" id="apiSearchInput" placeholder="Title, author, or ISBN..." onkeydown="if(event.key==='Enter')executeBookSearch()">
+      <button class="btn btn-primary" onclick="executeBookSearch()">Search</button>
+    </div>
+    <div id="searchResultsList" style="max-height:220px;overflow-y:auto;display:none;margin-bottom:14px"></div>
+
+    <!-- Candidate Editor -->
+    <div id="candidateEditor" style="display:none;border-top:1px solid var(--border);padding-top:12px">
+      <div style="font-family:'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;font-size:11px;font-weight:700;color:var(--accent-light);margin-bottom:10px">Book Details</div>
+      <div class="form-group">
+        <label class="form-label">Title</label>
+        <input type="text" class="form-input" id="candTitle">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Author</label>
+        <input type="text" class="form-input" id="candAuthor">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="form-group">
+          <label class="form-label">Total Pages</label>
+          <input type="number" class="form-input" id="candPages" value="300">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Initial Shelf</label>
+          <select class="form-select" id="candShelf">
+            <option value="reading">Reading</option>
+            <option value="toread">To Read</option>
+            <option value="finished">Finished</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Cover Image URL (optional)</label>
+        <input type="text" class="form-input" id="candCoverUrl" placeholder="https://...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes / Description</label>
+        <textarea class="form-textarea" id="candNotes"></textarea>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button class="btn btn-primary" style="flex:1" onclick="saveCandidateBook()">Save to Library</button>
+        <button class="btn btn-outline" onclick="closeSearchModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Book Details & Edit Modal -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="modal-title" style="margin-bottom:0">Book Details</div>
+      <button class="btn btn-outline btn-small" onclick="closeDetailModal()">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Title</label>
+      <input type="text" class="form-input" id="editTitle">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Author</label>
+      <input type="text" class="form-input" id="editAuthor">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div class="form-group">
+        <label class="form-label">Current Page</label>
+        <input type="number" class="form-input" id="editCurrentPage" value="0">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Total Pages</label>
+        <input type="number" class="form-input" id="editPages" value="300">
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div class="form-group">
+        <label class="form-label">Shelf</label>
+        <select class="form-select" id="editShelf">
+          <option value="reading">Reading</option>
+          <option value="toread">To Read</option>
+          <option value="finished">Finished</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Rating (1-5)</label>
+        <select class="form-select" id="editRating">
+          <option value="0">Unrated</option>
+          <option value="5">★★★★★ (5)</option>
+          <option value="4">★★★★☆ (4)</option>
+          <option value="3">★★★☆☆ (3)</option>
+          <option value="2">★★☆☆☆ (2)</option>
+          <option value="1">★☆☆☆☆ (1)</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Cover Image URL</label>
+      <input type="text" class="form-input" id="editCoverUrl">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes &amp; Quotes</label>
+      <textarea class="form-textarea" id="editNotes"></textarea>
+    </div>
+    <div style="display:flex;justify-content:space-between;gap:8px;margin-top:14px">
+      <button class="btn btn-danger" onclick="deleteActiveBook()">Delete</button>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-outline" onclick="closeDetailModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveActiveBookEdits()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var STORAGE_KEY = 'v07_reader_books';
+var books = [];
+var activeShelf = 'reading';
+var currentDetailId = null;
+
+// Clean text sanitization (strips HTML, decodes entities, normalizes spacing)
+function cleanText(input) {
+  if (input == null) return '';
+  if (Array.isArray(input)) {
+    return input.map(function(item){
+      if (typeof item === 'string') return item;
+      if (item && item.name) return item.name;
+      if (item && item.value) return item.value;
+      return '';
+    }).filter(Boolean).join(', ');
+  }
+  if (typeof input === 'object') {
+    if (input.value) return cleanText(input.value);
+    if (input.text) return cleanText(input.text);
+    return '';
+  }
+  var str = String(input);
+  str = str.replace(/<[^>]+>/g, ' ');
+  var txt = document.createElement('textarea');
+  txt.innerHTML = str;
+  str = txt.value;
+  return str.replace(/\s+/g, ' ').trim();
+}
+
+function escHtml(str) {
+  return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function fallbackCoverSvg(title, author) {
+  var t = cleanText(title || 'BOOK').slice(0, 24);
+  var a = cleanText(author || '').slice(0, 26);
+  var safeT = escHtml(t);
+  var safeA = escHtml(a);
+  var rawSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300" viewBox="0 0 200 300">' +
+    '<rect width="200" height="300" fill="#151821"/>' +
+    '<rect x="8" y="8" width="184" height="284" fill="none" stroke="#262C3E" stroke-width="1.5" rx="4"/>' +
+    '<path d="M75 35 L125 35 L125 75 L100 60 L75 75 Z" fill="rgba(141,108,255,0.25)" stroke="#8D6CFF" stroke-width="1.2"/>' +
+    '<text x="100" y="145" fill="#F1F5F9" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="13" font-weight="700" text-anchor="middle">' + safeT + '</text>' +
+    '<text x="100" y="168" fill="#94A3B8" font-family="Plus Jakarta Sans, system-ui, sans-serif" font-size="10" text-anchor="middle">' + safeA + '</text>' +
+    '<rect x="75" y="246" width="50" height="16" fill="rgba(141,108,255,0.12)" stroke="#8D6CFF" stroke-width="1" rx="3"/>' +
+    '<text x="100" y="257" fill="#8D6CFF" font-family="Plus Jakarta Sans, system-ui, sans-serif" font-size="8" font-weight="700" letter-spacing="1" text-anchor="middle">BOOK</text>' +
+    '</svg>';
+  try {
+    return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(rawSvg)));
+  } catch(e) {
+    return 'data:image/svg+xml;utf8,' + encodeURIComponent(rawSvg);
+  }
+}
+
+function toast(msg) {
+  var el = document.getElementById('toast');
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(function(){ el.classList.remove('show'); }, 2200);
+}
+
+// ─── Persistence & Sync ───
+function loadLibrary() {
+  try {
+    var raw = localStorage.getItem(STORAGE_KEY);
+    books = raw ? JSON.parse(raw) : [];
+  } catch(e) { books = []; }
+
+  var hostEngine = (window.parent && window.parent.V07StorageEngine) ? window.parent.V07StorageEngine : null;
+  if (hostEngine && hostEngine._pluginEventsCache && hostEngine._pluginEventsCache['com.v07.reader']) {
+    var rList = hostEngine._pluginEventsCache['com.v07.reader'];
+    if (rList && rList.length > 0) {
+      rList.forEach(function(rb) {
+        if (!books.some(function(b){ return b.id === rb.id || b.title === rb.title; })) {
+          books.push({
+            id: rb.id,
+            title: rb.title || 'Untitled',
+            author: rb.author || 'Unknown',
+            pages: rb.pages || 300,
+            currentPage: rb.currentPage || rb.current_page || 0,
+            shelf: rb.shelf || 'reading',
+            rating: rb.rating || 5,
+            cover: rb.cover || '',
+            year: rb.year || '2024',
+            notes: rb.notes || rb.note || ''
+          });
+        }
+      });
+    }
+  }
+
+  // Default seed if empty
+  if (!books.length) {
+    books = [
+      {
+        id: 'seed_1',
+        title: 'Atomic Habits',
+        author: 'James Clear',
+        pages: 320,
+        currentPage: 140,
+        shelf: 'reading',
+        rating: 5,
+        cover: '',
+        year: '2018',
+        notes: 'Tiny changes, remarkable results.'
+      },
+      {
+        id: 'seed_2',
+        title: 'Deep Work',
+        author: 'Cal Newport',
+        pages: 304,
+        currentPage: 304,
+        shelf: 'finished',
+        rating: 5,
+        cover: '',
+        year: '2016',
+        notes: 'Rules for focused success in a distracted world.'
+      },
+      {
+        id: 'seed_3',
+        title: 'Designing Data-Intensive Applications',
+        author: 'Martin Kleppmann',
+        pages: 616,
+        currentPage: 0,
+        shelf: 'toread',
+        rating: 0,
+        cover: '',
+        year: '2017',
+        notes: 'Distributed data architecture.'
+      }
+    ];
+    saveLibrary();
+  }
+}
+
+function saveLibrary() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(books));
+  } catch(e) {}
+
+  // Sync to parent V07StorageEngine and native bridge
+  try {
+    var hostEngine = (window.parent && window.parent.V07StorageEngine) ? window.parent.V07StorageEngine : null;
+    if (hostEngine && typeof hostEngine.setPluginStorage === 'function') {
+      hostEngine.setPluginStorage('com.v07.reader', 'books', books);
+    }
+  } catch(_) {}
+
+  try {
+    var invoker = window.nativeInvoke || (window.parent && window.parent.nativeInvoke);
+    if (typeof invoker === 'function') {
+      invoker('storage:set', { key: STORAGE_KEY, value: JSON.stringify(books) });
+      invoker('plugin:event:insert', {
+        pluginId: 'com.v07.reader',
+        category: 'reading',
+        id: 'reader_library_sync',
+        payloadJson: JSON.stringify({ booksCount: books.length, books: books })
+      });
+    }
+  } catch(_) {}
+
+  notifyWidgetRefresh();
+}
+
+function notifyWidgetRefresh() {
+  try {
+    window.parent.postMessage({ type: 'v07_refresh' }, '*');
+  } catch(e) {}
+}
+
+// ─── Rendering ───
+function renderLibrary() {
+  renderStats();
+  renderHero();
+  renderBooks();
+}
+
+function renderStats() {
+  var reading = 0, toread = 0, finished = 0, pages = 0;
+  books.forEach(function(b){
+    if (b.shelf === 'reading') reading++;
+    else if (b.shelf === 'toread') toread++;
+    else if (b.shelf === 'finished') finished++;
+    pages += (parseInt(b.currentPage, 10) || 0);
+  });
+  document.getElementById('statReading').textContent = reading;
+  document.getElementById('statToRead').textContent = toread;
+  document.getElementById('statFinished').textContent = finished;
+  document.getElementById('statTotalPages').textContent = pages.toLocaleString();
+}
+
+function renderHero() {
+  var heroCard = document.getElementById('heroBookCard');
+  var active = books.find(function(b){ return b.shelf === 'reading'; });
+  if (!active) {
+    heroCard.style.display = 'none';
+    return;
+  }
+  heroCard.style.display = 'flex';
+  document.getElementById('heroTitle').textContent = active.title;
+  document.getElementById('heroAuthor').textContent = active.author || 'Unknown';
+  var coverImg = document.getElementById('heroCover');
+  coverImg.src = active.cover || fallbackCoverSvg(active.title, active.author);
+  coverImg.onerror = function(){ this.src = fallbackCoverSvg(active.title, active.author); };
+
+  var cur = parseInt(active.currentPage, 10) || 0;
+  var tot = parseInt(active.pages, 10) || 1;
+  var pct = Math.min(100, Math.round((cur / tot) * 100));
+
+  document.getElementById('heroProgressPages').textContent = 'Page ' + cur + ' of ' + tot;
+  document.getElementById('heroProgressPercent').textContent = pct + '%';
+  document.getElementById('heroProgressBar').style.width = pct + '%';
+}
+
+function renderBooks() {
+  var container = document.getElementById('booksGrid');
+  var query = (document.getElementById('libFilter').value || '').toLowerCase().trim();
+
+  var filtered = books.filter(function(b){
+    if (activeShelf !== 'all' && b.shelf !== activeShelf) return false;
+    if (query) {
+      var t = (b.title || '').toLowerCase();
+      var a = (b.author || '').toLowerCase();
+      return t.indexOf(query) !== -1 || a.indexOf(query) !== -1;
+    }
+    return true;
+  });
+
+  if (!filtered.length) {
+    container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:32px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);color:var(--text-muted);font-family:'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;font-size:11px">No books in this shelf</div>';
+    return;
+  }
+
+  var html = '';
+  filtered.forEach(function(b){
+    var cur = parseInt(b.currentPage, 10) || 0;
+    var tot = parseInt(b.pages, 10) || 1;
+    var pct = Math.min(100, Math.round((cur / tot) * 100));
+    var coverUrl = b.cover || fallbackCoverSvg(b.title, b.author);
+    var shelfLabel = b.shelf === 'reading' ? 'READING' : (b.shelf === 'finished' ? 'DONE' : 'QUEUE');
+
+    html += '<div class="book-card" onclick="openBookDetail(\'' + b.id + '\')">';
+    html += '  <div class="book-cover-wrap">';
+    html += '    <img class="book-cover" src="' + coverUrl + '" alt="cover" onerror="this.src=\'' + fallbackCoverSvg(b.title, b.author) + '\'">';
+    html += '    <span class="shelf-tag">' + shelfLabel + '</span>';
+    html += '  </div>';
+    html += '  <div>';
+    html += '    <div class="book-card-title">' + escHtml(b.title) + '</div>';
+    html += '    <div class="book-card-author">' + escHtml(b.author || 'Unknown') + '</div>';
+    html += '    <div style="display:flex;justify-content:space-between;align-items:center;font-family:'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;font-size:9.5px;color:var(--text-secondary)">';
+    html += '      <span>' + cur + '/' + tot + 'p</span>';
+    html += '      <span style="color:var(--accent-light);font-weight:700">' + pct + '%</span>';
+    html += '    </div>';
+    html += '  </div>';
+    html += '</div>';
+  });
+  container.innerHTML = html;
+}
+
+function selectShelf(shelf) {
+  activeShelf = shelf;
+  document.querySelectorAll('.shelf-tab').forEach(function(el){
+    el.classList.toggle('active', el.dataset.shelf === shelf);
+  });
+  renderBooks();
+}
+
+function filterBooks() {
+  renderBooks();
+}
+
+// ─── Step Active Book Pages ───
+function stepActivePages(delta) {
+  var active = books.find(function(b){ return b.shelf === 'reading'; });
+  if (!active) return;
+  var cur = parseInt(active.currentPage, 10) || 0;
+  var tot = parseInt(active.pages, 10) || 1;
+  active.currentPage = Math.min(tot, Math.max(0, cur + delta));
+  if (active.currentPage >= tot) {
+    active.shelf = 'finished';
+    toast('Volume completed! Moved to Finished');
+  } else {
+    toast('Logged +' + delta + ' pages (' + active.currentPage + '/' + tot + ')');
+  }
+  saveLibrary();
+  renderLibrary();
+}
+
+function promptEditPage() {
+  var active = books.find(function(b){ return b.shelf === 'reading'; });
+  if (!active) return;
+  var p = prompt('Enter current page (Total: ' + active.pages + '):', active.currentPage || 0);
+  if (p != null) {
+    var n = parseInt(p, 10);
+    if (!isNaN(n) && n >= 0) {
+      active.currentPage = Math.min(active.pages, n);
+      if (active.currentPage >= active.pages) {
+        active.shelf = 'finished';
+        toast('Volume completed!');
+      } else {
+        toast('Page updated to ' + active.currentPage);
+      }
+      saveLibrary();
+      renderLibrary();
+    }
+  }
+}
+
+function openActiveBookDetail() {
+  var active = books.find(function(b){ return b.shelf === 'reading'; });
+  if (active) openBookDetail(active.id);
+}
+
+// ─── Book Search & Catalog ───
+function openSearchModal() {
+  document.getElementById('searchModal').classList.add('show');
+  document.getElementById('apiSearchInput').focus();
+}
+
+function closeSearchModal() {
+  document.getElementById('searchModal').classList.remove('show');
+  document.getElementById('candidateEditor').style.display = 'none';
+  document.getElementById('searchResultsList').style.display = 'none';
+}
+
+function openManualAddModal() {
+  openSearchModal();
+  showCandidateEditor({ title: '', author: '', pages: 300, cover: '', year: '', description: '' });
+}
+
+async function executeBookSearch() {
+  var q = (document.getElementById('apiSearchInput').value || '').trim();
+  if (!q) {
+    toast('Please enter title or author to search');
+    return;
+  }
+  var listEl = document.getElementById('searchResultsList');
+  listEl.style.display = 'block';
+  listEl.innerHTML = '<div style="padding:14px;text-align:center;font-family:'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;font-size:11px;color:var(--text-muted)">Searching books...</div>';
+
+  var results = [];
+
+  var olPromise = fetch('https://openlibrary.org/search.json?q=' + encodeURIComponent(q) + '&limit=10')
+    .then(function(r){ return r.json(); })
+    .catch(function(){ return { docs: [] }; });
+
+  var gbPromise = fetch('https://www.googleapis.com/books/v1/volumes?q=' + encodeURIComponent(q) + '&maxResults=10')
+    .then(function(r){ return r.json(); })
+    .catch(function(){ return { items: [] }; });
+
+  var settled = await Promise.allSettled([olPromise, gbPromise]);
+
+  // Open Library items
+  var olDocs = (settled[0].status === 'fulfilled' && settled[0].value.docs) ? settled[0].value.docs : [];
+  olDocs.forEach(function(doc){
+    var title = cleanText(doc.title || '') || 'Untitled';
+    var author = cleanText(doc.author_name || 'Unknown Author');
+    var cover = doc.cover_i ? 'https://covers.openlibrary.org/b/id/' + doc.cover_i + '-M.jpg' : '';
+    var pages = parseInt(doc.number_of_pages_median || doc.number_of_pages, 10) || 280;
+    var year = doc.first_publish_year ? String(doc.first_publish_year) : '';
+    var desc = cleanText(doc.first_sentence ? doc.first_sentence : '');
+
+    if (title) {
+      results.push({
+        source: 'Open Library',
+        title: title,
+        author: author,
+        pages: pages,
+        year: year,
+        cover: cover,
+        description: desc
+      });
+    }
+  });
+
+  // Google Books items
+  var gbItems = (settled[1].status === 'fulfilled' && settled[1].value.items) ? settled[1].value.items : [];
+  gbItems.forEach(function(item){
+    var vi = item.volumeInfo || {};
+    var title = cleanText(vi.title || '') || 'Untitled';
+    var author = cleanText(vi.authors || 'Unknown Author');
+    var cover = '';
+    if (vi.imageLinks) {
+      cover = (vi.imageLinks.thumbnail || vi.imageLinks.smallThumbnail || '').replace('http://', 'https://');
+    }
+    var pages = parseInt(vi.pageCount, 10) || 260;
+    var year = vi.publishedDate ? vi.publishedDate.slice(0, 4) : '';
+    var desc = cleanText(vi.description || '');
+
+    if (title) {
+      results.push({
+        source: 'Google Books',
+        title: title,
+        author: author,
+        pages: pages,
+        year: year,
+        cover: cover,
+        description: desc
+      });
+    }
+  });
+
+  if (!results.length) {
+    listEl.innerHTML = '<div style="padding:14px;text-align:center;font-size:12px;color:var(--text-muted)">No matching records found. Enter details manually below.</div>';
+    showCandidateEditor({ title: q, author: '', pages: 300, cover: '', year: '', description: '' });
+    return;
+  }
+
+  var html = '';
+  results.slice(0, 12).forEach(function(res, idx){
+    var coverSrc = res.cover || fallbackCoverSvg(res.title, res.author);
+    html += '<div class="search-result-row" onclick="selectSearchResult(' + idx + ')">';
+    html += '  <img class="search-cover-thumb" src="' + coverSrc + '" alt="cover" onerror="this.src=\'' + fallbackCoverSvg(res.title, res.author) + '\'">';
+    html += '  <div style="flex:1;min-width:0">';
+    html += '    <div style="font-size:12px;font-weight:700;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escHtml(res.title) + '</div>';
+    html += '    <div style="font-size:11px;color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escHtml(res.author) + (res.year ? ' (' + res.year + ')' : '') + '</div>';
+    html += '    <div style="font-family:'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;font-size:9px;color:var(--accent-light)">' + res.pages + ' pages · ' + res.source + '</div>';
+    html += '  </div>';
+    html += '  <button class="btn btn-primary btn-small" onclick="event.stopPropagation();selectSearchResult(' + idx + ')">Select</button>';
+    html += '</div>';
+  });
+
+  listEl.innerHTML = html;
+  window._lastSearchResults = results;
+}
+
+function selectSearchResult(idx) {
+  var res = window._lastSearchResults && window._lastSearchResults[idx];
+  if (!res) return;
+  showCandidateEditor(res);
+}
+
+function showCandidateEditor(bookData) {
+  var editor = document.getElementById('candidateEditor');
+  editor.style.display = 'block';
+  document.getElementById('candTitle').value = cleanText(bookData.title || '');
+  document.getElementById('candAuthor').value = cleanText(bookData.author || '');
+  document.getElementById('candPages').value = parseInt(bookData.pages, 10) || 300;
+  document.getElementById('candCoverUrl').value = (bookData.cover && !bookData.cover.startsWith('data:image/svg')) ? bookData.cover : '';
+  document.getElementById('candNotes').value = cleanText(bookData.description || bookData.notes || '');
+  editor.scrollIntoView({ behavior: 'smooth' });
+}
+
+function saveCandidateBook() {
+  var title = cleanText(document.getElementById('candTitle').value);
+  if (!title) {
+    toast('Book title is required');
+    return;
+  }
+  var author = cleanText(document.getElementById('candAuthor').value);
+  var pages = parseInt(document.getElementById('candPages').value, 10) || 300;
+  var shelf = document.getElementById('candShelf').value || 'reading';
+  var cover = document.getElementById('candCoverUrl').value.trim();
+  var notes = cleanText(document.getElementById('candNotes').value);
+
+  var newBook = {
+    id: 'b_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 5),
+    title: title,
+    author: author,
+    pages: pages,
+    currentPage: shelf === 'finished' ? pages : (shelf === 'reading' ? 1 : 0),
+    shelf: shelf,
+    rating: shelf === 'finished' ? 5 : 0,
+    cover: cover || fallbackCoverSvg(title, author),
+    notes: notes,
+    startedDate: new Date().toISOString().slice(0, 10)
+  };
+
+  books.unshift(newBook);
+  saveLibrary();
+  renderLibrary();
+  closeSearchModal();
+  toast('Added "' + title + '" to Library');
+}
+
+// ─── Detail & Edit Modal ───
+function openBookDetail(id) {
+  var b = books.find(function(item){ return item.id === id; });
+  if (!b) return;
+  currentDetailId = id;
+
+  document.getElementById('editTitle').value = b.title || '';
+  document.getElementById('editAuthor').value = b.author || '';
+  document.getElementById('editCurrentPage').value = b.currentPage || 0;
+  document.getElementById('editPages').value = b.pages || 300;
+  document.getElementById('editShelf').value = b.shelf || 'reading';
+  document.getElementById('editRating').value = b.rating || 0;
+  document.getElementById('editCoverUrl').value = (b.cover && !b.cover.startsWith('data:image/svg')) ? b.cover : '';
+  document.getElementById('editNotes').value = b.notes || '';
+
+  document.getElementById('detailModal').classList.add('show');
+}
+
+function closeDetailModal() {
+  document.getElementById('detailModal').classList.remove('show');
+  currentDetailId = null;
+}
+
+function saveActiveBookEdits() {
+  if (!currentDetailId) return;
+  var b = books.find(function(item){ return item.id === currentDetailId; });
+  if (!b) return;
+
+  b.title = cleanText(document.getElementById('editTitle').value) || b.title;
+  b.author = cleanText(document.getElementById('editAuthor').value);
+  var cur = parseInt(document.getElementById('editCurrentPage').value, 10) || 0;
+  var tot = parseInt(document.getElementById('editPages').value, 10) || 300;
+  b.pages = tot;
+  b.currentPage = Math.min(tot, Math.max(0, cur));
+  b.shelf = document.getElementById('editShelf').value;
+  b.rating = parseInt(document.getElementById('editRating').value, 10) || 0;
+  var customCover = document.getElementById('editCoverUrl').value.trim();
+  b.cover = customCover || fallbackCoverSvg(b.title, b.author);
+  b.notes = cleanText(document.getElementById('editNotes').value);
+
+  saveLibrary();
+  renderLibrary();
+  closeDetailModal();
+  toast('Updated "' + b.title + '"');
+}
+
+function deleteActiveBook() {
+  if (!currentDetailId) return;
+  if (!confirm('Remove this book from library?')) return;
+  books = books.filter(function(item){ return item.id !== currentDetailId; });
+  saveLibrary();
+  renderLibrary();
+  closeDetailModal();
+  toast('Book removed');
+}
+
+// Global hook for parent dashboard / FAB
+window.openBookSearch = function() {
+  openSearchModal();
+};
+
+// Initialize
+loadLibrary();
+renderLibrary();
+
+window.addEventListener('message', function(ev) {
+  if (ev.data && ev.data.type === 'v07_data_updated') {
+    loadLibrary();
+    renderLibrary();
+  }
+});
+setTimeout(function(){ loadLibrary(); renderLibrary(); }, 700);
+</script>
+</body>
+</html>

@@ -1,0 +1,345 @@
+/* Gamify plugin styles — matches V07 dashboard theme variables when available. */
+:root {
+  --bg: #090909;
+  --surface: #111319;
+  --surface-low: #111319;
+  --border: #2C2C2C;
+  --text: #e1e2ea;
+  --muted: #717171;
+  --primary: #4DE086;
+}
+
+:root[data-theme="light"] {
+  --bg: #f0f0f2;
+  --surface: #ffffff;
+  --surface-low: #f5f5f7;
+  --border: #d0d0d5;
+  --text: #1a1a2e;
+  --muted: #777;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  padding: 14px;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+.g-page { width: 100%; max-width: 100%; margin: 0 auto; box-sizing: border-box; }
+
+.g-header {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.g-lvl-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.g-lvl-badge {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: 0.02em;
+}
+
+.g-total {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.g-bar {
+  height: 8px;
+  background: var(--surface-low);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.g-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), #68a6ff);
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+.g-bar-lbl {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 6px;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  letter-spacing: 0.03em;
+}
+
+.g-stats {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.g-stat {
+  flex: 1;
+  background: var(--surface-low);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px;
+  text-align: center;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-size: 11px;
+  color: var(--text);
+  letter-spacing: 0.03em;
+}
+
+.g-stat-xp { color: var(--primary); }
+.g-stat-streak { color: #F4D35E; }
+
+.g-btn {
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--primary);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+.g-done {
+  margin-top: 12px;
+  padding: 10px;
+  text-align: center;
+  background: var(--surface-low);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--primary);
+  font-size: 13px;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+.g-sec-title {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 16px 0 6px;
+}
+
+.g-bd-list, .g-hist {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.g-bd-row, .g-hist-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.g-bd-row:last-child, .g-hist-row:last-child { border-bottom: none; }
+
+.g-bd-label { color: var(--text); }
+.g-bd-xp { color: var(--primary); font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; font-size: 12px; }
+.g-bd-empty { padding: 12px; color: var(--muted); font-size: 13px; }
+
+.g-hist-date { color: var(--muted); font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; font-size: 11px; }
+.g-hist-xp { color: var(--primary); font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; font-size: 12px; }
+
+/* ─── Gamify Calendar Heatmap Grid ───────────────────────────────────────── */
+.g-heatmap-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  margin-top: 14px;
+  box-sizing: border-box;
+}
+
+.g-heatmap-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.g-heatmap-sub {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}
+
+.g-heatmap-detail {
+  background: var(--surface-low);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-size: 11px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 36px;
+  box-sizing: border-box;
+}
+
+.g-heatmap-viewport {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+}
+.g-heatmap-viewport::-webkit-scrollbar { display: none; }
+
+.g-heatmap-wrapper {
+  display: inline-block;
+  min-width: max-content;
+}
+
+.g-heatmap-months {
+  display: flex;
+  margin-left: 20px;
+  margin-bottom: 6px;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-size: 9.5px;
+  color: var(--muted);
+  height: 14px;
+  position: relative;
+}
+
+.g-heatmap-month-lbl {
+  position: absolute;
+  white-space: nowrap;
+}
+
+.g-heatmap-body {
+  display: flex;
+  gap: 6px;
+}
+
+.g-heatmap-day-labels {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 136px; /* 7 * 16px + 6 * 4px */
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-size: 9px;
+  color: var(--muted);
+  padding-top: 1px;
+  width: 14px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.g-heatmap-grid {
+  display: flex;
+  gap: 4px;
+}
+
+.g-heatmap-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.g-h-cell {
+  width: 16px;
+  height: 16px;
+  border-radius: 3.5px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+:root[data-theme="light"] .g-h-cell {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+.g-h-cell:active, .g-h-cell.selected {
+  transform: scale(1.25);
+  z-index: 10;
+}
+
+.g-h-cell.intensity-1 {
+  background: rgba(77, 224, 134, 0.28);
+  border-color: rgba(77, 224, 134, 0.4);
+}
+.g-h-cell.intensity-2 {
+  background: rgba(77, 224, 134, 0.52);
+  border-color: rgba(77, 224, 134, 0.65);
+}
+.g-h-cell.intensity-3 {
+  background: rgba(77, 224, 134, 0.78);
+  border-color: rgba(77, 224, 134, 0.9);
+}
+.g-h-cell.intensity-4 {
+  background: #4DE086;
+  border-color: #6effa6;
+  box-shadow: 0 0 6px rgba(77, 224, 134, 0.5);
+}
+
+.g-h-cell.is-future {
+  opacity: 0.18;
+  cursor: default;
+  pointer-events: none;
+}
+
+.g-h-cell.is-today {
+  outline: 2px solid #FFFFFF;
+  outline-offset: 1px;
+  box-shadow: 0 0 10px rgba(77, 224, 134, 0.85);
+  position: relative;
+  z-index: 2;
+}
+
+.g-heatmap-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  font-size: 10px;
+  color: var(--muted);
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+.g-heatmap-legend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.g-h-cell.mini {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  cursor: default;
+}
+

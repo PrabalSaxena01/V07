@@ -1,0 +1,70 @@
+{
+  "id": "com.v07.gamify",
+  "name": "Gamify",
+  "version": "1.0.0",
+  "author": "Prabal",
+  "description": "Earn XP for logging in and logging your life. Track levels, streaks, and perfect days.",
+  "permissions": ["events:read", "events:write", "server", "notification"],
+  "entry": "index.html",
+  "settings": "settings.html",
+  "nav": {
+    "placement": "log-dashboard",
+    "icon": "military_tech",
+    "label": "GAMIFY",
+    "color": "#4DE086"
+  },
+  "widgets": [
+    {
+      "id": "gamify_stats",
+      "title": "GAMIFY PROGRESS",
+      "icon": "military_tech",
+      "path": "widget.html",
+      "color": "#4DE086",
+      "supportedSizes": ["compact", "small", "medium", "large"],
+      "defaultSize": "medium"
+    },
+    {
+      "id": "gamify_compact",
+      "title": "GAMIFY LEVEL BAR",
+      "icon": "stars",
+      "path": "widget.html",
+      "color": "#4DE086",
+      "supportedSizes": ["compact"],
+      "defaultSize": "compact"
+    },
+    {
+      "id": "gamify_small",
+      "title": "GAMIFY XP & STREAK",
+      "icon": "emoji_events",
+      "path": "widget.html",
+      "color": "#4DE086",
+      "supportedSizes": ["small"],
+      "defaultSize": "small"
+    },
+    {
+      "id": "gamify_large",
+      "title": "GAMIFY RANK & QUESTS",
+      "icon": "workspace_premium",
+      "path": "widget.html",
+      "color": "#4DE086",
+      "supportedSizes": ["large"],
+      "defaultSize": "large"
+    }
+  ],
+  "fab": [
+    {
+      "id": "gamify",
+      "label": "+ GAMIFY",
+      "icon": "military_tech",
+      "fn": "v07OpenPlugin",
+      "args": { "id": "com.v07.gamify" },
+      "enabled": true
+    }
+  ],
+  "notifications": {
+    "supported": true,
+    "defaultTime": "20:00",
+    "title": "Gamify Streak Warning",
+    "body": "Log in and complete your daily goals to protect your streak!"
+  }
+}

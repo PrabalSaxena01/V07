@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Custom Companion</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <link rel="stylesheet" href="plugin.css">
+  <script src="v07-sdk.js"></script>
+</head>
+<body>
+  <div class="plugin-container">
+    <!-- Header -->
+    <header class="header-card">
+      <div class="header-info">
+        <div class="plugin-icon">
+          <span class="material-symbols-outlined">extension</span>
+        </div>
+        <div>
+          <h1 class="plugin-title">Custom Companion</h1>
+          <span class="plugin-badge">Modular V3 Plugin · v1.0.0</span>
+        </div>
+      </div>
+      <button onclick="v07.ui.close()" class="btn btn-secondary" title="Close Companion">
+        <span class="material-symbols-outlined" style="font-size: 16px;">close</span>
+      </button>
+    </header>
+
+    <!-- Pillar 1: Persistent SQLite Key-Value Storage -->
+    <section class="card">
+      <div class="card-title">
+        <span>Persistent Storage Demo</span>
+        <span class="material-symbols-outlined" style="font-size: 18px; color: var(--primary);">database</span>
+      </div>
+      <p class="card-desc">
+        Data stored via <code>v07.storage.set()</code> is encrypted and persisted in your sovereign SQLite vault under the <code>plugin_storage</code> table.
+      </p>
+
+      <div class="counter-box">
+        <div>
+          <span style="font-size: 10px; font-weight: 700; color: var(--on-surface-variant); text-transform: uppercase;">Counter Value</span>
+          <div class="counter-value" id="counter-val">0</div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button onclick="updateCounter(-1)" class="btn btn-secondary">-1</button>
+          <button onclick="updateCounter(1)" class="btn btn-primary">+1</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pillar 2: Sanctuary Ledger Logging Integration -->
+    <section class="card">
+      <div class="card-title">
+        <span>Log to Sanctuary Ledger</span>
+        <span class="material-symbols-outlined" style="font-size: 18px; color: var(--secondary);">history_edu</span>
+      </div>
+      <p class="card-desc">
+        Record thoughts or reflections directly into the Sanctuary Ledger timeline with zero latency.
+      </p>
+
+      <input type="text" id="log-text" placeholder="Enter note to commit to ledger..." />
+      <div style="display: flex; justify-content: flex-end;">
+        <button onclick="recordNoteToLedger()" class="btn btn-primary">
+          <span class="material-symbols-outlined" style="font-size: 16px;">send</span>
+          <span>Commit Entry</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Status & Info Card -->
+    <section class="card">
+      <div class="card-title">
+        <span>Platform Connection</span>
+        <span class="material-symbols-outlined" style="font-size: 18px; color: var(--primary);">verified</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px; font-size: 11px; color: var(--on-surface-variant);">
+        <div><b>Plugin ID:</b> <code id="disp-id">com.v07.template</code></div>
+        <div><b>Sandbox:</b> Isolated Sovereign Partition</div>
+        <div><b>Ledger Sync:</b> Bi-directional</div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    let currentCount = 0;
+
+    async function initPlugin() {
+      document.getElementById('disp-id').textContent = v07.pluginId;
+
+      // Restore counter from storage
+      const savedCount = await v07.storage.get('counter');
+      if (savedCount !== null) {
+        currentCount = parseInt(savedCount, 10) || 0;
+        document.getElementById('counter-val').textContent = currentCount;
+      }
+    }
+
+    async function updateCounter(delta) {
+      currentCount += delta;
+      document.getElementById('counter-val').textContent = currentCount;
+      await v07.storage.set('counter', currentCount);
+    }
+
+    async function recordNoteToLedger() {
+      const input = document.getElementById('log-text');
+      const text = (input.value || '').trim();
+      if (!text) {
+        v07.ui.showToast('Empty Entry', 'Please type a note first', 'warning');
+        return;
+      }
+
+      await v07.ledger.addEntry({
+        category: 'template',
+        title: 'Companion Note',
+        content: text,
+        timestamp: Date.now()
+      });
+
+      input.value = '';
+      v07.ui.showToast('Committed to Ledger', 'Entry saved in SQLite vault', 'success');
+    }
+
+    window.addEventListener('DOMContentLoaded', initPlugin);
+  </script>
+</body>
+</html>

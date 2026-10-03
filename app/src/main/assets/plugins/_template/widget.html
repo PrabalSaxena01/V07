@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Template Widget</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --text: #e1e2ea;
+    --muted: #8a8f98;
+    --border: #2c2c2c;
+    --bar-bg: rgba(255,255,255,0.08);
+    --chip-bg: rgba(255,255,255,0.03);
+    --chip-border: rgba(255,255,255,0.06);
+    --primary: #A7C8FF;
+  }
+  :root[data-theme="light"] {
+    --text: #1a1a2e;
+    --muted: #666666;
+    --border: #d0d0d5;
+    --bar-bg: rgba(0,0,0,0.08);
+    --chip-bg: rgba(0,0,0,0.03);
+    --chip-border: rgba(0,0,0,0.08);
+    --primary: #1a5fb4;
+  }
+  body {
+    margin: 0;
+    padding: 8px 12px 10px;
+    background: transparent;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    color: var(--text);
+    overflow: hidden;
+    width: 100%;
+  }
+  .gw-wrap { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+  .gw-row1 { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .gw-lvl-group { display: flex; align-items: center; gap: 6px; }
+  .gw-badge {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--primary);
+    background: rgba(167,200,255,0.12);
+    border: 1px solid rgba(167,200,255,0.3);
+    border-radius: 4px;
+    padding: 1px 6px;
+    letter-spacing: 0.06em;
+  }
+  .gw-rank {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-size: 9.5px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .gw-total {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.05em;
+  }
+  .gw-bar-track {
+    width: 100%;
+    height: 4px;
+    background: var(--bar-bg);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .gw-bar-fill {
+    height: 100%;
+    background: var(--primary);
+    border-radius: 2px;
+    box-shadow: 0 0 6px rgba(167,200,255,0.5);
+    transition: width 0.3s ease;
+  }
+  .gw-chips {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .gw-chip {
+    font-size: 9px;
+    color: var(--muted);
+    background: var(--chip-bg);
+    border: 1px solid var(--chip-border);
+    border-radius: 4px;
+    padding: 2px 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+  }
+  .gw-dot { width: 5px; height: 5px; border-radius: 50%; display: inline-block; }
+  .gw-dot.on { background: var(--primary); box-shadow: 0 0 5px var(--primary); }
+  .gw-dot.off { background: #565B66; }
+  .gw-chip-val { color: var(--text); font-weight: 700; }
+  /* Compact 1*1 */
+  .mini-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 4px 0;
+  }
+</style>
+<script>
+(function(){
+  function syncTheme(){
+    var t = 'dark';
+    try {
+      t = window.parent.document.documentElement.dataset.theme || localStorage.getItem('v07_theme') || 'dark';
+    } catch(e){
+      try { t = localStorage.getItem('v07_theme') || 'dark'; } catch(e2){}
+    }
+    if(t === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    else document.documentElement.removeAttribute('data-theme');
+  }
+  syncTheme();
+  window.addEventListener('storage', syncTheme);
+})();
+</script>
+</head>
+<body>
+<div id="w"></div>
+<script>
+function getSize(){
+  try {
+    var s = new URLSearchParams(window.location.search).get('size');
+    if(s) return s;
+  } catch(e){}
+  return '4*2';
+}
+
+function draw(){
+  var el = document.getElementById('w');
+  if(!el) return;
+  var size = getSize();
+
+  if(size === '1*1'){
+    el.innerHTML =
+      '<div class="gw-wrap">' +
+      '  <div class="gw-row1">' +
+      '    <span class="gw-badge">MOD</span>' +
+      '    <span class="gw-rank">OK</span>' +
+      '  </div>' +
+      '  <div class="mini-center">' +
+      '    <span style="font-family:'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;font-size:18px;font-weight:700;color:var(--text)">85%</span>' +
+      '    <span style="font-size:8px;color:var(--muted);text-transform:uppercase">ACTIVE</span>' +
+      '  </div>' +
+      '  <div class="gw-bar-track"><div class="gw-bar-fill" style="width:85%"></div></div>' +
+      '</div>';
+  } else if(size === '2*1'){
+    el.innerHTML =
+      '<div class="gw-wrap">' +
+      '  <div class="gw-row1">' +
+      '    <div class="gw-lvl-group">' +
+      '      <span class="gw-badge">STATUS</span>' +
+      '      <span class="gw-rank">ONLINE</span>' +
+      '    </div>' +
+      '    <span class="gw-total">85%</span>' +
+      '  </div>' +
+      '  <div class="gw-bar-track"><div class="gw-bar-fill" style="width:85%"></div></div>' +
+      '  <div class="gw-chips">' +
+      '    <span class="gw-chip"><span class="gw-dot on"></span> SYNCED</span>' +
+      '    <span class="gw-chip">READY &rsaquo;</span>' +
+      '  </div>' +
+      '</div>';
+  } else { // 4*2
+    el.innerHTML =
+      '<div class="gw-wrap">' +
+      '  <div class="gw-row1">' +
+      '    <div class="gw-lvl-group">' +
+      '      <span class="gw-badge">ACTIVE MODULE</span>' +
+      '      <span class="gw-rank">TEMPLATE STATUS</span>' +
+      '    </div>' +
+      '    <span class="gw-total">85% COMPLETE</span>' +
+      '  </div>' +
+      '  <div class="gw-bar-track"><div class="gw-bar-fill" style="width:85%"></div></div>' +
+      '  <div style="font-size:11px;color:var(--muted);padding:4px 0">Modular plugin loaded via standard 5-pillar architecture.</div>' +
+      '  <div class="gw-chips">' +
+      '    <span class="gw-chip"><span class="gw-dot on"></span> RUNNING <span class="gw-chip-val">OK</span></span>' +
+      '    <span class="gw-chip">VERSION <span class="gw-chip-val">1.0.0</span></span>' +
+      '    <span class="gw-chip">OPEN &rsaquo;</span>' +
+      '  </div>' +
+      '</div>';
+  }
+}
+draw();
+</script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <link rel="stylesheet" href="plugin.css">
+  <script src="v07-sdk.js"></script>
+  <style>
+    body {
+      padding: 10px;
+      margin: 0;
+      min-height: auto;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .widget-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="widget-box">
+    <div class="plugin-icon" style="width: 32px; height: 32px; font-size: 18px;">
+      <span class="material-symbols-outlined">extension</span>
+    </div>
+    <div>
+      <div style="font-size: 10px; font-weight: 700; color: var(--on-surface-variant); text-transform: uppercase;">Companion</div>
+      <div style="font-size: 15px; font-weight: 800; color: var(--primary);" id="widget-count">0</div>
+    </div>
+  </div>
+  <button onclick="incrementWidget()" class="btn btn-primary" style="padding: 6px 12px; font-size: 11px;">
+    +1
+  </button>
+
+  <script>
+    let count = 0;
+    async function loadWidget() {
+      const saved = await v07.storage.get('counter');
+      if (saved !== null) {
+        count = parseInt(saved, 10) || 0;
+        document.getElementById('widget-count').textContent = count;
+      }
+    }
+    async function incrementWidget() {
+      count++;
+      document.getElementById('widget-count').textContent = count;
+      await v07.storage.set('counter', count);
+    }
+    window.addEventListener('DOMContentLoaded', loadWidget);
+  </script>
+</body>
+</html>

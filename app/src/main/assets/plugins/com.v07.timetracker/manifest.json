@@ -1,0 +1,70 @@
+{
+  "id": "com.v07.timetracker",
+  "name": "Time Tracker",
+  "version": "1.0.0",
+  "author": "Prabal",
+  "description": "Milestone countdowns, event timers, and pinned dates.",
+  "permissions": ["events:read", "events:write", "server", "notification"],
+  "entry": "index.html",
+  "settings": "settings.html",
+  "nav": {
+    "placement": "log-dashboard",
+    "icon": "schedule",
+    "label": "TIMETRACKER",
+    "color": "#8D6CFF"
+  },
+  "widgets": [
+    {
+      "id": "timetracker_card",
+      "title": "TIME TRACKER",
+      "icon": "schedule",
+      "path": "widget.html",
+      "color": "#8D6CFF",
+      "supportedSizes": ["compact", "small", "medium", "large"],
+      "defaultSize": "medium"
+    },
+    {
+      "id": "timetracker_compact",
+      "title": "TIMELINE MINI TICKER",
+      "icon": "alarm",
+      "path": "widget.html",
+      "color": "#8D6CFF",
+      "supportedSizes": ["compact"],
+      "defaultSize": "compact"
+    },
+    {
+      "id": "timetracker_small",
+      "title": "TIME COUNTER CARD",
+      "icon": "hourglass_top",
+      "path": "widget.html",
+      "color": "#8D6CFF",
+      "supportedSizes": ["small"],
+      "defaultSize": "small"
+    },
+    {
+      "id": "timetracker_large",
+      "title": "MILESTONES & AGENDA",
+      "icon": "date_range",
+      "path": "widget.html",
+      "color": "#8D6CFF",
+      "supportedSizes": ["large"],
+      "defaultSize": "large"
+    }
+  ],
+  "fab": [
+    {
+      "id": "timetracker",
+      "label": "+ TIME TRACKER",
+      "icon": "schedule",
+      "fn": "v07OpenPlugin",
+      "args": { "id": "com.v07.timetracker" },
+      "enabled": true
+    }
+  ],
+  "notifications": {
+    "supported": true,
+    "defaultTime": "08:30",
+    "title": "Upcoming Milestones",
+    "body": "Check your upcoming milestones and deadlines"
+  }
+}

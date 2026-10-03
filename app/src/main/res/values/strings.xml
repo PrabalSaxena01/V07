@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">V07 v3</string>
+    <string name="accessibility_service_desc">V07 Dashboard uses this service to detect the current foreground app for usage time tracking. No data is collected or transmitted.</string>
+    <string name="widget_dashboard_label">V07 Dashboard Widget</string>
+    <string name="widget_dashboard_description">Universal home screen widget for Weekly Digest, Day Tracker, Checklist, Focus, Run, Habits, Gamify, and Vitals.</string>
+</resources>

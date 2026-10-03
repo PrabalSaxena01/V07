@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Habits Widget</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+:root {
+  --text: #F1F5F9;
+  --muted: #94A3B8;
+  --bar-bg: rgba(255,255,255,0.08);
+  --chip-bg: rgba(255,255,255,0.04);
+  --border: #262C3E;
+  --accent: #FFB84D;
+  --accent-glow: rgba(255,184,77,0.15);
+}
+:root[data-theme="light"] {
+  --text: #0F172A;
+  --muted: #64748B;
+  --bar-bg: rgba(0,0,0,0.08);
+  --chip-bg: rgba(0,0,0,0.04);
+  --border: #CBD5E1;
+  --accent: #D97706;
+  --accent-glow: rgba(217,119,6,0.12);
+}
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  background: transparent;
+  color: var(--text);
+  padding: 8px 12px 10px;
+  overflow: hidden;
+  width: 100%;
+  cursor: pointer;
+  user-select: none;
+}
+.hw-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+.hw-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.hw-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-glow);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  padding: 2px 6px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.hw-stat {
+  font-size: 9px;
+  color: var(--accent);
+  background: var(--accent-glow);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-weight: 700;
+}
+/* Matrix Table in Widget */
+.wm-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.wm-th {
+  font-size: 8.5px;
+  color: var(--muted);
+  text-align: center;
+  padding: 2px;
+}
+.wm-th.wm-today {
+  color: var(--accent);
+  font-weight: 700;
+}
+.wm-td-name {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 95px;
+  padding: 3px 2px;
+  color: var(--text);
+}
+.wm-td-cell {
+  text-align: center;
+  padding: 2px 1px;
+}
+.wm-block {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  font-size: 11px;
+  line-height: 1;
+}
+.wm-block.filled {
+  color: #fff;
+  background: var(--accent);
+}
+.wm-block.empty {
+  color: var(--muted);
+  background: var(--bar-bg);
+}
+.wm-block.today-ring {
+  box-shadow: 0 0 0 1px var(--text);
+}
+/* Cards preview in Large */
+.wc-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 4px;
+}
+.wc-card {
+  border: 1px solid var(--border);
+  background: var(--chip-bg);
+  border-radius: 6px;
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+</style>
+<script>
+(function(){
+  function syncTheme(){
+    var t = 'dark';
+    try {
+      t = window.parent.document.documentElement.dataset.theme || localStorage.getItem('v07_theme') || 'dark';
+    } catch(e){
+      try { t = localStorage.getItem('v07_theme') || 'dark'; } catch(e2){}
+    }
+    if(t === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    else document.documentElement.removeAttribute('data-theme');
+  }
+  syncTheme();
+  window.addEventListener('storage', syncTheme);
+})();
+</script>
+</head>
+<body onclick="openHabitsPlugin()">
+<div id="wRoot">
+  <div style="font-size:10px;color:var(--muted)">loading habits&hellip;</div>
+</div>
+
+<script src="plugin.js"></script>
+<script>
+(function() {
+  function openHabitsPlugin() {
+    try {
+      if (window.parent && window.parent.openPluginPage) {
+        window.parent.openPluginPage('com.v07.habits');
+        return;
+      }
+    } catch(e){}
+    location.href = 'index.html';
+  }
+  window.openHabitsPlugin = openHabitsPlugin;
+
+  function getSize(){
+    try {
+      var s = new URLSearchParams(window.location.search).get('size');
+      if(s === 'compact' || s === '1*1') return 'compact';
+      if(s === 'small' || s === '2*1') return 'small';
+      if(s === 'medium' || s === '3*1') return 'medium';
+      if(s === 'large' || s === '4*2') return 'large';
+    } catch(e){}
+    var h = window.innerHeight;
+    if(h > 0 && h <= 85) return 'compact';
+    if(h > 85 && h <= 125) return 'small';
+    if(h > 125 && h <= 190) return 'medium';
+    if(h > 190) return 'large';
+    return 'medium';
+  }
+
+  function get7DayWindow() {
+    var days = [];
+    var now = new Date();
+    var dayNames = ['S','M','T','W','T','F','S'];
+    for (var i = 6; i >= 0; i--) {
+      var d = new Date(now);
+      d.setDate(now.getDate() - i);
+      var m = ('0' + (d.getMonth() + 1)).slice(-2);
+      var day = ('0' + d.getDate()).slice(-2);
+      days.push({
+        date: d.getFullYear() + '-' + m + '-' + day,
+        name: dayNames[d.getDay()],
+        isToday: (i === 0)
+      });
+    }
+    return days;
+  }
+
+  window.addEventListener('resize', draw);
+  window.addEventListener('message', function(e){
+    if(e.data && (e.data.type === 'setSize' || e.data.type === 'v07_refresh')){
+      draw();
+    }
+  });
+
+  function draw() {
+    var root = document.getElementById('wRoot');
+    if (!root) return;
+
+    if (!window.v07Habits) {
+      root.innerHTML = '<span style="font-size:10px;color:var(--muted)">loading habits&hellip;</span>';
+      setTimeout(draw, 100);
+      return;
+    }
+
+    try {
+      var habits = (v07Habits.getHabits ? v07Habits.getHabits() : (v07Habits.habits ? v07Habits.habits() : [])) || [];
+      var s = (v07Habits.stats ? v07Habits.stats() : { todayDone: 0, todayTotal: 0, current: 0 });
+      var pct = s.todayTotal > 0 ? Math.round((s.todayDone / s.todayTotal) * 100) : 0;
+      var size = getSize();
+      var week = get7DayWindow();
+
+      if (!habits.length) {
+        root.innerHTML =
+          '<div class="hw-wrap" onclick="openHabitsPlugin()" style="cursor:pointer;text-align:center;padding:12px 0">' +
+            '<div class="hw-badge">🔥 HABITS</div>' +
+            '<div style="font-size:11px;color:var(--text);margin-top:6px">No habits defined yet</div>' +
+            '<div style="font-size:8.5px;color:var(--muted);margin-top:2px">Tap to add habits</div>' +
+          '</div>';
+        return;
+      }
+
+      // COMPACT SIZE (72px)
+      if (size === 'compact') {
+        root.innerHTML =
+          '<div class="hw-wrap" onclick="openHabitsPlugin()" style="cursor:pointer">' +
+            '<div class="hw-head">' +
+              '<span class="hw-badge">🔥 ' + s.todayDone + '/' + s.todayTotal + ' TODAY</span>' +
+              '<span class="hw-stat">STREAK ' + (s.current || 0) + 'd</span>' +
+            '</div>' +
+            '<div style="display:flex;align-items:center;justify-content:space-between;margin:2px 0">' +
+              '<span style="font-size:13px;font-weight:700;color:var(--text)">' + pct + '% COMPLETED</span>' +
+              '<span style="font-size:9px;color:var(--muted)">' + habits.length + ' HABITS</span>' +
+            '</div>' +
+            '<div style="width:100%;height:4px;background:var(--bar-bg);border-radius:2px;overflow:hidden">' +
+              '<div style="height:100%;background:var(--accent);border-radius:2px;width:' + pct + '%"></div>' +
+            '</div>' +
+          '</div>';
+        return;
+      }
+
+      // SMALL SIZE (110px) - Compact Dots
+      if (size === 'small') {
+        var rowDots = '';
+        habits.slice(0, 3).forEach(function(h){
+          var icon = v07Habits.getHabitIcon ? v07Habits.getHabitIcon(h.name) : '🔥';
+          var curStreak = v07Habits.habitStreak ? v07Habits.habitStreak(h.id) : 0;
+          rowDots += '<div style="display:flex;align-items:center;justify-content:space-between;padding:2px 0">' +
+                     '  <span class="wm-td-name">' + icon + ' ' + (h.name || '') + '</span>' +
+                     '  <span style="font-size:9px;color:var(--accent);font-weight:700">🔥 ' + curStreak + 'd</span>' +
+                     '</div>';
+        });
+
+        root.innerHTML =
+          '<div class="hw-wrap" onclick="openHabitsPlugin()" style="cursor:pointer">' +
+            '<div class="hw-head">' +
+              '<span class="hw-badge">🔥 HABITS</span>' +
+              '<span class="hw-stat">' + s.todayDone + '/' + s.todayTotal + ' (' + pct + '%)</span>' +
+            '</div>' +
+            '<div style="width:100%;height:4px;background:var(--bar-bg);border-radius:2px;overflow:hidden;margin:2px 0">' +
+              '<div style="height:100%;background:var(--accent);width:' + pct + '%"></div>' +
+            '</div>' +
+            '<div style="margin-top:2px">' + rowDots + '</div>' +
+          '</div>';
+        return;
+      }
+
+      // MATRIX ROWS FOR MEDIUM AND LARGE
+      var matrixRows = '';
+      habits.slice(0, 4).forEach(function(h){
+        var icon = v07Habits.getHabitIcon ? v07Habits.getHabitIcon(h.name) : '🔥';
+        matrixRows += '<tr>';
+        matrixRows += '  <td class="wm-td-name">' + icon + ' ' + (h.name || '') + '</td>';
+        week.forEach(function(day){
+          var isDone = false;
+          if (v07Habits.isDoneOnDate) {
+            isDone = v07Habits.isDoneOnDate(h.id, day.date);
+          } else {
+            var logs = (window.localStorage && JSON.parse(localStorage.getItem('v07_hbt_events')||'[]')) || [];
+            for(var li=0; li<logs.length; li++){
+              if(logs[li].habit === h.id && logs[li].date === day.date){
+                isDone = logs[li].on === true;
+                break;
+              }
+            }
+          }
+          var blk = isDone ? 'filled' : 'empty';
+          var ring = day.isToday ? ' today-ring' : '';
+          matrixRows += '<td class="wm-td-cell">' +
+                        '  <div class="wm-block ' + blk + ring + '" style="' + (isDone ? 'background:' + (h.color || 'var(--accent)') + ';' : '') + '">' +
+                        (isDone ? '▰' : '·') +
+                        '  </div>' +
+                        '</td>';
+        });
+        matrixRows += '</tr>';
+      });
+
+      var matrixHtml =
+        '<table class="wm-table">' +
+        '  <thead><tr>' +
+        '    <th class="wm-th" style="text-align:left;padding-left:2px">HABIT</th>';
+      week.forEach(function(d){
+        matrixHtml += '<th class="wm-th ' + (d.isToday ? 'wm-today' : '') + '">' + d.name + '</th>';
+      });
+      matrixHtml += '  </tr></thead>' +
+                    '  <tbody>' + matrixRows + '</tbody>' +
+                    '</table>';
+
+    if (size === 'medium') {
+      root.innerHTML =
+        '<div class="hw-wrap" onclick="openHabitsPlugin()" style="cursor:pointer">' +
+          '<div class="hw-head">' +
+            '<span class="hw-badge">🔥 HABIT MATRIX</span>' +
+            '<span class="hw-stat">' + s.todayDone + '/' + s.todayTotal + ' TODAY · ' + s.current + 'd STREAK</span>' +
+          '</div>' +
+          matrixHtml +
+        '</div>';
+      return;
+    }
+
+    // LARGE SIZE (250px) - MATRIX + STREAK CARDS
+    var streakCards = '';
+    habits.slice(0, 4).forEach(function(h){
+      var curStreak = v07Habits.habitStreak(h.id);
+      var icon = v07Habits.getHabitIcon(h.name);
+      streakCards +=
+        '<div class="wc-card" style="border-left:2.5px solid ' + (h.color || 'var(--accent)') + '">' +
+        '  <span style="font-size:9.5px;font-weight:700">' + icon + ' ' + h.name + '</span>' +
+        '  <span style="font-size:10px;font-weight:700;color:' + (h.color || 'var(--accent)') + '">🔥 ' + curStreak + 'd</span>' +
+        '</div>';
+    });
+
+    root.innerHTML =
+      '<div class="hw-wrap" onclick="openHabitsPlugin()" style="cursor:pointer">' +
+        '<div class="hw-head">' +
+          '<span class="hw-badge" style="font-size:11px;padding:3px 7px">🔥 HABIT MATRIX &amp; STREAKS</span>' +
+          '<span class="hw-stat">OVERALL ' + s.current + 'd</span>' +
+        '</div>' +
+        matrixHtml +
+        '<div class="wc-cards">' + streakCards + '</div>' +
+      '</div>';
+    } catch(err) {
+      console.error('Habits widget render error:', err);
+      root.innerHTML = '<div class="hw-wrap" onclick="openHabitsPlugin()" style="cursor:pointer;padding:8px 0">' +
+        '<div class="hw-badge">🔥 HABITS</div>' +
+        '<div style="font-size:9.5px;color:var(--text);margin-top:4px">Tap to open habits</div>' +
+      '</div>';
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', draw);
+  } else {
+    draw();
+  }
+})();
+</script>
+</body>
+</html>

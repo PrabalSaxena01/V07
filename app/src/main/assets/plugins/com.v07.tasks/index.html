@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Sovereign Tasks &amp; Priorities</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --bg: #0D0F14;
+    --surface: #151821;
+    --surface-card: #191D28;
+    --surface-elevated: #202534;
+    --border: #262C3E;
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --accent: #50BF8E;
+    --accent-glow: rgba(80, 191, 142, 0.15);
+    --green: #4DE086;
+    --green-glow: rgba(77, 224, 134, 0.15);
+    --yellow: #FFB84D;
+    --yellow-glow: rgba(255, 184, 77, 0.15);
+    --rose: #FF5370;
+    --rose-glow: rgba(255, 83, 112, 0.15);
+    --text-primary: #F1F5F9;
+    --text-secondary: #94A3B8;
+    --text-muted: #64748B;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --radius-lg: 16px;
+  }
+
+  :root[data-theme="light"] {
+    --bg: #F8FAFC;
+    --surface: #FFFFFF;
+    --surface-card: #F1F5F9;
+    --surface-elevated: #E2E8F0;
+    --border: #CBD5E1;
+    --border-subtle: rgba(0, 0, 0, 0.08);
+    --accent: #10B981;
+    --accent-glow: rgba(16, 185, 129, 0.12);
+    --green: #16A34A;
+    --green-glow: rgba(22, 163, 74, 0.12);
+    --yellow: #D97706;
+    --yellow-glow: rgba(217, 119, 6, 0.12);
+    --rose: #E11D48;
+    --rose-glow: rgba(225, 29, 72, 0.12);
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --text-muted: #94A3B8;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+    padding: 16px 14px 80px;
+    width: 100%;
+    max-width: 640px;
+    margin: 0 auto;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--accent-glow);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: var(--radius-sm);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .header-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+    margin-bottom: 4px;
+  }
+  .header-sub {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  /* ── Stats Grid ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  @media(min-width: 480px){
+    .stats-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .stat-label {
+    font-size: 9.5px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .stat-value {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text-primary);
+  }
+  .stat-sub {
+    font-size: 10.5px;
+    color: var(--text-secondary);
+  }
+
+  /* ── Progress Card ── */
+  .progress-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    margin-bottom: 14px;
+  }
+  .progress-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10.5px;
+    margin-bottom: 8px;
+  }
+  .progress-track {
+    width: 100%;
+    height: 6px;
+    background: var(--surface-elevated);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--green));
+    border-radius: 3px;
+    transition: width 0.3s ease;
+  }
+
+  /* ── Add Task Card ── */
+  .add-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 14px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+  .input-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+    align-items: center;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  .task-input {
+    flex: 1;
+    min-width: 0;
+    min-height: 44px;
+    background: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    color: var(--text-primary);
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.15s;
+  }
+  .task-input:focus {
+    border-color: var(--accent);
+  }
+  .btn-due-toggle {
+    min-width: 44px;
+    min-height: 44px;
+    flex-shrink: 0;
+    background: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: all 0.15s;
+  }
+  .btn-due-toggle.active {
+    background: var(--accent-glow);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .btn-add {
+    min-height: 44px;
+    padding: 10px 18px;
+    flex-shrink: 0;
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    color: #fff;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    box-sizing: border-box;
+    transition: transform 0.15s, opacity 0.15s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+  .btn-add:active { transform: scale(0.97); }
+
+  .deadline-box {
+    display: none;
+    background: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    flex-direction: column;
+    gap: 8px;
+    box-sizing: border-box;
+    width: 100%;
+  }
+  .deadline-box.open { display: flex; }
+  .deadline-inputs {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .deadline-input {
+    flex: 1;
+    min-width: 0;
+    box-sizing: border-box;
+    min-height: 38px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 6px 10px;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 12px;
+    outline: none;
+  }
+  .deadline-note {
+    font-size: 10px;
+    color: var(--accent);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .prio-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .prio-btn {
+    flex: 1;
+    min-height: 36px;
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    background: var(--surface-card);
+    color: var(--text-muted);
+    border-radius: var(--radius-sm);
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .prio-btn.active-prio-high {
+    border-color: var(--rose);
+    color: var(--rose);
+    background: var(--rose-glow);
+  }
+  .prio-btn.active-prio-medium {
+    border-color: var(--yellow);
+    color: var(--yellow);
+    background: var(--yellow-glow);
+  }
+  .prio-btn.active-prio-low {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  /* ── Filter Chips ── */
+  .chips-row {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+    margin-bottom: 12px;
+  }
+  .chips-row::-webkit-scrollbar { display: none; }
+  .filter-chip {
+    min-height: 36px;
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .filter-chip.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  /* ── Task Items ── */
+  .task-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    transition: all 0.15s;
+    cursor: pointer;
+    user-select: none;
+  }
+  .task-item:active { transform: scale(0.99); }
+  .task-item.is-done {
+    opacity: 0.65;
+    border-color: var(--border-subtle);
+  }
+  .task-check-wrap {
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: -10px 0 -10px -10px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .task-check {
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    background: var(--surface-card);
+  }
+  .task-check.checked {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .task-body {
+    flex: 1;
+    min-width: 0;
+    padding-top: 1px;
+  }
+  .task-title {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-primary);
+    word-break: break-word;
+    line-height: 1.4;
+  }
+  .task-title.done-strike {
+    text-decoration: line-through;
+    color: var(--text-muted);
+  }
+  .task-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-top: 5px;
+    font-size: 10.5px;
+    color: var(--text-muted);
+  }
+  .prio-badge {
+    font-weight: 700;
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+  }
+  .prio-badge.high {
+    color: var(--rose);
+    background: var(--rose-glow);
+    border: 1px solid var(--rose);
+  }
+  .prio-badge.medium {
+    color: var(--yellow);
+    background: var(--yellow-glow);
+    border: 1px solid var(--yellow);
+  }
+  .prio-badge.low {
+    color: var(--accent);
+    background: var(--accent-glow);
+    border: 1px solid var(--accent);
+  }
+  .deadline-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 1.5px 7px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    background: var(--surface-elevated);
+    color: var(--text-secondary);
+  }
+  .deadline-pill.overdue {
+    background: var(--rose-glow);
+    color: var(--rose);
+    border: 1px solid var(--rose);
+  }
+  .deadline-pill.due-soon {
+    background: var(--yellow-glow);
+    color: var(--yellow);
+    border: 1px solid var(--yellow);
+  }
+
+  .task-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    margin-top: -6px;
+    margin-right: -6px;
+  }
+  .task-del-btn {
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 15px;
+    border-radius: var(--radius-sm);
+    transition: color 0.15s, background-color 0.15s;
+  }
+  .task-del-btn:hover {
+    color: var(--rose);
+    background: var(--rose-glow);
+  }
+  .task-del-btn:active { transform: scale(0.92); }
+
+  .empty-state {
+    padding: 36px 16px;
+    text-align: center;
+    border: 1.5px dashed var(--border);
+    border-radius: var(--radius);
+    color: var(--text-muted);
+    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+</style>
+<script>
+(function(){
+  function syncTheme(){
+    var t = 'dark';
+    try {
+      t = window.parent.document.documentElement.dataset.theme || localStorage.getItem('v07_theme') || 'dark';
+    } catch(e){
+      try { t = localStorage.getItem('v07_theme') || 'dark'; } catch(e2){}
+    }
+    if(t === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    else document.documentElement.removeAttribute('data-theme');
+  }
+  syncTheme();
+  window.addEventListener('storage', syncTheme);
+})();
+</script>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-badge">📋 SOVEREIGN DIRECTIVES</div>
+  <div class="header-title">Sovereign Tasks</div>
+  <div class="header-sub">Offline execution matrix, exact deadline alarms &amp; quiet focus priorities</div>
+</div>
+
+<!-- Stats HUD -->
+<div class="stats-grid">
+  <div class="stat-card" style="border-left: 3px solid var(--accent)">
+    <span class="stat-label">PENDING</span>
+    <span class="stat-value" id="statPending">0</span>
+    <span class="stat-sub">Active directives</span>
+  </div>
+  <div class="stat-card" style="border-left: 3px solid var(--rose)">
+    <span class="stat-label">HIGH PRIORITY</span>
+    <span class="stat-value" id="statHigh">0</span>
+    <span class="stat-sub" style="color:var(--rose)">Needs focus</span>
+  </div>
+  <div class="stat-card" style="border-left: 3px solid var(--green)">
+    <span class="stat-label">DONE TODAY</span>
+    <span class="stat-value" id="statDone">0</span>
+    <span class="stat-sub">Completed</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">RATE</span>
+    <span class="stat-value" id="statRate">0%</span>
+    <span class="stat-sub">Completion pace</span>
+  </div>
+</div>
+
+<!-- Progress Card -->
+<div class="progress-card">
+  <div class="progress-head">
+    <span style="color:var(--text-muted);font-weight:700">EXECUTION MOMENTUM</span>
+    <span id="progressPctText" style="color:var(--green);font-weight:700">0%</span>
+  </div>
+  <div class="progress-track">
+    <div class="progress-fill" id="progressBar" style="width:0%"></div>
+  </div>
+</div>
+
+<!-- Add Directive Card -->
+<div class="add-card">
+  <div class="input-row">
+    <input type="text" id="newTaskInput" class="task-input" placeholder="Define high-impact directive..." maxlength="240" onkeydown="if(event.key==='Enter')addTask()">
+    <button type="button" class="btn-due-toggle" id="btnDueToggle" onclick="toggleDeadlineBox()" title="Add Deadline & Exact Alarm" aria-label="Toggle Deadline">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+        <line x1="16" y1="2" x2="16" y2="6"></line>
+        <line x1="8" y1="2" x2="8" y2="6"></line>
+        <line x1="3" y1="10" x2="21" y2="10"></line>
+      </svg>
+    </button>
+    <button class="btn-add" onclick="addTask()">
+      <span>+ ADD</span>
+    </button>
+  </div>
+
+  <!-- Expandable Deadline Box -->
+  <div class="deadline-box" id="deadlineBox">
+    <div class="deadline-inputs">
+      <input type="date" id="newTaskDate" class="deadline-input" />
+      <input type="time" id="newTaskTime" class="deadline-input" />
+    </div>
+    <div class="deadline-note">
+      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="13" r="8"></circle>
+        <path d="M12 9v4l2 2"></path>
+        <path d="M5 3L2 6"></path>
+        <path d="M22 6l-3-3"></path>
+      </svg>
+      <span>Exact audible alarm at due time + 1h advance reminder</span>
+    </div>
+  </div>
+
+  <div class="prio-selector">
+    <span style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase">PRIORITY:</span>
+    <button class="prio-btn" id="prioHigh" onclick="setPrioSelection('HIGH')">HIGH</button>
+    <button class="prio-btn active-prio-medium" id="prioMedium" onclick="setPrioSelection('MEDIUM')">MEDIUM</button>
+    <button class="prio-btn" id="prioLow" onclick="setPrioSelection('LOW')">LOW</button>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="chips-row">
+  <button class="filter-chip active" id="chipAll" onclick="setFilter('all')">ALL (<span id="countAll">0</span>)</button>
+  <button class="filter-chip" id="chipPending" onclick="setFilter('pending')">PENDING (<span id="countPending">0</span>)</button>
+  <button class="filter-chip" id="chipHigh" onclick="setFilter('high')">HIGH PRIORITY (<span id="countHigh">0</span>)</button>
+  <button class="filter-chip" id="chipDone" onclick="setFilter('done')">COMPLETED (<span id="countDone">0</span>)</button>
+</div>
+
+<!-- Task List -->
+<div id="taskList"></div>
+
+<script>
+var STORAGE_KEY = 'v07_plugin_tasks_data';
+var activeFilter = 'all';
+var selectedPriority = 'MEDIUM';
+var _cachedTasks = [];
+
+// --- IMPECCABLE SANITIZATION & SAFE TEXT ---
+function cleanText(input) {
+  if (input == null) return '';
+  if (typeof input === 'object') {
+    if (input.value) input = input.value;
+    else if (Array.isArray(input)) input = input.join(', ');
+    else input = '';
+  }
+  var str = String(input).replace(/<[^>]+>/g, ' ');
+  var txt = document.createElement('textarea');
+  txt.innerHTML = str;
+  return txt.value.replace(/\s+/g, ' ').trim();
+}
+
+function esc(s) {
+  return (s || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// --- PLATFORM NATIVE BRIDGE HELPER ---
+async function callNative(action, payload) {
+  payload = payload || {};
+  if (window.PlatformBridge && typeof window.PlatformBridge.invoke === 'function') {
+    try {
+      var raw = window.PlatformBridge.invoke(action, JSON.stringify(payload));
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      console.warn('PlatformBridge error:', e);
+    }
+  }
+  if (window.parent && typeof window.parent.nativeInvoke === 'function') {
+    try {
+      return await window.parent.nativeInvoke(action, payload);
+    } catch (e) {
+      console.warn('parent.nativeInvoke error:', e);
+    }
+  }
+  return null;
+}
+
+function getLocalTasks() {
+  try {
+    var s = localStorage.getItem(STORAGE_KEY);
+    if (s) return JSON.parse(s);
+  } catch (e) {}
+  return [];
+}
+
+function saveLocalTasks(tasks) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    window.dispatchEvent(new Event('storage'));
+  } catch (e) {}
+}
+
+function toggleDeadlineBox() {
+  var box = document.getElementById('deadlineBox');
+  var btn = document.getElementById('btnDueToggle');
+  var isOpen = box.classList.toggle('open');
+  btn.classList.toggle('active', isOpen);
+
+  if (isOpen) {
+    var dInput = document.getElementById('newTaskDate');
+    var tInput = document.getElementById('newTaskTime');
+    if (!dInput.value) {
+      dInput.value = new Date().toISOString().split('T')[0];
+    }
+    if (!tInput.value) {
+      var now = new Date();
+      now.setHours(now.getHours() + 2, 0, 0, 0);
+      tInput.value = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+    }
+  }
+}
+
+function setPrioSelection(prio) {
+  selectedPriority = prio;
+  ['HIGH', 'MEDIUM', 'LOW'].forEach(function(p) {
+    var btn = document.getElementById('prio' + p.charAt(0) + p.slice(1).toLowerCase());
+    if (btn) {
+      btn.className = (p === prio) ? ('prio-btn active-prio-' + p.toLowerCase()) : 'prio-btn';
+    }
+  });
+}
+
+function scheduleAlarms(taskId, title, deadlineIso) {
+  if (!taskId || !deadlineIso) return;
+  var ms = new Date(deadlineIso).getTime();
+  if (isNaN(ms) || ms <= Date.now()) return;
+
+  try { callNative('notifications:requestPermission', {}); } catch(e){}
+
+  // Exact alarm at deadline
+  callNative('alarms:schedule', {
+    id: taskId + '_due',
+    title: '🚨 Directive Due: ' + title,
+    body: 'Deadline reached. Focus on completion.',
+    triggerAtMs: ms,
+    pluginId: 'tasks',
+    isAlarm: true
+  });
+
+  // 1-hour advance reminder
+  if (ms - Date.now() > 3600000) {
+    callNative('alarms:schedule', {
+      id: taskId + '_1h',
+      title: '⏰ Task Reminder: ' + title,
+      body: 'Upcoming directive deadline in 1 hour',
+      triggerAtMs: ms - 3600000,
+      pluginId: 'tasks',
+      isAlarm: false
+    });
+  }
+}
+
+function cancelAlarms(taskId) {
+  if (!taskId) return;
+  callNative('alarms:cancel', { id: taskId, pluginId: 'tasks' });
+  callNative('alarms:cancel', { id: taskId + '_due', pluginId: 'tasks' });
+  callNative('alarms:cancel', { id: taskId + '_1h', pluginId: 'tasks' });
+}
+
+async function loadTasks() {
+  var res = await callNative('tasks:list');
+  if (res && Array.isArray(res.tasks)) {
+    _cachedTasks = res.tasks.map(function(t) {
+      return {
+        id: t.id,
+        title: cleanText(t.title),
+        done: (t.status === 'completed' || t.status === 'done' || t.done === true),
+        priority: (t.priority || 'MEDIUM').toUpperCase(),
+        created: t.created_at || t.createdAt || Date.now(),
+        deadline: t.deadline || ''
+      };
+    });
+    saveLocalTasks(_cachedTasks);
+    renderTasks();
+    return;
+  }
+
+  // Fallback to local storage
+  _cachedTasks = getLocalTasks();
+  renderTasks();
+}
+
+function setFilter(f) {
+  activeFilter = f;
+  ['All', 'Pending', 'High', 'Done'].forEach(function(name) {
+    var chip = document.getElementById('chip' + name);
+    if (chip) chip.classList.toggle('active', name.toLowerCase() === f);
+  });
+  renderTasks();
+}
+
+function formatDeadlinePill(deadline, isDone) {
+  if (!deadline) return '';
+  var d = new Date(deadline);
+  if (isNaN(d.getTime())) return '';
+  var now = Date.now();
+  var diff = d.getTime() - now;
+  var isOverdue = diff < 0 && !isDone;
+
+  var timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  var isToday = new Date().toISOString().slice(0, 10) === d.toISOString().slice(0, 10);
+  var dateStr = isToday ? ('Today ' + timeStr) : (d.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' + timeStr);
+
+  if (isDone) {
+    return '<span class="deadline-pill">✓ ' + esc(dateStr) + '</span>';
+  }
+  if (isOverdue) {
+    var mins = Math.round(Math.abs(diff) / 60000);
+    var overdueLabel = mins < 60 ? (mins + 'm overdue') : (Math.round(mins / 60) + 'h overdue');
+    return '<span class="deadline-pill overdue">⚠️ ' + overdueLabel + '</span>';
+  }
+  if (diff <= 3600000) {
+    var remainingMins = Math.max(1, Math.round(diff / 60000));
+    return '<span class="deadline-pill due-soon">⏰ Due in ' + remainingMins + 'm</span>';
+  }
+  return '<span class="deadline-pill">⏰ ' + esc(dateStr) + '</span>';
+}
+
+function renderTasks() {
+  var tasks = _cachedTasks;
+  var total = tasks.length;
+  var doneCount = tasks.filter(function(t) { return t.done; }).length;
+  var pendingCount = total - doneCount;
+  var highCount = tasks.filter(function(t) { return t.priority === 'HIGH' && !t.done; }).length;
+
+  document.getElementById('countAll').textContent = total;
+  document.getElementById('countPending').textContent = pendingCount;
+  document.getElementById('countHigh').textContent = highCount;
+  document.getElementById('countDone').textContent = doneCount;
+
+  document.getElementById('statPending').textContent = pendingCount;
+  document.getElementById('statHigh').textContent = highCount;
+  document.getElementById('statDone').textContent = doneCount;
+
+  var pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
+  document.getElementById('statRate').textContent = pct + '%';
+  document.getElementById('progressPctText').textContent = doneCount + '/' + total + ' (' + pct + '%)';
+  document.getElementById('progressBar').style.width = pct + '%';
+
+  var filtered = tasks.slice().sort(function(a, b) {
+    if (a.done !== b.done) return a.done ? 1 : -1;
+    if (a.priority === 'HIGH' && b.priority !== 'HIGH') return -1;
+    if (a.priority !== 'HIGH' && b.priority === 'HIGH') return 1;
+    if (a.deadline && b.deadline) return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+    if (a.deadline && !b.deadline) return -1;
+    if (!a.deadline && b.deadline) return 1;
+    return b.created - a.created;
+  });
+
+  if (activeFilter === 'pending') filtered = filtered.filter(function(t) { return !t.done; });
+  else if (activeFilter === 'high') filtered = filtered.filter(function(t) { return t.priority === 'HIGH' && !t.done; });
+  else if (activeFilter === 'done') filtered = filtered.filter(function(t) { return t.done; });
+
+  var container = document.getElementById('taskList');
+  if (!filtered.length) {
+    container.innerHTML = '<div class="empty-state">' +
+      '<svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.4">' +
+        '<path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>' +
+      '</svg>' +
+      '<div style="font-weight:700;color:var(--text-primary)">No tasks in this view</div>' +
+      '<div>Add a quiet priority above or switch filter tabs</div>' +
+    '</div>';
+    return;
+  }
+
+  var html = '';
+  filtered.forEach(function(t) {
+    var isHigh = (t.priority === 'HIGH');
+    var isLow = (t.priority === 'LOW');
+    var prioClass = isHigh ? 'high' : (isLow ? 'low' : 'medium');
+    var prioCol = isHigh ? 'var(--rose)' : (isLow ? 'var(--accent)' : 'var(--yellow)');
+    var deadlineHtml = formatDeadlinePill(t.deadline, t.done);
+
+    html += '<div class="task-item ' + (t.done ? 'is-done' : '') + '" style="border-left:3.5px solid ' + (t.done ? 'var(--border)' : prioCol) + '" onclick="toggleTask(\'' + t.id + '\')">';
+    html += '  <div class="task-check-wrap" onclick="event.stopPropagation();toggleTask(\'' + t.id + '\')">';
+    html += '    <div class="task-check ' + (t.done ? 'checked' : '') + '">';
+    if (t.done) {
+      html += '      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+    }
+    html += '    </div>';
+    html += '  </div>';
+    html += '  <div class="task-body">';
+    html += '    <div class="task-title ' + (t.done ? 'done-strike' : '') + '">' + esc(t.title) + '</div>';
+    html += '    <div class="task-meta">';
+    html += '      <span class="prio-badge ' + prioClass + '">' + esc(t.priority) + '</span>';
+    if (deadlineHtml) html += deadlineHtml;
+    html += '    </div>';
+    html += '  </div>';
+    html += '  <div class="task-actions">';
+    html += '    <div class="task-del-btn" onclick="event.stopPropagation();deleteTask(\'' + t.id + '\')" title="Archive Task" aria-label="Archive Task">✕</div>';
+    html += '  </div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+async function addTask() {
+  var input = document.getElementById('newTaskInput');
+  var title = cleanText(input.value);
+  if (!title) return;
+
+  var dateInput = document.getElementById('newTaskDate');
+  var timeInput = document.getElementById('newTaskTime');
+  var deadlineBox = document.getElementById('deadlineBox');
+  var hasDeadline = deadlineBox && deadlineBox.classList.contains('open') && dateInput && dateInput.value;
+
+  var deadlineIso = null;
+  if (hasDeadline) {
+    var tVal = (timeInput && timeInput.value) ? timeInput.value : '18:00';
+    deadlineIso = dateInput.value + 'T' + tVal + ':00';
+  }
+
+  var newId = 't_' + Date.now();
+  var localItem = {
+    id: newId,
+    title: title,
+    done: false,
+    priority: selectedPriority,
+    created: Date.now(),
+    deadline: deadlineIso || ''
+  };
+
+  _cachedTasks.unshift(localItem);
+  saveLocalTasks(_cachedTasks);
+  input.value = '';
+  renderTasks();
+
+  if (deadlineBox && deadlineBox.classList.contains('open')) {
+    toggleDeadlineBox();
+  }
+
+  var res = await callNative('tasks:add', {
+    title: title,
+    priority: selectedPriority,
+    deadline: deadlineIso
+  });
+
+  var realId = (res && res.id) ? res.id : ((res && res.task && res.task.id) ? res.task.id : newId);
+  localItem.id = realId;
+  saveLocalTasks(_cachedTasks);
+
+  if (deadlineIso) {
+    scheduleAlarms(realId, title, deadlineIso);
+  }
+}
+
+async function toggleTask(id) {
+  var t = _cachedTasks.find(function(x) { return x.id === id; });
+  if (!t) return;
+  var wasDone = t.done;
+  t.done = !t.done;
+  saveLocalTasks(_cachedTasks);
+  renderTasks();
+
+  await callNative('tasks:toggle', { id: id });
+
+  if (t.done) {
+    cancelAlarms(id);
+  } else if (t.deadline) {
+    scheduleAlarms(id, t.title, t.deadline);
+  }
+}
+
+async function deleteTask(id) {
+  cancelAlarms(id);
+  _cachedTasks = _cachedTasks.filter(function(x) { return x.id !== id; });
+  saveLocalTasks(_cachedTasks);
+  renderTasks();
+
+  await callNative('tasks:delete', { id: id });
+}
+
+window.v07AddTask = function() {
+  var inp = document.getElementById('newTaskInput');
+  if (inp) {
+    inp.focus();
+    inp.scrollIntoView({ behavior: 'smooth' });
+  }
+};
+
+loadTasks();
+
+window.addEventListener('message', function(ev) {
+  if (ev.data && ev.data.type === 'v07_data_updated') {
+    loadTasks();
+  }
+});
+setTimeout(loadTasks, 600);
+</script>
+</body>
+</html>

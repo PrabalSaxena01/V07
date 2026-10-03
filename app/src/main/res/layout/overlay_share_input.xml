@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/share_backdrop"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#D9000000">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="vertical"
+        android:background="@drawable/overlay_think_bg"
+        android:elevation="12dp"
+        android:layout_margin="16dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="10dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:background="#1A191C21">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="// VAULT_ENTRY"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="#A7C8FF"
+                android:fontFamily="monospace"
+                android:letterSpacing="0.15" />
+
+            <TextView
+                android:id="@+id/btn_cancel"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:gravity="center"
+                android:text="\u2715"
+                android:textSize="10sp"
+                android:textColor="#717171"
+                android:clickable="true"
+                android:focusable="true"
+                android:contentDescription="Dismiss" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/share_content_preview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="11sp"
+            android:textColor="#717171"
+            android:fontFamily="monospace"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="8dp"
+            android:visibility="gone" />
+
+        <EditText
+            android:id="@+id/share_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="TITLE"
+            android:textColorHint="#40717171"
+            android:textColor="#E1E2EA"
+            android:textSize="14sp"
+            android:fontFamily="monospace"
+            android:background="@drawable/overlay_input_bg"
+            android:singleLine="true"
+            android:inputType="text"
+            android:maxLines="1"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginTop="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="10dp"
+            android:paddingEnd="4dp"
+            android:layout_marginTop="6dp">
+
+            <EditText
+                android:id="@+id/share_info"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="CONTENT"
+                android:textColorHint="#40717171"
+                android:textColor="#E1E2EA"
+                android:textSize="13sp"
+                android:fontFamily="monospace"
+                android:background="@drawable/overlay_input_bg"
+                android:minLines="2"
+                android:gravity="top"
+                android:inputType="textMultiLine"
+                android:maxLines="4"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:layout_marginEnd="6dp" />
+
+            <ImageButton
+                android:id="@+id/btn_paste_clipboard"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@drawable/ic_content_paste"
+                android:scaleType="center"
+                android:background="@drawable/overlay_action_dark_bg"
+                android:clickable="true"
+                android:focusable="true"
+                android:contentDescription="Paste clipboard" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="TAGS"
+            android:textSize="9sp"
+            android:textColor="#717171"
+            android:fontFamily="monospace"
+            android:letterSpacing="0.15"
+            android:paddingStart="10dp"
+            android:paddingTop="8dp"
+            android:layout_marginBottom="2dp" />
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:scrollbars="none"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp">
+
+            <LinearLayout
+                android:id="@+id/share_tags_container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" />
+        </HorizontalScrollView>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="10dp">
+
+            <TextView
+                android:id="@+id/btn_save"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="> BROADCAST"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:fontFamily="monospace"
+                android:letterSpacing="0.15"
+                android:background="@drawable/overlay_send_btn_bg"
+                android:clickable="true"
+                android:focusable="true"
+                android:contentDescription="Broadcast" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

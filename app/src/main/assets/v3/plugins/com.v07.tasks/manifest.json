@@ -1,0 +1,70 @@
+{
+  "id": "com.v07.tasks",
+  "name": "Tasks",
+  "version": "1.0.0",
+  "author": "Prabal",
+  "description": "Daily tasks, priority checklist, progress bar, and deadlines.",
+  "permissions": ["events:read", "events:write", "server", "notification"],
+  "entry": "index.html",
+  "settings": "settings.html",
+  "nav": {
+    "placement": "log-dashboard",
+    "icon": "checklist",
+    "label": "TASKS",
+    "color": "#5CE1E6"
+  },
+  "widgets": [
+    {
+      "id": "tasks_today",
+      "title": "TASKS & DIRECTIVES",
+      "icon": "checklist",
+      "path": "widget.html",
+      "color": "#5CE1E6",
+      "supportedSizes": ["compact", "small", "medium", "large"],
+      "defaultSize": "medium"
+    },
+    {
+      "id": "tasks_compact",
+      "title": "TASK MINI PROGRESS",
+      "icon": "task_alt",
+      "path": "widget.html",
+      "color": "#5CE1E6",
+      "supportedSizes": ["compact"],
+      "defaultSize": "compact"
+    },
+    {
+      "id": "tasks_counter",
+      "title": "TASK QUICK COUNTER",
+      "icon": "checklist",
+      "path": "widget.html",
+      "color": "#5CE1E6",
+      "supportedSizes": ["small"],
+      "defaultSize": "small"
+    },
+    {
+      "id": "tasks_expanded",
+      "title": "TASK QUEUE & DEADLINES",
+      "icon": "view_list",
+      "path": "widget.html",
+      "color": "#5CE1E6",
+      "supportedSizes": ["large"],
+      "defaultSize": "large"
+    }
+  ],
+  "fab": [
+    {
+      "id": "addtask",
+      "label": "+ TASKS",
+      "icon": "checklist",
+      "fn": "v07OpenPlugin",
+      "args": { "id": "com.v07.tasks" },
+      "enabled": true
+    }
+  ],
+  "notifications": {
+    "supported": true,
+    "defaultTime": "09:00",
+    "title": "Daily Tasks",
+    "body": "Review your daily tasks and priorities"
+  }
+}

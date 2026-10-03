@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="40dp"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingStart="6dp"
+    android:paddingEnd="10dp"
+    android:layout_marginStart="4dp"
+    android:layout_marginEnd="4dp"
+    android:layout_marginBottom="1dp"
+    android:background="@drawable/overlay_task_row_bg"
+    android:clickable="true"
+    android:focusable="true">
+
+    <TextView
+        android:id="@+id/check_circle"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:gravity="center"
+        android:textSize="9sp"
+        android:background="@drawable/overlay_check_circle"
+        android:clickable="true"
+        android:focusable="true" />
+
+    <TextView
+        android:id="@+id/check_label"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textSize="12sp"
+        android:textColor="#C1C6D4"
+        android:fontFamily="monospace"
+        android:paddingStart="8dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:ellipsize="end"
+        android:maxLines="1" />
+</LinearLayout>

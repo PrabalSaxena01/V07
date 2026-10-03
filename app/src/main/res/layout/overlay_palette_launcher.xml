@@ -1,0 +1,445 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/palette_backdrop"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#D9000000">
+
+    <!-- Panel container -->
+    <FrameLayout
+        android:id="@+id/palette_panel"
+        android:layout_width="240dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="100dp"
+        android:background="@drawable/overlay_palette_panel_bg"
+        android:elevation="16dp"
+        android:padding="6dp"
+        android:alpha="0">
+
+        <!-- Page 1: Main commands -->
+        <LinearLayout
+            android:id="@+id/palette_page1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="4dp">
+
+            <!-- THINK -->
+            <LinearLayout
+                android:id="@+id/pbtn_think"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="18dp"
+                android:paddingEnd="14dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="@drawable/overlay_palette_row_bg">
+                <TextView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:gravity="center"
+                    android:text="&#x1F4AD;"
+                    android:textSize="16sp" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="14dp"
+                    android:text="THINK"
+                    android:textSize="13sp"
+                    android:textColor="#e1e2ea"
+                    android:fontFamily="sans-serif-medium" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="&#x203A;"
+                    android:textSize="16sp"
+                    android:textColor="#717171" />
+            </LinearLayout>
+
+            <!-- MOOD -->
+            <LinearLayout
+                android:id="@+id/pbtn_mood"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="18dp"
+                android:paddingEnd="14dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="@drawable/overlay_palette_row_bg">
+                <TextView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:gravity="center"
+                    android:text="&#x1F60A;"
+                    android:textSize="16sp" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="14dp"
+                    android:text="MOOD"
+                    android:textSize="13sp"
+                    android:textColor="#e1e2ea"
+                    android:fontFamily="sans-serif-medium" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="&#x203A;"
+                    android:textSize="16sp"
+                    android:textColor="#717171" />
+            </LinearLayout>
+
+            <!-- ENERGY -->
+            <LinearLayout
+                android:id="@+id/pbtn_energy"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="18dp"
+                android:paddingEnd="14dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="@drawable/overlay_palette_row_bg">
+                <TextView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:gravity="center"
+                    android:text="&#x26A1;"
+                    android:textSize="16sp" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="14dp"
+                    android:text="ENERGY"
+                    android:textSize="13sp"
+                    android:textColor="#e1e2ea"
+                    android:fontFamily="sans-serif-medium" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="&#x203A;"
+                    android:textSize="16sp"
+                    android:textColor="#717171" />
+            </LinearLayout>
+
+            <!-- RUN -->
+            <LinearLayout
+                android:id="@+id/pbtn_run"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="18dp"
+                android:paddingEnd="14dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="@drawable/overlay_palette_row_bg">
+                <TextView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:gravity="center"
+                    android:text="&#x1F3C3;"
+                    android:textSize="16sp" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="14dp"
+                    android:text="RUN"
+                    android:textSize="13sp"
+                    android:textColor="#e1e2ea"
+                    android:fontFamily="sans-serif-medium" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="&#x203A;"
+                    android:textSize="16sp"
+                    android:textColor="#717171" />
+            </LinearLayout>
+
+            <!-- MORE -->
+            <LinearLayout
+                android:id="@+id/pbtn_more"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="18dp"
+                android:paddingEnd="14dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="@drawable/overlay_palette_row_bg">
+                <TextView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:gravity="center"
+                    android:text="&#x2026;"
+                    android:textSize="18sp"
+                    android:textColor="#e1e2ea" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="14dp"
+                    android:text="MORE"
+                    android:textSize="13sp"
+                    android:textColor="#e1e2ea"
+                    android:fontFamily="sans-serif-medium" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="&#x2192;"
+                    android:textSize="14sp"
+                    android:textColor="#717171" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Page 2: More commands (hidden initially) -->
+        <LinearLayout
+            android:id="@+id/palette_page2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="4dp"
+            android:visibility="gone">
+
+            <!-- Back -->
+            <LinearLayout
+                android:id="@+id/pbtn_back"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="18dp"
+                android:paddingEnd="14dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="@drawable/overlay_palette_row_bg">
+                <TextView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:gravity="center"
+                    android:text="&#x2190;"
+                    android:textSize="16sp"
+                    android:textColor="#e1e2ea" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="14dp"
+                    android:text="BACK"
+                    android:textSize="13sp"
+                    android:textColor="#e1e2ea"
+                    android:fontFamily="sans-serif-medium" />
+            </LinearLayout>
+
+            <!-- WIN -->
+            <LinearLayout
+                android:id="@+id/pbtn_win"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="18dp"
+                android:paddingEnd="14dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="@drawable/overlay_palette_row_bg">
+                <TextView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:gravity="center"
+                    android:text="&#x1F3C6;"
+                    android:textSize="16sp" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="14dp"
+                    android:text="WIN"
+                    android:textSize="13sp"
+                    android:textColor="#e1e2ea"
+                    android:fontFamily="sans-serif-medium" />
+            </LinearLayout>
+
+            <!-- HABIT -->
+            <LinearLayout
+                android:id="@+id/pbtn_habit"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="18dp"
+                android:paddingEnd="14dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="@drawable/overlay_palette_row_bg">
+                <TextView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:gravity="center"
+                    android:text="&#x2713;"
+                    android:textSize="16sp"
+                    android:textColor="#e1e2ea" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="14dp"
+                    android:text="HABIT"
+                    android:textSize="13sp"
+                    android:textColor="#e1e2ea"
+                    android:fontFamily="sans-serif-medium" />
+            </LinearLayout>
+
+            <!-- DSA -->
+            <LinearLayout
+                android:id="@+id/pbtn_dsa"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="18dp"
+                android:paddingEnd="14dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="@drawable/overlay_palette_row_bg">
+                <TextView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:gravity="center"
+                    android:text="&#x1F4D6;"
+                    android:textSize="16sp" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="14dp"
+                    android:text="DSA"
+                    android:textSize="13sp"
+                    android:textColor="#e1e2ea"
+                    android:fontFamily="sans-serif-medium" />
+            </LinearLayout>
+
+            <!-- CHESS -->
+            <LinearLayout
+                android:id="@+id/pbtn_chess"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="18dp"
+                android:paddingEnd="14dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="@drawable/overlay_palette_row_bg">
+                <TextView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:gravity="center"
+                    android:text="&#x265F;"
+                    android:textSize="16sp" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="14dp"
+                    android:text="CHESS"
+                    android:textSize="13sp"
+                    android:textColor="#e1e2ea"
+                    android:fontFamily="sans-serif-medium" />
+            </LinearLayout>
+
+            <!-- PUSHUPS -->
+            <LinearLayout
+                android:id="@+id/pbtn_pushups"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="18dp"
+                android:paddingEnd="14dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="@drawable/overlay_palette_row_bg">
+                <TextView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:gravity="center"
+                    android:text="&#x1F4AA;"
+                    android:textSize="16sp" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="14dp"
+                    android:text="PUSHUPS"
+                    android:textSize="13sp"
+                    android:textColor="#e1e2ea"
+                    android:fontFamily="sans-serif-medium" />
+            </LinearLayout>
+
+            <!-- PANIC -->
+            <LinearLayout
+                android:id="@+id/pbtn_panic"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="18dp"
+                android:paddingEnd="14dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="@drawable/overlay_palette_row_bg">
+                <TextView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:gravity="center"
+                    android:text="&#x1F6A8;"
+                    android:textSize="16sp" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="14dp"
+                    android:text="PANIC"
+                    android:textSize="13sp"
+                    android:textColor="#FF4444"
+                    android:fontFamily="sans-serif-medium" />
+            </LinearLayout>
+        </LinearLayout>
+    </FrameLayout>
+
+    <!-- FAB (bottom right) -->
+    <FrameLayout
+        android:id="@+id/palette_fab"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="24dp"
+        android:background="@drawable/overlay_fab_beige_bg"
+        android:elevation="12dp"
+        android:clickable="true"
+        android:focusable="true">
+        <TextView
+            android:id="@+id/palette_fab_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="&#x2318;"
+            android:textSize="22sp"
+            android:textColor="#e1e2ea"
+            android:fontFamily="sans-serif-medium" />
+    </FrameLayout>
+
+</FrameLayout>

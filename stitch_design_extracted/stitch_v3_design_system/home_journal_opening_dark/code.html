@@ -1,0 +1,276 @@
+<!DOCTYPE html><html lang="en" style=""><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><meta content="mobile_tab" name="shell-type"><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "surface": "#171B19",
+        "background": "#171B19",
+        "surface-container-lowest": "#202522",
+        "surface-container": "#202522",
+        "surface-container-low": "#202522",
+        "surface-container-subtle": "#272D29",
+        "surface-container-high": "#272D29",
+        "surface-container-highest": "#343C37",
+        "border-subtle": "#343C37",
+        "outline": "#343C37",
+        "outline-variant": "#272D29",
+        "primary": "#75B7A1",
+        "primary-container": "#75B7A1",
+        "on-primary": "#101412",
+        "on-surface": "#E9EEE9",
+        "on-surface-variant": "#AAB5AE",
+        "on-surface-muted": "#7D8982",
+        "accent-pill": "#263D35",
+        "secondary": "#D09A8C",
+        "secondary-container": "#3A2B28",
+        "on-secondary": "#171B19",
+        "on-secondary-container": "#D09A8C"
+      },
+      borderRadius: {
+        "DEFAULT": "0.25rem",
+        "lg": "0.5rem",
+        "xl": "0.75rem",
+        "full": "9999px"
+      },
+      spacing: {
+        "space-xl": "1.5rem",
+        "space-sm": "0.75rem",
+        "space-2xl": "2rem",
+        "space-xs": "0.5rem",
+        "gutter": "1.25rem",
+        "margin": "1.25rem",
+        "space-lg": "1.25rem",
+        "space-md": "1rem"
+      },
+      fontFamily: {
+        "body-sm": ["Plus Jakarta Sans"],
+        "label-lg": ["Plus Jakarta Sans"],
+        "display-lg": ["Plus Jakarta Sans"],
+        "label-md": ["Plus Jakarta Sans"],
+        "body-lg": ["Plus Jakarta Sans"],
+        "display-lg-mobile": ["Plus Jakarta Sans"],
+        "headline-md": ["Plus Jakarta Sans"],
+        "headline-sm": ["Plus Jakarta Sans"],
+        "label-sm": ["Plus Jakarta Sans"],
+        "headline-lg": ["Plus Jakarta Sans"],
+        "body-md": ["Plus Jakarta Sans"]
+      },
+      fontSize: {
+        "body-sm": ["13px", { "lineHeight": "20px", "fontWeight": "400" }],
+        "label-lg": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+        "display-lg": ["40px", { "lineHeight": "52px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+        "label-md": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+        "body-lg": ["17px", { "lineHeight": "28px", "fontWeight": "400" }],
+        "display-lg-mobile": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+        "headline-md": ["22px", { "lineHeight": "30px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+        "headline-sm": ["18px", { "lineHeight": "26px", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+        "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.02em", "fontWeight": "500" }],
+        "headline-lg": ["28px", { "lineHeight": "38px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+        "body-md": ["15px", { "lineHeight": "24px", "fontWeight": "400" }]
+      }
+    }
+  }
+};</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head><body class="bg-[#171B19] font-body-md text-body-md text-[#E9EEE9] antialiased flex flex-col min-h-screen"><style id="cool-slate-theme-override">body, main, header, .bg-\[\#171B19\], .bg-\[\#171B19\]\/85 { background-color: #0d1117 !important; } .bg-\[\#202522\] { background-color: #161b22 !important; } .bg-\[\#272D29\], .hover\:bg-\[\#272D29\]:hover, .hover\:bg-\[\#2e3530\]:hover { background-color: #21262d !important; } .border-\[\#343C37\] { border-color: #30363d !important; } .text-\[\#E9EEE9\] { color: #f0f6fc !important; } .text-\[\#AAB5AE\] { color: #8b949e !important; } .text-\[\#7D8982\] { color: #6e7681 !important; } .text-\[\#101412\] { color: #0d1117 !important; } .bg-\[\#3A2B28\] { background-color: #1f242c !important; } .border-\[\#D09A8C\]\/20 { border-color: rgba(91, 143, 185, 0.25) !important; } .text-\[\#D09A8C\] { color: #5B8FB9 !important; }</style><header class="fixed top-0 w-full z-50 pt-safe bg-[#171B19]/85 backdrop-blur-xl border-b border-[#343C37]"><div class="h-16 px-margin flex items-center justify-between"><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-[#5B8FB9] text-[20px]">spa</span><h1 class="font-headline-sm text-headline-sm text-[#E9EEE9] font-medium tracking-tight">Home</h1></div><div class="w-8 h-8 rounded-full bg-[#5B8FB9] flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-[#101412] text-[18px]">person</span></div></div></header><main class="flex flex-col relative w-full pt-16 pb-28 bg-[#171B19] px-margin min-h-screen"><div class="flex flex-col w-full pb-6 space-y-space-xl">
+<!-- Warm Morning Greeting -->
+<section class="flex flex-col pt-space-xs">
+<div class="flex items-center gap-space-xs mb-1.5">
+<span class="material-symbols-outlined text-[#5B8FB9] text-[20px]" style="font-variation-settings: &quot;FILL&quot; 1;">eco</span>
+<span class="font-label-md text-label-md text-[#5B8FB9] font-medium tracking-wide">Sunday sanctuary</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-[#E9EEE9] font-semibold tracking-tight">Good morning, Sarah</h2>
+<p class="font-body-md text-body-md text-[#AAB5AE] mt-0.5">A little space for today.</p>
+</section>
+<!-- Today's Quiet Snapshot (Single Calm Composition) -->
+<section class="w-full bg-[#202522] border border-[#343C37] rounded-xl p-space-lg shadow-sm">
+<div class="flex items-center justify-between pb-space-sm mb-space-sm">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-[#5B8FB9]"></span>
+<span class="font-label-md text-label-md text-[#AAB5AE]">The morning flow</span>
+</div>
+<span class="font-label-sm text-label-sm text-[#7D8982]">Updated moments ago</span>
+</div>
+<div class="grid grid-cols-3 gap-space-xs text-left">
+<div class="flex flex-col pr-1">
+<span class="font-headline-sm text-headline-sm text-[#E9EEE9] font-semibold">2h 15m</span>
+<span class="font-label-sm text-label-sm text-[#AAB5AE] mt-0.5">screen time today</span>
+</div>
+<div class="flex flex-col px-1">
+<span class="font-headline-sm text-headline-sm text-[#5B8FB9] font-semibold">50 min</span>
+<span class="font-label-sm text-label-sm text-[#AAB5AE] mt-0.5">focused time</span>
+</div>
+<div class="flex flex-col pl-1">
+<span class="font-headline-sm text-headline-sm text-[#E9EEE9] font-semibold">4 of 5</span>
+<span class="font-label-sm text-label-sm text-[#AAB5AE] mt-0.5">habits completed</span>
+</div>
+</div>
+<!-- Soft Breath Indicator Bar -->
+<div class="w-full bg-[#272D29] h-1.5 rounded-full mt-space-md overflow-hidden flex">
+<div class="bg-[#5B8FB9] h-full rounded-full transition-all duration-700" style="width: 68%;"></div>
+</div>
+</section>
+<!-- Focus Section -->
+<section class="w-full bg-[#202522] border border-[#343C37] rounded-xl p-space-xl shadow-sm flex flex-col items-center text-center relative overflow-hidden">
+<div class="w-full flex items-center justify-between mb-space-md text-left">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-[#E9EEE9]">Take a little time for yourself</h3>
+<p class="font-body-sm text-body-sm text-[#AAB5AE]">Quiet intervals for calm presence</p>
+</div>
+<div class="w-8 h-8 rounded-full bg-[#272D29] border border-[#343C37] flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[#5B8FB9] text-[18px]">hourglass_empty</span>
+</div>
+</div>
+<!-- Timer Visual -->
+<div class="my-space-md flex flex-col items-center">
+<div class="font-display-lg-mobile text-display-lg-mobile font-semibold text-[#E9EEE9] tracking-tight" id="timer-display">
+        25:00
+      </div>
+<p class="font-label-md text-label-md text-[#AAB5AE] mt-1 flex items-center gap-1.5">
+<span class="inline-block w-1.5 h-1.5 rounded-full bg-[#5B8FB9] animate-pulse"></span>
+        Gentle bell chime at completion
+      </p>
+</div>
+<div class="w-full flex items-center justify-center gap-space-sm pt-space-xs">
+<button class="w-full max-w-[240px] py-3 px-6 rounded-lg bg-[#5B8FB9] text-[#101412] font-label-lg text-label-lg font-medium shadow-sm hover:brightness-105 active:scale-[0.98] transition-all flex items-center justify-center gap-2" id="timer-btn">
+<span class="material-symbols-outlined text-[18px]">play_arrow</span>
+<span class="">Start focus</span>
+</button>
+</div>
+</section>
+<!-- Tasks Section: A few things for today -->
+<section class="w-full bg-[#202522] border border-[#343C37] rounded-xl p-space-lg shadow-sm flex flex-col">
+<div class="flex items-center justify-between mb-space-sm">
+<div class="flex flex-col">
+<h3 class="font-headline-sm text-headline-sm text-[#E9EEE9]">A few things for today</h3>
+<span class="font-label-sm text-label-sm text-[#AAB5AE]">Unrushed steps to take</span>
+</div>
+<span class="font-label-sm text-label-sm text-[#5B8FB9] font-medium bg-[#1F2D3A] px-2.5 py-1 rounded-full border border-[#5B8FB9]/20">1 done</span>
+</div>
+<div class="flex flex-col divide-y-0 space-y-space-xs mt-1">
+<!-- Item 1 (Done) -->
+<label class="group flex items-center gap-space-sm p-space-xs rounded-lg hover:bg-[#272D29] transition-colors cursor-pointer select-none">
+<input checked="" class="peer sr-only" type="checkbox">
+<div class="w-5 h-5 rounded-md bg-[#5B8FB9] text-[#101412] flex items-center justify-center peer-checked:flex transition-all">
+<span class="material-symbols-outlined text-[16px]">check</span>
+</div>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md text-[#7D8982] line-through transition-colors">Review morning pages</span>
+<span class="font-label-sm text-label-sm text-[#7D8982]">Written at 7:45 am</span>
+</div>
+</label>
+<!-- Item 2 -->
+<label class="group flex items-center gap-space-sm p-space-xs rounded-lg hover:bg-[#272D29] transition-colors cursor-pointer select-none">
+<input class="peer sr-only" type="checkbox">
+<div class="w-5 h-5 rounded-md bg-[#272D29] border border-[#343C37] text-transparent peer-checked:bg-[#5B8FB9] peer-checked:border-[#5B8FB9] peer-checked:text-[#101412] flex items-center justify-center transition-all">
+<span class="material-symbols-outlined text-[16px]">check</span>
+</div>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md text-[#E9EEE9] peer-checked:text-[#7D8982] peer-checked:line-through transition-colors">Water the plants</span>
+<span class="font-label-sm text-label-sm text-[#AAB5AE]">Ferns and monstera by the window</span>
+</div>
+</label>
+<!-- Item 3 -->
+<label class="group flex items-center gap-space-sm p-space-xs rounded-lg hover:bg-[#272D29] transition-colors cursor-pointer select-none">
+<input class="peer sr-only" type="checkbox">
+<div class="w-5 h-5 rounded-md bg-[#272D29] border border-[#343C37] text-transparent peer-checked:bg-[#5B8FB9] peer-checked:border-[#5B8FB9] peer-checked:text-[#101412] flex items-center justify-center transition-all">
+<span class="material-symbols-outlined text-[16px]">check</span>
+</div>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md text-[#E9EEE9] peer-checked:text-[#7D8982] peer-checked:line-through transition-colors">Read for 10 minutes</span>
+<span class="font-label-sm text-label-sm text-[#AAB5AE]">Balcony tea time</span>
+</div>
+</label>
+</div>
+<!-- Soft Action Prompt -->
+<button class="mt-space-sm w-full py-2.5 px-space-sm rounded-lg bg-[#272D29] hover:bg-[#2e3530] text-[#AAB5AE] border border-[#343C37] font-label-md text-label-md flex items-center justify-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[18px] text-[#5B8FB9]">add</span>
+<span class="">Add a gentle note</span>
+</button>
+</section>
+<!-- Reading Section: Currently Reading -->
+<section class="w-full bg-[#202522] border border-[#343C37] rounded-xl p-space-lg shadow-sm flex flex-col">
+<div class="flex items-center justify-between mb-space-sm">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[#D09A8C] text-[18px]">menu_book</span>
+<h3 class="font-headline-sm text-headline-sm text-[#E9EEE9]">Currently reading</h3>
+</div>
+<span class="font-label-sm text-label-sm text-[#D09A8C] bg-[#3A2B28] px-2 py-0.5 rounded-full border border-[#D09A8C]/20 font-medium">Kindle sync</span>
+</div>
+<div class="flex items-center gap-space-md">
+<div class="w-14 h-20 rounded-md bg-[#272D29] border border-[#343C37] overflow-hidden shrink-0 shadow-sm">
+<img class="w-full h-full object-cover opacity-90" data-alt="Warm editorial book cover mockup with minimalist botanical leaf print and soft cream background for quiet introversion reading" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhoe71cDDbYn-K824DF2MscqEFiMXO1SaxAzGmGJOxT6IswRkABbux0AtYjoKyXd2yRg09TXID1FjcOx7nmUyeSXhfo34xAd1D0wzLP75m6YcP2tCHo7e9-A8YXyl_7lpeMocezmCtxyRr3ryH5RNt8uQsio_OfdxGTUtniwT7hIVuwBaBiGtuB_-l5R4JdUzcIHebvERrEuSXvOZDHt6ss1ICz0aLQJlDTKXJTwEP1Xw-mVTYUKz7">
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<h4 class="font-headline-sm text-headline-sm text-[#E9EEE9] truncate">Quiet: The Power of Introverts</h4>
+<p class="font-body-sm text-body-sm text-[#AAB5AE] mt-0.5">Susan Cain</p>
+<div class="mt-space-xs flex items-center justify-between text-[#AAB5AE] font-label-sm text-label-sm">
+<span class="">Chapter 4</span>
+<span class="text-[#5B8FB9] font-medium">42% complete</span>
+</div>
+<!-- Mint Progress Line -->
+<div class="w-full bg-[#272D29] h-1.5 rounded-full mt-1.5 overflow-hidden">
+<div class="bg-[#5B8FB9] h-full rounded-full" style="width: 42%;"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Atmospheric Moment of Delight / Daily Thought -->
+<section class="w-full rounded-xl bg-[#272D29] border border-[#343C37] p-space-lg flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-[#5B8FB9] text-[20px] shrink-0 mt-0.5" style="font-variation-settings: &quot;FILL&quot; 1;">format_quote</span>
+<div class="flex flex-col">
+<p class="font-body-sm text-body-sm text-[#E9EEE9] italic leading-relaxed">
+        "Almost everything will work again if you unplug it for a few minutes, including you."
+      </p>
+<span class="font-label-sm text-label-sm text-[#7D8982] mt-1">— Anne Lamott</span>
+</div>
+</section>
+</div>
+<script>
+  (function() {
+    const timerBtn = document.getElementById('timer-btn');
+    const timerDisplay = document.getElementById('timer-display');
+    if (!timerBtn || !timerDisplay) return;
+
+    let isRunning = false;
+    let secondsLeft = 25 * 60;
+    let timerInterval = null;
+
+    function renderTime() {
+      const mins = Math.floor(secondsLeft / 60);
+      const secs = secondsLeft % 60;
+      timerDisplay.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    timerBtn.addEventListener('click', function() {
+      if (isRunning) {
+        clearInterval(timerInterval);
+        isRunning = false;
+        timerBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">play_arrow</span><span>Resume focus</span>';
+        timerBtn.className = "w-full max-w-[240px] py-3 px-6 rounded-lg bg-[#75B7A1] text-[#101412] font-label-lg text-label-lg font-medium shadow-sm active:scale-[0.98] transition-all flex items-center justify-center gap-2";
+      } else {
+        isRunning = true;
+        timerBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">pause</span><span>Pause pause</span>';
+        timerBtn.className = "w-full max-w-[240px] py-3 px-6 rounded-lg bg-[#3A2B28] text-[#D09A8C] border border-[#D09A8C]/30 font-label-lg text-label-lg font-medium shadow-sm active:scale-[0.98] transition-all flex items-center justify-center gap-2";
+        timerInterval = setInterval(() => {
+          if (secondsLeft > 0) {
+            secondsLeft--;
+            renderTime();
+          } else {
+            clearInterval(timerInterval);
+            isRunning = false;
+            secondsLeft = 25 * 60;
+            renderTime();
+            timerBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">check_circle</span><span>Well done</span>';
+            timerBtn.className = "w-full max-w-[240px] py-3 px-6 rounded-lg bg-[#263D35] text-[#75B7A1] border border-[#75B7A1]/30 font-label-lg text-label-lg font-medium shadow-sm active:scale-[0.98] transition-all flex items-center justify-center gap-2";
+          }
+        }, 1000);
+      }
+    });
+  })();
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe pointer-events-none flex justify-center px-margin mb-space-sm"><div class="pointer-events-auto w-full max-w-[400px] h-16 rounded-full bg-[#202522] border border-[#343C37] shadow-[0_12px_32px_-4px_rgba(0,0,0,0.4),0_4px_12px_-2px_rgba(0,0,0,0.2)] px-space-xs flex items-center justify-between"><a class="flex flex-col items-center justify-center min-w-[56px] h-12 rounded-full text-[#5B8FB9] transition-colors" data-path="home" href="#"><span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">spa</span><span class="font-label-sm text-label-sm font-medium text-[#5B8FB9]">Home</span></a><a class="flex flex-col items-center justify-center min-w-[56px] h-12 rounded-full text-[#7D8982] hover:text-[#E9EEE9] transition-colors" data-path="tools" href="#"><span class="material-symbols-outlined text-[20px]">grid_view</span><span class="font-label-sm text-label-sm">Tools</span></a><a class="flex flex-col items-center justify-center min-w-[56px] h-12 rounded-full text-[#7D8982] hover:text-[#E9EEE9] transition-colors" data-path="journal" href="#"><span class="material-symbols-outlined text-[20px]">edit_note</span><span class="font-label-sm text-label-sm">Journal</span></a><a class="flex flex-col items-center justify-center min-w-[56px] h-12 rounded-full text-[#7D8982] hover:text-[#E9EEE9] transition-colors" data-path="day" href="#"><span class="material-symbols-outlined text-[20px]">calendar_today</span><span class="font-label-sm text-label-sm">Day</span></a><a class="flex flex-col items-center justify-center min-w-[56px] h-12 rounded-full text-[#7D8982] hover:text-[#E9EEE9] transition-colors" data-path="you" href="#"><span class="material-symbols-outlined text-[20px]">person_outline</span><span class="font-label-sm text-label-sm">You</span></a></div></nav>
+
+</body></html>

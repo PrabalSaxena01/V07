@@ -1,0 +1,12 @@
+const fs = require('fs');
+const path = require('path');
+const html = fs.readFileSync(path.resolve('app/src/main/assets/v3/index.html'), 'utf8');
+
+const regex = /featured-book-cover/g;
+let match;
+while ((match = regex.exec(html)) !== null) {
+  const start = Math.max(0, match.index - 200);
+  const end = Math.min(html.length, match.index + 300);
+  console.log('--- occurrence ---');
+  console.log(html.substring(start, end));
+}

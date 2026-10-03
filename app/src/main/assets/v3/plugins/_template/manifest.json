@@ -1,0 +1,36 @@
+﻿{
+  "id": "com.v07.template",
+  "name": "Plugin Template",
+  "version": "1.0.0",
+  "author": "Prabal",
+  "description": "Base boilerplate template demonstrating the 5 Pillars of V07 Plugins.",
+  "permissions": ["events:read", "events:write", "server", "notification", "ai"],
+  "entry": "index.html",
+  "settings": "settings.html",
+  "widgets": [
+    {
+      "id": "main",
+      "title": "TEMPLATE",
+      "icon": "extension",
+      "path": "widget.html",
+      "supportedSizes": ["1*1", "2*1", "4*2"],
+      "defaultSize": "4*2",
+      "color": "#A7C8FF"
+    }
+  ],
+  "fab": [
+    {
+      "id": "action",
+      "label": "+ QUICK ACTION",
+      "icon": "extension",
+      "fn": "v07TemplateQuickAction",
+      "enabled": true
+    }
+  ],
+  "notifications": {
+    "supported": true,
+    "defaultTime": "10:00",
+    "title": "Template Reminder",
+    "body": "Daily notification from template plugin"
+  }
+}

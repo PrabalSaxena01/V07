@@ -1,0 +1,90 @@
+/* ==========================================================================
+   V07 V3 DESIGN SYSTEM — VECTOR ART PLUGIN HARMONIZATION
+   Injects high-precision vector engineering aesthetics, JetBrains Mono
+   metrics, sharp 1px vector borders, and vivid technical accents.
+   ========================================================================== */
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/JetBrainsMono-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/JetBrainsMono-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/JetBrainsMono-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+}
+
+:root {
+  --bg: #090A0F !important;
+  --surface: #11141E !important;
+  --surface-low: #0D0F17 !important;
+  --surface-container: #171B28 !important;
+  --border: #202638 !important;
+  --text: #F1F4FA !important;
+  --muted: #7E879E !important;
+  --accent: #5CE1E6 !important;
+  --accent-glow: rgba(92, 225, 230, 0.15) !important;
+  --success: #4DE086 !important;
+  --radius: 6px !important;
+
+  /* Vector Palette */
+  --cyan: #5CE1E6 !important;
+  --green: #4DE086 !important;
+  --amber: #FFB84D !important;
+  --red: #FF5370 !important;
+  --blue: #68A6FF !important;
+
+  --bar-bg: rgba(255, 255, 255, 0.06) !important;
+  --chip-bg: #171B28 !important;
+  --chip-border: #202638 !important;
+
+  --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  --font-mono: "JetBrains Mono", "Space Mono", monospace !important;
+}
+
+body {
+  font-family: var(--font-ui) !important;
+  background: var(--bg) !important;
+  color: var(--text) !important;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Vector Headings */
+h1, h2, h3, h4,
+.h-title, .title, .gw-title, .vw-title, .reader-title, .shelf-title {
+  font-family: var(--font-ui) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.01em !important;
+}
+
+/* Monospace Vector Numerics & Badges */
+.gw-badge, .gw-stat, .gw-mono,
+.vw-metric, .vw-date, .vw-badge,
+.h-count, .h-streak, .h-badge,
+.streak-pill, .mono, [data-mono="true"], code, pre {
+  font-family: var(--font-mono) !important;
+  letter-spacing: 0.04em !important;
+}
+
+/* Sharp Vector Borders & Geometry */
+.card, .h-card, .gw-wrap, .vw-wrap, .widget-container, .box {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: none !important;
+}
+
+/* Tactile Micro-Interactions */
+button:active, .h-btn:active, .chip:active, .btn:active {
+  transform: scale(0.97) !important;
+  transition: transform 0.08s ease !important;
+}

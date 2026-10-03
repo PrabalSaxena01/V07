@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Plugin Settings</title>
+<link rel="stylesheet" href="plugin.css">
+</head>
+<body>
+<div class="plugin-page">
+  <div class="page-header">
+    <div class="title">TEMPLATE SETTINGS</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Custom Options</div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px">
+      <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer">
+        <input type="checkbox" id="prefHighContrast" checked> Enable High Contrast Mode
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer">
+        <input type="checkbox" id="prefAutoSync" checked> Automatic Background Sync
+      </label>
+    </div>
+  </div>
+</div>
+<script>
+// Save/load custom plugin preferences
+var hc = document.getElementById('prefHighContrast');
+var as = document.getElementById('prefAutoSync');
+try {
+  hc.checked = localStorage.getItem('tpl_high_contrast') !== 'false';
+  as.checked = localStorage.getItem('tpl_auto_sync') !== 'false';
+} catch(e){}
+
+hc.onchange = function(){ localStorage.setItem('tpl_high_contrast', hc.checked); };
+as.onchange = function(){ localStorage.setItem('tpl_auto_sync', as.checked); };
+</script>
+</body>
+</html>

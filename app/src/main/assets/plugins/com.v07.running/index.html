@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Runtime Tracker</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --bg: #0B0E14;
+    --surface: #151821;
+    --surface-alt: #1A1F2C;
+    --border: #262D3D;
+    --text: #F1F5F9;
+    --text-muted: #8E9BAE;
+    --emerald: #10B981;
+    --emerald-dim: rgba(16, 185, 129, 0.15);
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 680px;
+    margin: 0 auto;
+    min-height: 100vh;
+  }
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .title-group { display: flex; align-items: center; gap: 10px; }
+  .icon-box {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: var(--surface-alt); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; color: var(--emerald);
+  }
+  .title { font-size: 16px; font-weight: 700; color: var(--text); }
+  .subtitle { font-size: 11px; color: var(--text-muted); font-family: monospace; }
+  .stats-row {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+  }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 4px;
+  }
+  .stat-label { font-size: 10px; font-family: monospace; color: var(--text-muted); text-transform: uppercase; }
+  .stat-val { font-size: 18px; font-weight: 800; color: var(--emerald); }
+  .log-form {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px;
+  }
+  .form-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  label { font-size: 11px; font-weight: 600; color: var(--text-muted); }
+  input, textarea {
+    width: 100%; background: var(--surface-alt); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); padding: 8px 10px; font-size: 12px; outline: none; margin-top: 4px;
+  }
+  .btn-submit {
+    background: var(--emerald); color: #000; font-weight: 700;
+    font-size: 12px; padding: 10px; border-radius: 8px; border: none;
+    cursor: pointer; transition: 0.15s; margin-top: 4px;
+  }
+  .btn-submit:hover { opacity: 0.9; }
+  .runs-list { display: flex; flex-direction: column; gap: 8px; }
+  .run-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px; display: flex; justify-content: space-between; align-items: center;
+  }
+  .run-info { display: flex; flex-direction: column; gap: 2px; }
+  .run-dist { font-size: 14px; font-weight: 700; color: var(--text); }
+  .run-date { font-size: 10px; font-family: monospace; color: var(--text-muted); }
+  .run-metrics { text-align: right; }
+  .run-pace { font-size: 12px; font-weight: 600; color: var(--emerald); }
+  .run-time { font-size: 11px; color: var(--text-muted); }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div class="title-group">
+      <div class="icon-box">🏃</div>
+      <div>
+        <div class="title">Runtime Tracker</div>
+        <div class="subtitle">Physical Cadence & Pacing</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <span class="stat-label">This Week</span>
+      <span id="statThisWeek" class="stat-val">0.0 km</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Total Runs</span>
+      <span id="statTotalRuns" class="stat-val">0</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Avg Pace</span>
+      <span id="statAvgPace" class="stat-val">--'--"</span>
+    </div>
+  </div>
+
+  <div class="log-form">
+    <span style="font-size:12px;font-weight:700;">Log Running Session</span>
+    <div class="form-row">
+      <div>
+        <label>Distance (km)</label>
+        <input type="number" id="runDist" step="0.01" placeholder="e.g. 5.2" required>
+      </div>
+      <div>
+        <label>Duration (minutes)</label>
+        <input type="number" id="runDur" step="1" placeholder="e.g. 28" required>
+      </div>
+    </div>
+    <div>
+      <label>Notes / Terrain</label>
+      <input type="text" id="runNotes" placeholder="e.g. Morning park loop, steady cadence">
+    </div>
+    <button class="btn-submit" onclick="submitRun()">Log Session</button>
+  </div>
+
+  <div style="font-size:12px;font-weight:700;margin-top:4px;">Recent Sessions</div>
+  <div id="runsList" class="runs-list"></div>
+
+<script>
+  var _runs = [];
+
+  async function init() {
+    loadRuns();
+    renderStats();
+    renderRuns();
+    queryHostEvents();
+  }
+
+  function loadRuns() {
+    try {
+      var raw = localStorage.getItem('v07_plugin_runs');
+      if (raw) _runs = JSON.parse(raw);
+    } catch (_) {}
+  }
+
+  function saveRuns() {
+    localStorage.setItem('v07_plugin_runs', JSON.stringify(_runs));
+  }
+
+  async function queryHostEvents() {
+    try {
+      var eventsList = null;
+
+      // Tier 1: query via window.parent.nativeInvoke
+      if (window.parent && window.parent.nativeInvoke && window.parent !== window) {
+        var res = await window.parent.nativeInvoke('com.v07.running', 'events:query', { category: 'running' });
+        if (res && res.events && Array.isArray(res.events) && res.events.length > 0) {
+          eventsList = res.events;
+        }
+      }
+
+      // Tier 1b: check window.parent.V07
+      if ((!eventsList || !eventsList.length) && window.parent && window.parent.V07 && window.parent.V07.readEventsAll) {
+        var rV = window.parent.V07.readEventsAll('running');
+        if (rV && rV.events && Array.isArray(rV.events) && rV.events.length > 0) {
+          eventsList = rV.events;
+        }
+      }
+
+      // Tier 2: direct access to window.parent or window.opener V07StorageEngine
+      var hostEngine = (window.parent && window.parent.V07StorageEngine) ? window.parent.V07StorageEngine : ((window.opener && window.opener.V07StorageEngine) ? window.opener.V07StorageEngine : null);
+      if (!eventsList && hostEngine) {
+        var pCache = hostEngine._pluginEventsCache || {};
+        var runs = (pCache['com.v07.running'] || []).concat(pCache['com.v07.fitness'] || []);
+        var aggRuns = (hostEngine._eventsCache || []).filter(function(e) {
+          var c = (e.category || '').toLowerCase();
+          return c === 'running' || c === 'run' || c === 'fitness';
+        });
+        var eMap = new Map();
+        runs.forEach(function(r) { eMap.set(r.id, r); });
+        aggRuns.forEach(function(r) { if (!eMap.has(r.id)) eMap.set(r.id, r); });
+        if (eMap.size > 0) {
+          eventsList = Array.from(eMap.values());
+        }
+      }
+
+      if (eventsList && Array.isArray(eventsList)) {
+        eventsList.forEach(function(ev) {
+          if (!_runs.some(function(r) { return r.id === ev.id; })) {
+            try {
+              var p = {};
+              if (ev.payloadJson) {
+                try { p = typeof ev.payloadJson === 'string' ? JSON.parse(ev.payloadJson) : ev.payloadJson; } catch(_) {}
+              }
+              var dist = parseFloat(p.distance || p.distanceKm || p.distance_km || ev.distanceKm || ev.distance_km || ev.distance || 0);
+              var dur = parseFloat(p.duration || p.duration_min || ev.duration_min || (ev.durationSec ? (ev.durationSec / 60) : 0) || (ev.duration_sec ? (ev.duration_sec / 60) : 0) || 0);
+              var notes = p.notes || ev.notes || ev.note || ev.title || '';
+              var date = ev.date || p.date || (ev.ts ? new Date(ev.ts).toISOString().split('T')[0] : '');
+              var pace = p.pace || ev.pace || '';
+
+              if (dist > 0 || dur > 0) {
+                _runs.push({
+                  id: ev.id,
+                  distance: dist,
+                  duration: dur,
+                  notes: notes,
+                  date: date,
+                  pace: pace,
+                  ts: ev.timestamp || ev.ts || p.ts || Date.now()
+                });
+              }
+            } catch (_) {}
+          }
+        });
+        _runs.sort(function(a, b) { return (b.ts || 0) - (a.ts || 0); });
+        saveRuns();
+        renderStats();
+        renderRuns();
+      }
+    } catch (e) {
+      console.warn('[Running Plugin] queryHostEvents error:', e);
+    }
+  }
+
+  async function submitRun() {
+    var dist = parseFloat(document.getElementById('runDist').value);
+    var dur = parseFloat(document.getElementById('runDur').value);
+    var notes = (document.getElementById('runNotes').value || '').trim();
+
+    if (!dist || dist <= 0 || !dur || dur <= 0) {
+      alert('Please enter a valid distance and duration.');
+      return;
+    }
+
+    var now = Date.now();
+    var dateStr = new Date(now).toISOString().split('T')[0];
+    var id = 'run_' + now;
+
+    var newRun = {
+      id: id,
+      distance: dist,
+      duration: dur,
+      notes: notes,
+      date: dateStr,
+      ts: now
+    };
+
+    _runs.unshift(newRun);
+    saveRuns();
+
+    // Push to host platform
+    try {
+      if (window.parent && window.parent.nativeInvoke) {
+        window.parent.nativeInvoke('events:insert', {
+          id: id,
+          category: 'running',
+          date: dateStr,
+          timestamp: now,
+          payloadJson: JSON.stringify(newRun)
+        });
+      }
+    } catch (_) {}
+
+    document.getElementById('runDist').value = '';
+    document.getElementById('runDur').value = '';
+    document.getElementById('runNotes').value = '';
+
+    renderStats();
+    renderRuns();
+  }
+
+  function renderStats() {
+    var totalDist = 0;
+    var totalDur = 0;
+    _runs.forEach(function(r) {
+      totalDist += (r.distance || 0);
+      totalDur += (r.duration || 0);
+    });
+
+    document.getElementById('statThisWeek').textContent = totalDist.toFixed(1) + ' km';
+    document.getElementById('statTotalRuns').textContent = _runs.length;
+
+    if (totalDist > 0 && totalDur > 0) {
+      var paceMinPerKm = totalDur / totalDist;
+      var paceMin = Math.floor(paceMinPerKm);
+      var paceSec = Math.round((paceMinPerKm - paceMin) * 60);
+      document.getElementById('statAvgPace').textContent = paceMin + "'" + (paceSec < 10 ? '0' : '') + paceSec + '"';
+    } else {
+      document.getElementById('statAvgPace').textContent = "--'--\"";
+    }
+  }
+
+  function renderRuns() {
+    var container = document.getElementById('runsList');
+    if (_runs.length === 0) {
+      container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:12px;border:1px dashed var(--border);border-radius:10px;">No runs recorded yet. Lace up and log your first cadence!</div>';
+      return;
+    }
+    var html = '';
+    _runs.slice(0, 10).forEach(function(r) {
+      var paceStr = '';
+      if (r.distance > 0 && r.duration > 0) {
+        var pace = r.duration / r.distance;
+        var m = Math.floor(pace);
+        var s = Math.round((pace - m) * 60);
+        paceStr = m + "'" + (s < 10 ? '0' : '') + s + '"/km';
+      }
+      html += `
+        <div class="run-card">
+          <div class="run-info">
+            <span class="run-dist">${r.distance} km</span>
+            <span class="run-date">${r.date} ${r.notes ? ('· ' + r.notes) : ''}</span>
+          </div>
+          <div class="run-metrics">
+            <span class="run-pace">${paceStr}</span><br>
+            <span class="run-time">${r.duration} min</span>
+          </div>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+  }
+
+  init();
+
+  window.addEventListener('message', function(ev) {
+    if (ev.data && ev.data.type === 'v07_data_updated') {
+      queryHostEvents();
+    }
+  });
+  setTimeout(queryHostEvents, 700);
+</script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+{
+  "id": "com.v07.reader",
+  "name": "Book Collection",
+  "version": "1.1.0",
+  "author": "Prabal",
+  "description": "Book collection and reading tracker. Search open databases, log reading progress, and manage personal shelves.",
+  "permissions": ["events:read", "events:write", "server", "notification"],
+  "entry": "index.html",
+  "settings": "settings.html",
+  "nav": {
+    "placement": "log-dashboard",
+    "icon": "auto_stories",
+    "label": "COLLECTION",
+    "color": "#8D6CFF"
+  },
+  "widgets": [
+    {
+      "id": "reader_active",
+      "title": "READING TRACKER",
+      "icon": "auto_stories",
+      "path": "widget.html",
+      "color": "#8D6CFF",
+      "supportedSizes": ["compact", "small", "medium", "large"],
+      "defaultSize": "medium"
+    },
+    {
+      "id": "reader_compact",
+      "title": "CURRENT BOOK BAR",
+      "icon": "bookmark",
+      "path": "widget.html",
+      "color": "#8D6CFF",
+      "supportedSizes": ["compact"],
+      "defaultSize": "compact"
+    },
+    {
+      "id": "reader_small",
+      "title": "BOOK PROGRESS CARD",
+      "icon": "menu_book",
+      "path": "widget.html",
+      "color": "#8D6CFF",
+      "supportedSizes": ["small"],
+      "defaultSize": "small"
+    },
+    {
+      "id": "reader_large",
+      "title": "BOOKSHELF & PACING",
+      "icon": "library_books",
+      "path": "widget.html",
+      "color": "#8D6CFF",
+      "supportedSizes": ["large"],
+      "defaultSize": "large"
+    }
+  ],
+  "fab": [
+    {
+      "id": "addbook",
+      "label": "+ BOOK COLLECTION",
+      "icon": "auto_stories",
+      "fn": "v07OpenPlugin",
+      "args": { "id": "com.v07.reader" },
+      "enabled": true
+    }
+  ],
+  "notifications": {
+    "supported": true,
+    "defaultTime": "20:30",
+    "title": "Reading Time",
+    "body": "Log your daily reading progress in your Book Collection"
+  }
+}

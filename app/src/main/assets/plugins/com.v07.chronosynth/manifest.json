@@ -1,0 +1,77 @@
+{
+  "id": "com.v07.chronosynth",
+  "name": "Weekly Digest",
+  "version": "1.0.0",
+  "author": "Prabal",
+  "description": "Weekly AI intelligence engine aggregating focus, tasks, habits, athletics, screen time, and mental state into executive briefings.",
+  "permissions": [
+    "events:read",
+    "events:write",
+    "sessions:read",
+    "server",
+    "notification",
+    "ai"
+  ],
+  "entry": "index.html",
+  "settings": "settings.html",
+  "nav": {
+    "placement": "log-dashboard",
+    "icon": "psychology",
+    "label": "WEEKLY DIGEST",
+    "color": "#4DE086"
+  },
+  "widgets": [
+    {
+      "id": "weekly_briefing",
+      "title": "WEEKLY DIGEST",
+      "icon": "psychology",
+      "path": "widget.html",
+      "color": "#4DE086",
+      "supportedSizes": ["compact", "small", "medium", "large"],
+      "defaultSize": "medium"
+    },
+    {
+      "id": "weekly_compact",
+      "title": "WEEKLY SPRINT BAR",
+      "icon": "speed",
+      "path": "widget.html",
+      "color": "#4DE086",
+      "supportedSizes": ["compact"],
+      "defaultSize": "compact"
+    },
+    {
+      "id": "weekly_small",
+      "title": "WEEKLY STATS GRID",
+      "icon": "grid_view",
+      "path": "widget.html",
+      "color": "#4DE086",
+      "supportedSizes": ["small"],
+      "defaultSize": "small"
+    },
+    {
+      "id": "weekly_large",
+      "title": "WEEKLY AI SYNTHESIS",
+      "icon": "auto_awesome",
+      "path": "widget.html",
+      "color": "#4DE086",
+      "supportedSizes": ["large"],
+      "defaultSize": "large"
+    }
+  ],
+  "fab": [
+    {
+      "id": "synthesize",
+      "label": "+ WEEKLY DIGEST",
+      "icon": "auto_awesome",
+      "fn": "v07OpenPlugin",
+      "args": { "id": "com.v07.chronosynth" },
+      "enabled": true
+    }
+  ],
+  "notifications": {
+    "supported": true,
+    "defaultTime": "21:00",
+    "title": "Weekly Telemetry Ready",
+    "body": "Your weekly executive AI briefing is ready for review."
+  }
+}

@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Time Tracker Widget</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --text: #F1F5F9;
+    --muted: #94A3B8;
+    --border: #262C3E;
+    --bar-bg: rgba(255,255,255,0.08);
+    --chip-bg: rgba(255,255,255,0.04);
+    --chip-border: rgba(255,255,255,0.08);
+    --primary: #8D6CFF;
+    --primary-glow: rgba(141,108,255,0.15);
+  }
+  :root[data-theme="light"] {
+    --text: #0F172A;
+    --muted: #64748B;
+    --border: #CBD5E1;
+    --bar-bg: rgba(0,0,0,0.08);
+    --chip-bg: rgba(0,0,0,0.04);
+    --chip-border: rgba(0,0,0,0.08);
+    --primary: #7C3AED;
+    --primary-glow: rgba(124,58,237,0.12);
+  }
+  body {
+    margin: 0;
+    padding: 8px 12px 10px;
+    background: transparent;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    color: var(--text);
+    overflow: hidden;
+    width: 100%;
+    cursor: pointer;
+    user-select: none;
+  }
+  .gw-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+  }
+  .gw-row1 {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .gw-lvl-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+  }
+  .gw-badge {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--primary);
+    background: var(--primary-glow);
+    border: 1px solid var(--primary);
+    border-radius: 4px;
+    padding: 2px 6px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  .gw-rank {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-size: 9.5px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .gw-total {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+  }
+  .card-carousel {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding: 2px 0;
+  }
+  .card-carousel::-webkit-scrollbar { display: none; }
+  .m-card {
+    flex-shrink: 0;
+    background: var(--chip-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    min-width: 110px;
+  }
+  .m-title {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .m-days {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-top: 2px;
+  }
+  .m-status {
+    font-size: 8.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .gw-chips {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .gw-chip {
+    font-size: 9px;
+    color: var(--muted);
+    background: var(--chip-bg);
+    border: 1px solid var(--chip-border);
+    border-radius: 4px;
+    padding: 3px 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+  }
+  .gw-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .gw-dot.on {
+    background: var(--primary);
+    box-shadow: 0 0 5px var(--primary);
+  }
+  .gw-chip-val {
+    color: var(--text);
+    font-weight: 700;
+  }
+</style>
+<script>
+(function(){
+  function syncTheme(){
+    var t = 'dark';
+    try {
+      t = window.parent.document.documentElement.dataset.theme || localStorage.getItem('v07_theme') || 'dark';
+    } catch(e){
+      try { t = localStorage.getItem('v07_theme') || 'dark'; } catch(e2){}
+    }
+    if(t === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    else document.documentElement.removeAttribute('data-theme');
+  }
+  syncTheme();
+  window.addEventListener('storage', syncTheme);
+})();
+</script>
+</head>
+<body onclick="openTimeTrackerPlugin()">
+<div id="w"></div>
+<script>
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function openTimeTrackerPlugin(){
+  try {
+    if(window.parent && window.parent.openPluginPage){
+      window.parent.openPluginPage('com.v07.timetracker');
+      return;
+    }
+  } catch(e){}
+  location.href = 'index.html';
+}
+
+function getSize(){
+  try {
+    var s = new URLSearchParams(window.location.search).get('size');
+    if(s === 'compact' || s === '1*1') return 'compact';
+    if(s === 'small' || s === '2*1') return 'small';
+    if(s === 'medium' || s === '3*1') return 'medium';
+    if(s === 'large' || s === '4*2') return 'large';
+  } catch(e){}
+  var h = window.innerHeight;
+  if(h > 0 && h <= 85) return 'compact';
+  if(h > 85 && h <= 125) return 'small';
+  if(h > 125 && h <= 190) return 'medium';
+  if(h > 190) return 'large';
+  return 'medium';
+}
+
+window.addEventListener('resize', draw);
+window.addEventListener('message', function(e){
+  if(e.data && (e.data.type === 'setSize' || e.data.type === 'v07_refresh')){
+    draw();
+  }
+});
+
+function draw(){
+  var el = document.getElementById('w');
+  if(!el) return;
+  var size = getSize();
+
+  function renderData(rawEntries){
+    var today = new Date();
+    today.setHours(0,0,0,0);
+    var pinned = (rawEntries || []).filter(function(e){
+      return e.pinned === true || e.pinned === 'true';
+    }).map(function(e){
+      var d = new Date(e.date + 'T00:00:00');
+      var diff = Math.ceil((d - today) / 86400000);
+      var isPast = diff < 0;
+      return {
+        id: e.id,
+        title: e.title || e.name || 'Milestone',
+        date: e.date,
+        diff_days: isPast ? (Math.abs(diff) + 'd ago') : (diff === 0 ? 'Today' : diff + 'd left'),
+        past: isPast,
+        days: diff
+      };
+    }).sort(function(a,b){ return a.days - b.days; });
+
+    var count = pinned.length;
+    var topEvent = pinned[0];
+
+    if(size === 'compact'){
+      el.innerHTML =
+        '<div class="gw-wrap" onclick="openTimeTrackerPlugin()" style="cursor:pointer">' +
+        '  <div class="gw-row1">' +
+        '    <span class="gw-badge">⏱ ' + (topEvent ? esc(topEvent.diff_days) : '--') + '</span>' +
+        '    <span class="gw-rank">' + count + ' PINNED</span>' +
+        '  </div>' +
+        '  <div style="font-size:12px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:2px 0">' +
+        '    ' + (topEvent ? esc(topEvent.title) : 'No pinned milestones') +
+        '  </div>' +
+        '  <div style="width:100%;height:4px;background:var(--bar-bg);border-radius:2px;overflow:hidden">' +
+        '    <div style="height:100%;background:var(--primary);border-radius:2px;width:100%"></div>' +
+        '  </div>' +
+        '</div>';
+      return;
+    }
+
+    if(size === 'small'){
+      el.innerHTML =
+        '<div class="gw-wrap" onclick="openTimeTrackerPlugin()" style="cursor:pointer">' +
+        '  <div class="gw-row1">' +
+        '    <div class="gw-lvl-group">' +
+        '      <span class="gw-badge">⏱ COUNTDOWN</span>' +
+        '      <span class="gw-rank">' + count + ' PINNED</span>' +
+        '    </div>' +
+        '    <span class="gw-total">' + (topEvent ? esc(topEvent.diff_days) : '--') + '</span>' +
+        '  </div>' +
+        '  <div style="font-size:11.5px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (topEvent ? esc(topEvent.title) : 'No pinned milestones') + '</div>' +
+        '  <div style="width:100%;height:4px;background:var(--bar-bg);border-radius:2px;overflow:hidden">' +
+        '    <div style="height:100%;background:var(--primary);border-radius:2px;width:100%"></div>' +
+        '  </div>' +
+        '  <div class="gw-chips">' +
+        '    <span class="gw-chip"><span class="gw-dot on"></span> ' + (topEvent && topEvent.past ? 'PAST' : 'UPCOMING') + '</span>' +
+        '    <span class="gw-chip">PINNED <span class="gw-chip-val">' + count + '</span></span>' +
+        '  </div>' +
+        '</div>';
+      return;
+    }
+
+    var cardsCount = size === 'medium' ? 2 : 4;
+    var cardsHtml = count === 0 ?
+      '<div style="font-size:11px;color:var(--muted);padding:8px 0;text-align:center">No pinned milestones. Tap to pin dates.</div>' :
+      pinned.slice(0, cardsCount).map(function(d){
+        return '<div class="m-card">' +
+               '  <div class="m-title">' + esc(d.title) + '</div>' +
+               '  <div class="m-days">' + esc(d.diff_days) + '</div>' +
+               '  <div class="m-status">' + (d.past ? 'PAST' : 'UPCOMING') + '</div>' +
+               '</div>';
+      }).join('');
+
+    el.innerHTML =
+      '<div class="gw-wrap" onclick="openTimeTrackerPlugin()" style="cursor:pointer">' +
+      '  <div class="gw-row1">' +
+      '    <div class="gw-lvl-group">' +
+      '      <span class="gw-badge">⏱ ' + (size === 'medium' ? 'COUNTDOWN' : 'TIMETRACKER AGENDA') + '</span>' +
+      '      <span class="gw-rank">' + count + ' PINNED</span>' +
+      '    </div>' +
+      '    <span class="gw-total">' + (topEvent ? topEvent.diff_days : '--') + '</span>' +
+      '  </div>' +
+      '  <div class="card-carousel">' + cardsHtml + '</div>' +
+      '  <div class="gw-chips">' +
+      '    <span class="gw-chip"><span class="gw-dot on"></span> ACTIVE COUNTDOWNS</span>' +
+      '    <span class="gw-chip" onclick="openTimeTrackerPlugin()">MANAGE DATES &rsaquo;</span>' +
+      '  </div>' +
+      '</div>';
+  }
+
+  fetch('/daytracker')
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      var list = data.entries || data.events || [];
+      renderData(list);
+    })
+    .catch(function(){
+      fetch('/day-tracker/events')
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+          var list = data.entries || data.events || [];
+          renderData(list);
+        })
+        .catch(function(){
+          var local = [];
+          try { local = JSON.parse(localStorage.getItem('v07_plugin_timetracker_events') || '[]'); } catch(e){}
+          renderData(local);
+        });
+    });
+}
+draw();
+setInterval(draw, 30000);
+</script>
+</body>
+</html>

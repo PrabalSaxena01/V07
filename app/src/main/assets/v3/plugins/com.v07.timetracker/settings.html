@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Time Tracker Settings</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #090909; --surface: #111319; --surface-low: #1D2025; --border: #2C2C2C;
+    --text: #E1E2EA; --muted: #8A8F98; --accent: #8D6CFF;
+  }
+  :root[data-theme="light"] {
+    --bg: #f0f0f2; --surface: #ffffff; --surface-low: #f5f5f7; --border: #d0d0d5;
+    --text: #1a1a2e; --muted: #666666; --accent: #7c4dff;
+  }
+  body {
+    background: var(--bg); color: var(--text); padding: 14px;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; font-size: 12px;
+  }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px; margin-bottom: 12px;
+  }
+  .card-title {
+    font-size: 10px; font-weight: 700; color: var(--accent);
+    text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .widget-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .pill-btn {
+    flex: 1; min-width: 55px; background: var(--surface-low); border: 1px solid var(--border);
+    color: var(--muted); padding: 6px 4px; border-radius: 4px; font-family: inherit;
+    font-size: 10px; font-weight: 700; cursor: pointer; text-align: center;
+  }
+  .pill-btn.active { background: var(--accent); border-color: var(--accent); color: #FFF; }
+  .field { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  input[type="time"], input[type="text"], select {
+    background: var(--surface-low); color: var(--text); border: 1px solid var(--border);
+    border-radius: 4px; padding: 5px 8px; font-family: inherit; font-size: 11px;
+  }
+  .btn-action {
+    background: var(--accent); color: #FFF; border: none; border-radius: 4px;
+    padding: 7px 12px; font-family: inherit; font-size: 10px; font-weight: 700;
+    cursor: pointer; text-transform: uppercase;
+  }
+  .toast {
+    position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%) translateY(100px);
+    background: #111; color: var(--accent); border: 1px solid var(--accent);
+    padding: 8px 16px; border-radius: 6px; font-size: 11px; font-weight: 700;
+    z-index: 999; opacity: 0; transition: all 0.2s ease;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+</style>
+<script>
+(function(){
+  function syncTheme(){
+    var t = 'dark';
+    try {
+      t = window.parent.document.documentElement.dataset.theme || localStorage.getItem('v07_theme') || 'dark';
+    } catch(e){
+      try { t = localStorage.getItem('v07_theme') || 'dark'; } catch(e2){}
+    }
+    if(t === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    else document.documentElement.removeAttribute('data-theme');
+  }
+  syncTheme();
+  window.addEventListener('storage', syncTheme);
+})();
+</script>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-title">✦ HOME DASHBOARD WIDGET</div>
+  <p style="font-size:11px;color:var(--muted);margin-bottom:8px">
+    Choose the Time Tracker widget size displayed on your Home dashboard:
+  </p>
+  <div class="widget-pills">
+    <button class="pill-btn" data-size="compact" onclick="setWidgetSize('compact')">COMPACT (1x1)</button>
+    <button class="pill-btn" data-size="small" onclick="setWidgetSize('small')">SMALL (2x1)</button>
+    <button class="pill-btn" data-size="medium" onclick="setWidgetSize('medium')">MEDIUM (3x1)</button>
+    <button class="pill-btn" data-size="large" onclick="setWidgetSize('large')">LARGE (4x2)</button>
+    <button class="pill-btn" data-size="hidden" onclick="setWidgetSize('hidden')">HIDE / OFF</button>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">🔔 DAILY MILESTONE NOTIFICATION</div>
+  <div class="field">
+    <span>Enable Daily Reminder</span>
+    <input type="checkbox" id="notifToggle" onchange="saveNotifSettings()">
+  </div>
+  <div class="field">
+    <span>Reminder Time</span>
+    <input type="time" id="notifTime" value="08:30" onchange="saveNotifSettings()">
+  </div>
+  <div class="field">
+    <span>Title</span>
+    <input type="text" id="notifTitle" value="Upcoming Milestones" style="width:160px" onchange="saveNotifSettings()">
+  </div>
+  <div style="display:flex;gap:8px;margin-top:10px">
+    <button class="btn-action" onclick="testNotif()" style="flex:1">TEST NOTIFICATION</button>
+    <button class="btn-action" onclick="saveNotifSettings()" style="flex:1;background:var(--surface-low);color:var(--text);border:1px solid var(--border)">SAVE SCHEDULE</button>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">✦ TIME TRACKER OPTIONS</div>
+  <div class="field">
+    <span>Countdown Display</span>
+    <select id="prefTimeFmt">
+      <option value="days">Days Remaining (e.g. 14d)</option>
+      <option value="exact">Exact (Days + Hours)</option>
+    </select>
+  </div>
+  <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;margin-bottom:8px">
+    <input type="checkbox" id="prefShowPast" checked> Show past / completed milestones
+  </label>
+  <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer">
+    <input type="checkbox" id="prefMilestoneAlert" checked> Milestone alert 1 day before
+  </label>
+</div>
+
+<div class="toast" id="toast">Saved</div>
+
+<script>
+var PLUGIN_ID = 'com.v07.timetracker';
+var SETTINGS_KEY = 'v07_plugin_settings_' + PLUGIN_ID;
+
+function getSettings(){
+  try { return JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); } catch(e){ return {}; }
+}
+function saveSettings(s){
+  try {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+    window.dispatchEvent(new Event('storage'));
+  } catch(e){}
+}
+
+function loadUI(){
+  var s = getSettings();
+  var sz = s.widgetSize || 'medium';
+  document.querySelectorAll('.pill-btn').forEach(function(b){
+    b.classList.toggle('active', b.dataset.size === sz);
+  });
+  document.getElementById('notifToggle').checked = s.notifEnabled !== false;
+  document.getElementById('notifTime').value = s.notifTime || '08:30';
+  document.getElementById('notifTitle').value = s.notifTitle || 'Upcoming Milestones';
+
+  var fmt = document.getElementById('prefTimeFmt');
+  var past = document.getElementById('prefShowPast');
+  var alertPref = document.getElementById('prefMilestoneAlert');
+  fmt.value = localStorage.getItem('tt_time_fmt') || 'days';
+  past.checked = localStorage.getItem('tt_show_past') !== 'false';
+  alertPref.checked = localStorage.getItem('tt_alert_pref') !== 'false';
+  fmt.onchange = function(){ localStorage.setItem('tt_time_fmt', fmt.value); };
+  past.onchange = function(){ localStorage.setItem('tt_show_past', past.checked); };
+  alertPref.onchange = function(){ localStorage.setItem('tt_alert_pref', alertPref.checked); };
+}
+
+function setWidgetSize(sz){
+  var s = getSettings();
+  s.widgetSize = sz;
+  saveSettings(s);
+  document.querySelectorAll('.pill-btn').forEach(function(b){
+    b.classList.toggle('active', b.dataset.size === sz);
+  });
+  if(window.parent && window.parent.postMessage){
+    window.parent.postMessage({ type: 'setPluginWidgetSize', pluginId: PLUGIN_ID, size: sz }, '*');
+  }
+  toast('Widget set to: ' + sz.toUpperCase());
+}
+
+function saveNotifSettings(){
+  var s = getSettings();
+  s.notifEnabled = document.getElementById('notifToggle').checked;
+  s.notifTime = document.getElementById('notifTime').value || '08:30';
+  s.notifTitle = document.getElementById('notifTitle').value || 'Upcoming Milestones';
+  saveSettings(s);
+
+  if(s.notifEnabled){
+    var parts = s.notifTime.split(':');
+    var th = parseInt(parts[0], 10) || 8;
+    var tm = parseInt(parts[1], 10) || 30;
+    var now = new Date();
+    var target = new Date();
+    target.setHours(th, tm, 0, 0);
+    if(target.getTime() <= now.getTime()) target.setDate(target.getDate() + 1);
+    var delayMs = target.getTime() - now.getTime();
+
+    var bridge = (window.parent && window.parent.AndroidV07) || window.AndroidV07;
+    if(bridge && bridge.call){
+      var res = bridge.call('scheduleReminder', JSON.stringify({
+        pluginId: PLUGIN_ID,
+        title: s.notifTitle,
+        body: 'Check your upcoming milestones and deadlines',
+        delayMs: delayMs,
+        id: 'daily'
+      }));
+      if(res){
+        var parsed = typeof res === 'string' ? JSON.parse(res) : res;
+        if(parsed && parsed.ok === false){
+          toast(parsed.error || 'Failed to schedule reminder');
+          return;
+        }
+      }
+      toast('Reminder scheduled for ' + s.notifTime);
+    } else {
+      toast('Notification bridge unavailable');
+    }
+  } else {
+    var bridge = (window.parent && window.parent.AndroidV07) || window.AndroidV07;
+    if(bridge && bridge.call){
+      bridge.call('cancelReminder', JSON.stringify({ pluginId: PLUGIN_ID, id: 'daily' }));
+    }
+    toast('Reminder disabled');
+  }
+}
+
+function testNotif(){
+  var title = document.getElementById('notifTitle').value || 'Upcoming Milestones';
+  try {
+    var bridge = (window.parent && window.parent.AndroidV07) || window.AndroidV07;
+    if(bridge && bridge.call){
+      var res = bridge.call('scheduleReminder', JSON.stringify({
+        pluginId: PLUGIN_ID,
+        title: title,
+        body: 'Check your upcoming milestones and deadlines',
+        delayMs: 0,
+        id: 'test_' + Date.now()
+      }));
+      if(res){
+        var parsed = typeof res === 'string' ? JSON.parse(res) : res;
+        if(parsed && parsed.ok === false){
+          toast(parsed.error || 'Failed to send notification');
+          return;
+        }
+      }
+      toast('Test notification sent');
+      return;
+    }
+    toast('Notification bridge unavailable in browser mode');
+  } catch(e){
+    toast('Failed: ' + (e.message || e));
+  }
+}
+
+function toast(msg){
+  var el = document.getElementById('toast');
+  if(!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(function(){ el.classList.remove('show'); }, 2000);
+}
+
+loadUI();
+</script>
+</body>
+</html>

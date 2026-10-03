@@ -1,0 +1,27 @@
+{
+  "id": "com.v07.running",
+  "name": "Runtime Tracker",
+  "version": "3.0.0",
+  "author": "V07 Sanctuary",
+  "description": "Log running sessions, track pace, cadence, notes, and visual progression across weekly and monthly horizons.",
+  "permissions": ["events:read", "events:write", "storage:isolated"],
+  "entry": "index.html",
+  "settings": "settings.html",
+  "nav": {
+    "placement": "kit",
+    "icon": "directions_run",
+    "label": "RUNNING",
+    "color": "#10B981"
+  },
+  "widgets": [
+    {
+      "id": "running_weekly_stats",
+      "title": "WEEKLY RUNNING DISTANCE",
+      "icon": "directions_run",
+      "path": "widget.html",
+      "color": "#10B981",
+      "supportedSizes": ["small", "medium"],
+      "defaultSize": "medium"
+    }
+  ]
+}

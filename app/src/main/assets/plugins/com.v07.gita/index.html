@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Gita Wisdom</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --bg: #0B0E14;
+    --surface: #151821;
+    --surface-alt: #1A1F2C;
+    --border: #262D3D;
+    --text: #F1F5F9;
+    --text-muted: #8E9BAE;
+    --accent: #FF9F43;
+    --accent-glow: rgba(255, 159, 67, 0.15);
+    --gold: #F6C90E;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 680px;
+    margin: 0 auto;
+    min-height: 100vh;
+  }
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .title-group { display: flex; align-items: center; gap: 10px; }
+  .icon-box {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: var(--surface-alt); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; color: var(--accent);
+  }
+  .title { font-size: 16px; font-weight: 700; color: var(--text); }
+  .subtitle { font-size: 11px; color: var(--text-muted); font-family: monospace; }
+  .controls {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    background: var(--surface); padding: 10px 14px; border-radius: 12px;
+    border: 1px solid var(--border); align-items: center; justify-content: space-between;
+  }
+  .select-group { display: flex; gap: 8px; align-items: center; }
+  select {
+    background: var(--surface-alt); color: var(--text);
+    border: 1px solid var(--border); padding: 6px 12px; border-radius: 8px;
+    font-size: 12px; font-weight: 600; outline: none; cursor: pointer;
+  }
+  .nav-btn {
+    background: var(--surface-alt); color: var(--text);
+    border: 1px solid var(--border); padding: 6px 12px; border-radius: 8px;
+    font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.15s;
+  }
+  .nav-btn:hover { border-color: var(--accent); }
+  .verse-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  }
+  .verse-meta {
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: monospace; font-size: 11px; color: var(--accent); font-weight: 700;
+  }
+  .sanskrit {
+    font-size: 17px; line-height: 1.7; color: var(--gold);
+    text-align: center; padding: 12px 8px; font-style: italic;
+    background: var(--surface-alt); border-radius: 10px; border: 1px solid rgba(246, 201, 14, 0.15);
+  }
+  .translation {
+    font-size: 14px; line-height: 1.6; color: var(--text);
+    padding: 4px 2px;
+  }
+  .hindi {
+    font-size: 13px; line-height: 1.6; color: var(--text-muted);
+    border-top: 1px dashed var(--border); padding-top: 10px;
+  }
+  .reflection-box {
+    display: flex; flex-direction: column; gap: 8px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px;
+  }
+  .reflection-box textarea {
+    width: 100%; background: var(--surface-alt); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); padding: 10px; font-size: 12px;
+    resize: vertical; outline: none; min-height: 60px;
+  }
+  .btn-save {
+    align-self: flex-end; background: var(--accent); color: #000;
+    font-weight: 700; font-size: 11px; padding: 7px 16px; border-radius: 8px;
+    border: none; cursor: pointer; transition: 0.15s;
+  }
+  .btn-save:hover { opacity: 0.9; }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div class="title-group">
+      <div class="icon-box">🪔</div>
+      <div>
+        <div class="title">Gita Wisdom</div>
+        <div class="subtitle">Sacred Sanctuary Reflection</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="select-group">
+      <label style="font-size:11px;color:var(--text-muted);">Chapter</label>
+      <select id="chapSelect" onchange="onChapChange()">
+        <option value="1">Chapter 1</option>
+        <option value="2" selected>Chapter 2</option>
+        <option value="3">Chapter 3</option>
+        <option value="4">Chapter 4</option>
+        <option value="5">Chapter 5</option>
+        <option value="6">Chapter 6</option>
+        <option value="7">Chapter 7</option>
+        <option value="8">Chapter 8</option>
+        <option value="9">Chapter 9</option>
+        <option value="10">Chapter 10</option>
+        <option value="11">Chapter 11</option>
+        <option value="12">Chapter 12</option>
+        <option value="13">Chapter 13</option>
+        <option value="14">Chapter 14</option>
+        <option value="15">Chapter 15</option>
+        <option value="16">Chapter 16</option>
+        <option value="17">Chapter 17</option>
+        <option value="18">Chapter 18</option>
+      </select>
+      <label style="font-size:11px;color:var(--text-muted);margin-left:6px;">Verse</label>
+      <select id="verseSelect" onchange="renderCurrentVerse()"></select>
+    </div>
+    <div style="display:flex;gap:4px;">
+      <button class="nav-btn" onclick="prevVerse()">◀</button>
+      <button class="nav-btn" onclick="nextVerse()">▶</button>
+      <button class="nav-btn" onclick="randomVerse()" title="Contemplate Random Verse">🎲</button>
+    </div>
+  </div>
+
+  <div class="verse-card">
+    <div class="verse-meta">
+      <span id="verseLabel">GITA 2.47</span>
+      <span style="color:var(--text-muted);">Karma Yoga</span>
+    </div>
+    <div id="verseSanskrit" class="sanskrit">
+      कर्मण्येवाधिकारस्ते मा फलेषु कदाचन।<br>
+      मा कर्मफलहेतुर्भूर्मा ते सङ्गोऽस्त्वकर्मणि॥
+    </div>
+    <div id="verseEnglish" class="translation">
+      "You have a right to perform your prescribed duties, but you are not entitled to the fruits of your actions. Never consider yourself to be the cause of the results of your activities, nor be attached to inaction."
+    </div>
+    <div id="verseHindi" class="hindi">
+      कर्म करने में ही तुम्हारा अधिकार है, फल में कभी नहीं। इसलिए तुम कर्मफल के हेतु मत बनो और न ही अकर्मण्यता में तुम्हारी आसक्ति हो।
+    </div>
+  </div>
+
+  <div class="reflection-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:12px;font-weight:700;">Capture Reflection</span>
+      <span id="savedIndicator" style="font-size:10px;font-family:monospace;color:var(--accent);"></span>
+    </div>
+    <textarea id="reflectionInput" placeholder="Reflect on this verse's wisdom for your day..."></textarea>
+    <button class="btn-save" onclick="saveReflection()">Save Reflection</button>
+  </div>
+
+<script>
+  var _gitaData = null;
+
+  async function init() {
+    try {
+      var res = await fetch('../../gita.json');
+      if (!res.ok) res = await fetch('gita.json');
+      if (res.ok) _gitaData = await res.json();
+    } catch (_) {}
+    onChapChange();
+  }
+
+  function onChapChange() {
+    var c = parseInt(document.getElementById('chapSelect').value) || 2;
+    var vSelect = document.getElementById('verseSelect');
+    vSelect.innerHTML = '';
+    var count = 72;
+    if (_gitaData && _gitaData[c] && _gitaData[c].verses) {
+      count = _gitaData[c].verses.length;
+    }
+    for (var i = 1; i <= count; i++) {
+      var opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = i;
+      if (c === 2 && i === 47) opt.selected = true;
+      vSelect.appendChild(opt);
+    }
+    renderCurrentVerse();
+  }
+
+  function renderCurrentVerse() {
+    var c = parseInt(document.getElementById('chapSelect').value) || 2;
+    var v = parseInt(document.getElementById('verseSelect').value) || 47;
+    document.getElementById('verseLabel').textContent = 'GITA ' + c + '.' + v;
+    
+    if (_gitaData && _gitaData[c] && _gitaData[c].verses && _gitaData[c].verses[v - 1]) {
+      var d = _gitaData[c].verses[v - 1];
+      document.getElementById('verseSanskrit').innerHTML = (d.sanskrit || '').replace(/\n/g, '<br>') || 'कर्मण्येवाधिकारस्ते...';
+      document.getElementById('verseEnglish').textContent = d.english || '';
+      document.getElementById('verseHindi').textContent = d.hindi || '';
+    } else if (c === 2 && v === 47) {
+      document.getElementById('verseSanskrit').innerHTML = 'कर्मण्येवाधिकारस्ते मा फलेषु कदाचन।<br>मा कर्मफलहेतुर्भूर्मा ते सङ्गोऽस्त्वकर्मणि॥';
+      document.getElementById('verseEnglish').textContent = '"You have a right to perform your prescribed duties, but you are not entitled to the fruits of your actions. Never consider yourself to be the cause of the results of your activities, nor be attached to inaction."';
+      document.getElementById('verseHindi').textContent = 'कर्म करने में ही तुम्हारा अधिकार है, फल में कभी नहीं। इसलिए तुम कर्मफल के हेतु मत बनो और न ही अकर्मण्यता में तुम्हारी आसक्ति हो।';
+    }
+    var saved = localStorage.getItem('gita_ref_' + c + '_' + v) || '';
+    document.getElementById('reflectionInput').value = saved;
+    document.getElementById('savedIndicator').textContent = saved ? 'Saved locally' : '';
+  }
+
+  function prevVerse() {
+    var vSelect = document.getElementById('verseSelect');
+    if (vSelect.selectedIndex > 0) {
+      vSelect.selectedIndex--;
+      renderCurrentVerse();
+    }
+  }
+
+  function nextVerse() {
+    var vSelect = document.getElementById('verseSelect');
+    if (vSelect.selectedIndex < vSelect.options.length - 1) {
+      vSelect.selectedIndex++;
+      renderCurrentVerse();
+    }
+  }
+
+  function randomVerse() {
+    var cSelect = document.getElementById('chapSelect');
+    cSelect.selectedIndex = Math.floor(Math.random() * cSelect.options.length);
+    onChapChange();
+    var vSelect = document.getElementById('verseSelect');
+    vSelect.selectedIndex = Math.floor(Math.random() * vSelect.options.length);
+    renderCurrentVerse();
+  }
+
+  async function saveReflection() {
+    var c = document.getElementById('chapSelect').value;
+    var v = document.getElementById('verseSelect').value;
+    var text = document.getElementById('reflectionInput').value.trim();
+    if (!text) return;
+    localStorage.setItem('gita_ref_' + c + '_' + v, text);
+    document.getElementById('savedIndicator').textContent = '✓ Saved';
+
+    // Invoke host bridge if available
+    try {
+      if (window.parent && window.parent.nativeInvoke) {
+        window.parent.nativeInvoke('events:insert', {
+          id: 'gita_' + Date.now(),
+          category: 'thought',
+          title: 'Reflection on Gita ' + c + '.' + v,
+          content: text,
+          date: new Date().toISOString().split('T')[0],
+          timestamp: Date.now()
+        });
+      }
+    } catch (_) {}
+  }
+
+  init();
+</script>
+</body>
+</html>

@@ -1,0 +1,408 @@
+<!DOCTYPE html><html class="dark" lang="en" style=""><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><meta content="mobile_tab" name="shell-type"><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "calm-bg": "#171B19",
+        "calm-card": "#202522",
+        "calm-border": "#343C37",
+        "calm-soft": "#272D29",
+        "calm-text": "#E9EEE9",
+        "calm-muted": "#AAB5AE",
+        "calm-accent": "#75B7A1",
+        "calm-danger-bg": "#3A2323",
+        "calm-danger-border": "#4A2E2E",
+        "calm-danger-text": "#E07B78",
+        "calm-mono-bg": "#101412",
+        "surface": "#171B19",
+        "on-surface": "#E9EEE9",
+        "on-surface-variant": "#AAB5AE",
+        "primary": "#75B7A1",
+        "outline-variant": "#343C37"
+      },
+      borderRadius: {
+        "DEFAULT": "0.25rem",
+        "lg": "0.5rem",
+        "xl": "0.75rem",
+        "full": "9999px"
+      },
+      spacing: {
+        "space-xl": "1.5rem",
+        "space-sm": "0.75rem",
+        "space-2xl": "2rem",
+        "space-xs": "0.5rem",
+        "gutter": "1.25rem",
+        "margin": "1.25rem",
+        "space-lg": "1.25rem",
+        "space-md": "1rem"
+      },
+      fontFamily: {
+        "sans": ["Plus Jakarta Sans", "sans-serif"],
+        "body-sm": ["Plus Jakarta Sans"],
+        "label-lg": ["Plus Jakarta Sans"],
+        "display-lg": ["Plus Jakarta Sans"],
+        "label-md": ["Plus Jakarta Sans"],
+        "body-lg": ["Plus Jakarta Sans"],
+        "display-lg-mobile": ["Plus Jakarta Sans"],
+        "headline-md": ["Plus Jakarta Sans"],
+        "headline-sm": ["Plus Jakarta Sans"],
+        "label-sm": ["Plus Jakarta Sans"],
+        "headline-lg": ["Plus Jakarta Sans"],
+        "body-md": ["Plus Jakarta Sans"]
+      },
+      fontSize: {
+        "body-sm": ["13px", { "lineHeight": "20px", "fontWeight": "400" }],
+        "label-lg": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+        "display-lg": ["40px", { "lineHeight": "52px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+        "label-md": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+        "body-lg": ["17px", { "lineHeight": "28px", "fontWeight": "400" }],
+        "display-lg-mobile": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+        "headline-md": ["22px", { "lineHeight": "30px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+        "headline-sm": ["18px", { "lineHeight": "26px", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+        "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.02em", "fontWeight": "500" }],
+        "headline-lg": ["28px", { "lineHeight": "38px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+        "body-md": ["15px", { "lineHeight": "24px", "fontWeight": "400" }]
+      }
+    }
+  }
+};</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+      background-color: #171B19;
+      color: #E9EEE9;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+  </style>
+</head><body class="bg-calm-bg font-body-md text-body-md text-calm-text antialiased flex flex-col min-h-screen" style="background-color: rgb(13, 17, 23) !important;"><header class="fixed top-0 w-full z-50 pt-safe bg-[#171B19]/90 backdrop-blur-xl border-b border-calm-border/50" style="background-color: rgba(13, 17, 23, 0.92); border-bottom-color: rgba(91, 143, 185, 0.15);"><div class="h-16 px-margin flex items-center justify-between"><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-calm-accent text-[20px]">spa</span><h1 class="font-headline-sm text-headline-sm text-calm-text font-medium tracking-tight">You</h1></div><div class="w-8 h-8 rounded-full bg-calm-accent text-[#101412] flex items-center justify-center shrink-0" style="background-color: rgb(91, 143, 185) !important; color: rgb(13, 17, 23) !important;"><span class="material-symbols-outlined text-[18px]">person</span></div></div></header><main class="flex flex-col relative w-full pt-16 pb-28 bg-calm-bg px-margin min-h-screen" style="background-color: rgb(13, 17, 23) !important;"><div class="flex flex-col w-full pb-10 space-y-space-xl">
+<!-- Friendly Page Introductory Framing -->
+<div class="flex flex-col space-y-space-xs pt-space-xs">
+<div class="inline-flex items-center gap-space-xs text-calm-accent font-label-md" style="color: rgb(91, 143, 185) !important;">
+<span class="material-symbols-outlined text-[16px]">tune</span>
+<span class="">Sanctuary settings</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-calm-text tracking-tight">Your space</h2>
+<p class="font-body-md text-body-md text-calm-muted">Make V07 feel like yours.</p>
+</div>
+<!-- Section 1: Your Profile -->
+<section class="flex flex-col space-y-space-sm">
+<div class="flex items-center justify-between px-space-xs">
+<h3 class="font-label-lg text-label-lg text-calm-muted font-medium">Your profile</h3>
+<span class="font-label-sm text-label-sm text-calm-accent flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-calm-accent inline-block"></span>
+        Encrypted &amp; private
+      </span>
+</div>
+<div class="bg-calm-card border border-calm-border rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md" style="background-color: rgb(22, 27, 34) !important; border-color: rgba(91, 143, 185, 0.15) !important;">
+<div class="flex items-center gap-space-md">
+<div class="relative shrink-0">
+<img class="w-16 h-16 rounded-full object-cover shadow-sm bg-calm-soft border border-calm-border" data-alt="Minimalist portrait of Sarah Jenkins against a cool slate gray and steel navy background, calm and modern studio aesthetic." src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&amp;fit=crop&amp;w=256&amp;q=80">
+<div class="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-calm-accent text-[#101412] flex items-center justify-center shadow-sm" style="background-color: rgb(91, 143, 185) !important; color: rgb(13, 17, 23) !important;">
+<span class="material-symbols-outlined text-[12px]">favorite</span>
+</div>
+</div>
+<div class="flex flex-col min-w-0 flex-1">
+<div class="flex items-center gap-space-xs">
+<span class="font-headline-sm text-headline-sm text-calm-text truncate">Sarah Jenkins</span>
+<span class="material-symbols-outlined text-calm-accent text-[18px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+<p class="font-body-sm text-body-sm text-calm-muted truncate">sarah@example.com</p>
+<div class="mt-1 flex items-center gap-1.5 text-calm-muted font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[13px] text-calm-accent">cloud_done</span>
+<span class="truncate">Local journal active · Backed up securely</span>
+</div>
+</div>
+</div>
+<div class="pt-space-xs flex items-center justify-between gap-space-sm">
+<button class="w-full py-2.5 px-space-md rounded-full bg-calm-soft text-calm-text hover:bg-calm-soft/80 border border-calm-border/60 text-label-md font-label-md transition-all active:scale-[0.98] flex items-center justify-center gap-1.5" type="button">
+<span class="material-symbols-outlined text-[16px] text-calm-accent">edit</span>
+<span class="">Edit profile</span>
+</button>
+<button class="w-full py-2.5 px-space-md rounded-full bg-calm-soft text-calm-text hover:bg-calm-soft/80 border border-calm-border/60 text-label-md font-label-md transition-all active:scale-[0.98] flex items-center justify-center gap-1.5" type="button">
+<span class="material-symbols-outlined text-[16px] text-calm-muted">share</span>
+<span class="">Share status</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Section 2: Daily Rhythm & Notifications -->
+<section class="flex flex-col space-y-space-sm">
+<div class="flex items-center justify-between px-space-xs">
+<h3 class="font-label-lg text-label-lg text-calm-muted font-medium">Daily rhythm &amp; notifications</h3>
+<span class="material-symbols-outlined text-calm-muted text-[18px]">bedtime</span>
+</div>
+<div class="bg-calm-card border border-calm-border rounded-xl shadow-sm p-space-md flex flex-col space-y-space-md" style="background-color: rgb(22, 27, 34) !important; border-color: rgba(91, 143, 185, 0.15) !important;">
+<!-- Item 1: Morning prompt -->
+<div class="flex items-center justify-between gap-space-md py-1">
+<div class="flex items-start gap-space-sm min-w-0">
+<div class="w-9 h-9 rounded-full bg-calm-soft text-calm-accent border border-calm-border flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">wb_sunny</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-lg text-label-lg text-calm-text">Morning prompt</span>
+<span class="font-body-sm text-body-sm text-calm-muted">Gentle reminder at 8:30 AM to reflect on quiet intent</span>
+</div>
+</div>
+<button aria-checked="true" class="toggle-switch shrink-0 w-12 h-7 rounded-full bg-calm-accent p-0.5 transition-colors relative flex items-center cursor-pointer" onclick="toggleSwitch(this)" role="switch" type="button" style="background-color: rgb(91, 143, 185) !important;">
+<div class="w-6 h-6 rounded-full bg-calm-card shadow-sm transform translate-x-5 transition-transform flex items-center justify-center">
+<span class="material-symbols-outlined text-[12px] text-calm-accent">check</span>
+</div>
+</button>
+</div>
+<div class="h-[1px] bg-calm-border w-full"></div>
+<!-- Item 2: Focus chime & vibration -->
+<div class="flex items-center justify-between gap-space-md py-1">
+<div class="flex items-start gap-space-sm min-w-0">
+<div class="w-9 h-9 rounded-full bg-calm-soft text-calm-accent border border-calm-border flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">music_note</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-lg text-label-lg text-calm-text">Focus chime &amp; vibration</span>
+<span class="font-body-sm text-body-sm text-calm-muted">Soft wooden singing bowl chime when writing sessions start</span>
+</div>
+</div>
+<button aria-checked="true" class="toggle-switch shrink-0 w-12 h-7 rounded-full bg-calm-accent p-0.5 transition-colors relative flex items-center cursor-pointer" onclick="toggleSwitch(this)" role="switch" type="button" style="background-color: rgb(91, 143, 185) !important;">
+<div class="w-6 h-6 rounded-full bg-calm-card shadow-sm transform translate-x-5 transition-transform flex items-center justify-center">
+<span class="material-symbols-outlined text-[12px] text-calm-accent">check</span>
+</div>
+</button>
+</div>
+<div class="h-[1px] bg-calm-border w-full"></div>
+<!-- Item 3: Evening pause notification -->
+<div class="flex items-center justify-between gap-space-md py-1">
+<div class="flex items-start gap-space-sm min-w-0">
+<div class="w-9 h-9 rounded-full bg-calm-soft text-calm-muted border border-calm-border flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">nights_stay</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-lg text-label-lg text-calm-text">Evening pause notification</span>
+<span class="font-body-sm text-body-sm text-calm-muted">Warm reminder at 9:15 PM to release today's thoughts</span>
+</div>
+</div>
+<button aria-checked="false" class="toggle-switch shrink-0 w-12 h-7 rounded-full bg-calm-soft border border-calm-border p-0.5 transition-colors relative flex items-center cursor-pointer" onclick="toggleSwitch(this)" role="switch" type="button">
+<div class="w-6 h-6 rounded-full bg-calm-border shadow-sm transform translate-x-0 transition-transform flex items-center justify-center">
+<span class="material-symbols-outlined text-[12px] text-calm-muted opacity-0">check</span>
+</div>
+</button>
+</div>
+</div>
+</section>
+<!-- Section 3: Appearance & Theme -->
+<section class="flex flex-col space-y-space-sm">
+<div class="flex items-center justify-between px-space-xs">
+<h3 class="font-label-lg text-label-lg text-calm-muted font-medium">Appearance &amp; theme</h3>
+<span class="font-label-sm text-label-sm text-calm-muted">Editorial palette</span>
+</div>
+<div class="grid grid-cols-2 gap-space-sm">
+<!-- Warm Paper (Light) Option -->
+<div class="bg-calm-card border border-calm-border rounded-xl p-space-md shadow-sm relative cursor-pointer flex flex-col justify-between transition-all group opacity-75 hover:opacity-100" id="theme-light" onclick="selectTheme('light')" style="background-color: rgb(22, 27, 34) !important; border-color: rgba(91, 143, 185, 0.15) !important;">
+<div class="flex items-center justify-between mb-space-sm">
+<div class="w-6 h-6 rounded-full bg-calm-soft flex items-center justify-center">
+<span class="material-symbols-outlined text-calm-muted text-[14px]">auto_stories</span>
+</div>
+<div class="w-5 h-5 rounded-full bg-calm-soft text-calm-accent flex items-center justify-center opacity-0" id="check-light">
+<span class="material-symbols-outlined text-[13px]">check</span>
+</div>
+</div>
+<div class="h-16 w-full rounded-lg bg-[#F1F3F5] p-2 flex flex-col justify-between mb-space-sm border border-calm-border/40"><div class="flex gap-1.5 items-center"><div class="w-2.5 h-2.5 rounded-full bg-[#5B8FB9]"></div><div class="w-12 h-1.5 rounded-full bg-[#bfc9c4]"></div></div><div class="space-y-1"><div class="w-full h-1.5 rounded-full bg-[#bfc9c4]"></div><div class="w-3/4 h-1.5 rounded-full bg-[#bfc9c4]"></div></div></div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-calm-text font-semibold">Warm Paper</span>
+<span class="font-body-sm text-body-sm text-calm-muted">Calm, natural daylight</span>
+</div>
+</div>
+<!-- Night Ink (Dark) Option - Active in Dark Mode -->
+<div class="bg-calm-card border-2 border-calm-accent rounded-xl p-space-md shadow-sm relative cursor-pointer flex flex-col justify-between transition-all group opacity-100" id="theme-dark" onclick="selectTheme('dark')" style="background-color: rgb(22, 27, 34) !important; border-color: rgb(91, 143, 185) !important;">
+<div class="flex items-center justify-between mb-space-sm">
+<div class="w-6 h-6 rounded-full bg-calm-soft flex items-center justify-center">
+<span class="material-symbols-outlined text-calm-accent text-[14px]">dark_mode</span>
+</div>
+<div class="w-5 h-5 rounded-full bg-calm-accent text-[#101412] flex items-center justify-center" id="check-dark" style="background-color: rgb(91, 143, 185) !important; color: rgb(13, 17, 23) !important;">
+<span class="material-symbols-outlined text-[13px] font-bold">check</span>
+</div>
+</div>
+<div class="h-16 w-full rounded-lg bg-calm-mono-bg border border-calm-border p-2 flex flex-col justify-between mb-space-sm">
+<div class="flex gap-1.5 items-center">
+<div class="w-2.5 h-2.5 rounded-full bg-calm-accent"></div>
+<div class="w-12 h-1.5 rounded-full bg-calm-border"></div>
+</div>
+<div class="space-y-1">
+<div class="w-full h-1.5 rounded-full bg-calm-border"></div>
+<div class="w-3/4 h-1.5 rounded-full bg-calm-border"></div>
+</div>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-calm-text font-semibold">Night Ink</span>
+<span class="font-body-sm text-body-sm text-calm-muted">Deep charcoal resting</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 4: Storage & Vault -->
+<section class="flex flex-col space-y-space-sm">
+<div class="flex items-center justify-between px-space-xs">
+<h3 class="font-label-lg text-label-lg text-calm-muted font-medium">Storage &amp; vault</h3>
+<span class="font-label-sm text-label-sm text-calm-accent flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">lock</span>
+        Local sovereignty
+      </span>
+</div>
+<div class="bg-calm-card border border-calm-border rounded-xl p-space-lg shadow-sm flex flex-col space-y-space-md" style="background-color: rgb(22, 27, 34) !important; border-color: rgba(91, 143, 185, 0.15) !important;">
+<div class="flex items-start gap-space-sm">
+<div class="w-10 h-10 rounded-full bg-calm-soft text-calm-accent border border-calm-border flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">folder_special</span>
+</div>
+<div class="flex flex-col min-w-0">
+<p class="font-label-lg text-label-lg text-calm-text font-medium">Your words stay on your device.</p>
+<p class="font-body-sm text-body-sm text-calm-muted mt-0.5">V07 never parses, tracks, or shares your personal journal entries. Data is held in an open markdown format you control completely.</p>
+</div>
+</div>
+<div class="bg-calm-mono-bg border border-calm-border rounded-lg p-space-sm flex flex-col space-y-1" style="background-color: rgb(13, 17, 23) !important; border-color: rgba(91, 143, 185, 0.15) !important;">
+<span class="font-label-sm text-label-sm text-calm-muted">Vault directory path</span>
+<div class="flex items-center justify-between gap-space-xs overflow-hidden">
+<code class="font-mono text-body-sm text-calm-accent truncate select-all">/storage/emulated/0/V07Journal</code>
+<button class="text-calm-muted hover:text-calm-accent transition-colors p-1 rounded-md shrink-0 flex items-center" onclick="copyPath(this)" title="Copy path" type="button">
+<span class="material-symbols-outlined text-[18px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-space-sm pt-space-xs">
+<button class="py-2.5 px-space-sm rounded-full bg-calm-soft text-calm-text border border-calm-border/80 text-label-md font-label-md hover:bg-calm-soft/80 transition-colors active:scale-[0.98] flex items-center justify-center gap-1.5 truncate" type="button">
+<span class="material-symbols-outlined text-[16px] text-calm-muted">folder_open</span>
+<span class="">Choose folder</span>
+</button>
+<button class="py-2.5 px-space-sm rounded-full bg-calm-accent text-[#101412] font-semibold text-label-md font-label-md hover:bg-calm-accent/90 transition-colors active:scale-[0.98] flex items-center justify-center gap-1.5 shadow-sm truncate" type="button" style="background-color: rgb(91, 143, 185) !important; color: rgb(13, 17, 23) !important;">
+<span class="material-symbols-outlined text-[16px]">cloud_download</span>
+<span class="">Export backup</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Section 5: Advanced (Quiet & Restrained) -->
+<section class="flex flex-col space-y-space-sm pt-space-xs">
+<div class="flex items-center justify-between px-space-xs">
+<h3 class="font-label-lg text-label-lg text-calm-muted font-medium">Advanced</h3>
+<span class="font-label-sm text-label-sm text-calm-muted">Inspection &amp; cache</span>
+</div>
+<div class="bg-calm-card border border-calm-border rounded-xl p-space-md shadow-sm flex flex-col space-y-space-sm" style="background-color: rgb(22, 27, 34) !important; border-color: rgba(91, 143, 185, 0.15) !important;">
+<div class="flex items-center justify-between py-1">
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md text-calm-text">Inspect local database</span>
+<span class="font-body-sm text-body-sm text-calm-muted">Review indexed SQLite tables and vector caches</span>
+</div>
+<button class="px-3 py-1.5 rounded-full bg-calm-soft border border-calm-border text-calm-text font-label-sm text-label-sm hover:bg-calm-soft/80 transition-colors shrink-0" type="button">
+          View raw
+        </button>
+</div>
+<div class="h-[1px] bg-calm-border w-full"></div>
+<div class="flex items-center justify-between py-1">
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md text-calm-text">Diagnostics &amp; logs</span>
+<span class="font-body-sm text-body-sm text-calm-muted">Export sync timestamps and device logs</span>
+</div>
+<button class="px-3 py-1.5 rounded-full bg-calm-soft border border-calm-border text-calm-text font-label-sm text-label-sm hover:bg-calm-soft/80 transition-colors shrink-0" type="button">
+          Download
+        </button>
+</div>
+<div class="h-[1px] bg-calm-border w-full"></div>
+<!-- Danger Zone - Soft Muted Red styling -->
+<div class="pt-space-xs flex flex-col space-y-space-sm">
+<div class="flex items-center gap-1.5 text-calm-danger-text font-label-md">
+<span class="material-symbols-outlined text-[16px]">warning</span>
+<span class="">Caution zone</span>
+</div>
+<div class="flex flex-col gap-2">
+<button class="w-full py-2.5 px-space-md rounded-full bg-calm-danger-bg border border-calm-danger-border text-calm-danger-text text-label-md font-label-md hover:bg-calm-danger-bg/80 transition-all active:scale-[0.98] flex items-center justify-between" type="button">
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">cached</span>
+<span class="">Clear local cache</span>
+</span>
+<span class="font-label-sm text-label-sm opacity-80">14.8 MB</span>
+</button>
+<button class="w-full py-2.5 px-space-md rounded-full bg-calm-danger-bg border border-calm-danger-border text-calm-danger-text text-label-md font-label-md hover:bg-calm-danger-bg/80 transition-all active:scale-[0.98] flex items-center justify-between" type="button">
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">delete_forever</span>
+<span class="">Reset application</span>
+</span>
+<span class="font-label-sm text-label-sm">Erase setup</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Human Sign-off note -->
+<div class="flex flex-col items-center justify-center text-center space-y-1 pt-space-xs text-calm-muted">
+<div class="flex items-center gap-1 text-calm-accent">
+<span class="material-symbols-outlined text-[14px]">spa</span>
+<span class="font-label-sm text-label-sm font-semibold">V07 Notebook</span>
+</div>
+<p class="font-body-sm text-body-sm text-calm-muted/80">Crafted for mindful presence · Version 0.7.4 (Build 89)</p>
+</div>
+</div>
+<script>
+  function toggleSwitch(button) {
+    const isChecked = button.getAttribute('aria-checked') === 'true';
+    const thumb = button.querySelector('div');
+    const icon = thumb.querySelector('span');
+
+    if (isChecked) {
+      button.setAttribute('aria-checked', 'false');
+      button.classList.remove('bg-calm-accent');
+      button.classList.add('bg-calm-soft', 'border', 'border-calm-border');
+      thumb.classList.remove('translate-x-5', 'bg-calm-card');
+      thumb.classList.add('translate-x-0', 'bg-calm-border');
+      icon.classList.add('opacity-0');
+      icon.classList.remove('text-calm-accent');
+    } else {
+      button.setAttribute('aria-checked', 'true');
+      button.classList.remove('bg-calm-soft', 'border', 'border-calm-border');
+      button.classList.add('bg-calm-accent');
+      thumb.classList.remove('translate-x-0', 'bg-calm-border');
+      thumb.classList.add('translate-x-5', 'bg-calm-card');
+      icon.classList.remove('opacity-0');
+      icon.classList.add('text-calm-accent');
+    }
+  }
+
+  function selectTheme(type) {
+    const checkLight = document.getElementById('check-light');
+    const checkDark = document.getElementById('check-dark');
+    const cardLight = document.getElementById('theme-light');
+    const cardDark = document.getElementById('theme-dark');
+
+    if (type === 'light') {
+      checkLight.classList.remove('opacity-0');
+      checkLight.classList.add('bg-calm-accent', 'text-[#101412]');
+      checkDark.classList.add('opacity-0');
+      cardLight.classList.remove('opacity-75');
+      cardLight.classList.add('border-calm-accent', 'border-2');
+      cardLight.classList.remove('border-calm-border');
+      cardDark.classList.add('opacity-75');
+      cardDark.classList.remove('border-2', 'border-calm-accent');
+      cardDark.classList.add('border-calm-border');
+    } else {
+      checkDark.classList.remove('opacity-0');
+      checkDark.classList.add('bg-calm-accent', 'text-[#101412]');
+      checkLight.classList.add('opacity-0');
+      cardDark.classList.remove('opacity-75');
+      cardDark.classList.add('border-2', 'border-calm-accent');
+      cardDark.classList.remove('border-calm-border');
+      cardLight.classList.add('opacity-75');
+      cardLight.classList.remove('border-2', 'border-calm-accent');
+      cardLight.classList.add('border-calm-border');
+    }
+  }
+
+  function copyPath(button) {
+    const icon = button.querySelector('.material-symbols-outlined');
+    navigator.clipboard?.writeText('/storage/emulated/0/V07Journal');
+    const prevText = icon.textContent;
+    icon.textContent = 'check';
+    button.classList.add('text-calm-accent');
+    setTimeout(() => {
+      icon.textContent = prevText;
+      button.classList.remove('text-calm-accent');
+    }, 1800);
+  }
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe pointer-events-none flex justify-center px-margin mb-space-sm"><div class="pointer-events-auto w-full max-w-[400px] h-16 rounded-full bg-[#202522] border border-[#343C37] shadow-[0_12px_32px_-4px_rgba(0,0,0,0.5),0_4px_12px_-2px_rgba(0,0,0,0.3)] px-space-xs flex items-center justify-between" data-active-classes="bg-[#272D29] text-[#75B7A1]" style="background-color: rgb(22, 27, 34) !important; border-color: rgba(91, 143, 185, 0.2) !important;"><a class="flex flex-col items-center justify-center min-w-[56px] h-12 rounded-full text-calm-muted hover:text-calm-text transition-colors" data-path="home" href="#"><span class="material-symbols-outlined text-[20px]">spa</span><span class="font-label-sm text-label-sm">Home</span></a><a class="flex flex-col items-center justify-center min-w-[56px] h-12 rounded-full text-calm-muted hover:text-calm-text transition-colors" data-path="tools" href="#"><span class="material-symbols-outlined text-[20px]">grid_view</span><span class="font-label-sm text-label-sm">Tools</span></a><a class="flex flex-col items-center justify-center min-w-[56px] h-12 rounded-full text-calm-muted hover:text-calm-text transition-colors" data-path="journal" href="#"><span class="material-symbols-outlined text-[20px]">edit_note</span><span class="font-label-sm text-label-sm">Journal</span></a><a class="flex flex-col items-center justify-center min-w-[56px] h-12 rounded-full text-calm-muted hover:text-calm-text transition-colors" data-path="day" href="#"><span class="material-symbols-outlined text-[20px]">calendar_today</span><span class="font-label-sm text-label-sm">Day</span></a><a class="flex flex-col items-center justify-center min-w-[56px] h-12 rounded-full bg-calm-soft text-calm-accent transition-colors" data-path="you" href="#" style="background-color: rgb(28, 33, 40) !important; color: rgb(91, 143, 185) !important;"><span class="material-symbols-outlined text-[20px]">person</span><span class="font-label-sm text-label-sm font-semibold">You</span></a></div></nav>
+
+</body></html>

@@ -1,0 +1,70 @@
+{
+  "id": "com.v07.habits",
+  "name": "Habits",
+  "version": "1.0.0",
+  "author": "Prabal",
+  "description": "Track daily habits on a GitHub-style calendar heatmap. Log habits, build streaks, and see your consistency at a glance.",
+  "permissions": ["events:read", "events:write", "server", "notification"],
+  "entry": "index.html",
+  "settings": "settings.html",
+  "nav": {
+    "placement": "log-dashboard",
+    "icon": "local_fire_department",
+    "label": "HABITS",
+    "color": "#FFB454"
+  },
+  "widgets": [
+    {
+      "id": "habits_tracker",
+      "title": "HABIT TRACKER",
+      "icon": "local_fire_department",
+      "path": "widget.html",
+      "color": "#FFB454",
+      "supportedSizes": ["compact", "small", "medium", "large"],
+      "defaultSize": "medium"
+    },
+    {
+      "id": "habits_compact",
+      "title": "HABIT STREAK BAR",
+      "icon": "bolt",
+      "path": "widget.html",
+      "color": "#FFB454",
+      "supportedSizes": ["compact"],
+      "defaultSize": "compact"
+    },
+    {
+      "id": "habits_small",
+      "title": "HABIT 7-DAY DOTS",
+      "icon": "calendar_view_week",
+      "path": "widget.html",
+      "color": "#FFB454",
+      "supportedSizes": ["small"],
+      "defaultSize": "small"
+    },
+    {
+      "id": "habits_large",
+      "title": "HABIT 20-WEEK HEATMAP",
+      "icon": "grid_on",
+      "path": "widget.html",
+      "color": "#FFB454",
+      "supportedSizes": ["large"],
+      "defaultSize": "large"
+    }
+  ],
+  "fab": [
+    {
+      "id": "habits",
+      "label": "+ HABITS",
+      "icon": "local_fire_department",
+      "fn": "v07OpenPlugin",
+      "args": { "id": "com.v07.habits" },
+      "enabled": true
+    }
+  ],
+  "notifications": {
+    "supported": true,
+    "defaultTime": "21:00",
+    "title": "Habits Check-in",
+    "body": "Check off your daily habits before the day ends!"
+  }
+}
