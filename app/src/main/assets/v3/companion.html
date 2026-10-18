@@ -730,6 +730,99 @@
     </div>
   </div>
 
+  <!-- 8. Profile & Cloud Sync Partitioning Modal -->
+  <div id="profileModal" class="modal-overlay">
+    <div class="modal-box max-w-md">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[var(--primary)]">manage_accounts</span>
+          <h3 class="text-base font-bold text-[var(--text)]">Profile & Cloud Sync</h3>
+        </div>
+        <button data-close-modal class="text-[var(--text-muted)] hover:text-[var(--text)] p-1">
+          <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+      </div>
+
+      <!-- Current Profile HUD -->
+      <div class="p-3 mb-4 rounded-lg bg-[var(--surface-alt)] border border-[var(--border)]">
+        <div class="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-1">Active Isolated Partition</div>
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-[var(--primary)]"></span>
+            <span id="activeProfileLabel" class="text-sm font-bold text-[var(--text)] font-mono">guest</span>
+          </div>
+          <span id="profileSyncStatusBadge" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[var(--warning-dim)] text-[var(--warning)]">Offline Mode</span>
+        </div>
+      </div>
+
+      <!-- Profile Switcher Section -->
+      <div class="mb-4">
+        <label class="block text-xs font-semibold text-[var(--text-secondary)] mb-1">Switch Local Profile</label>
+        <div class="flex gap-2 mb-2">
+          <select id="profileSelectDropdown" class="flex-1 px-3 py-1.5 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-xs text-[var(--text)]">
+            <option value="guest">guest</option>
+          </select>
+          <button id="switchProfileBtn" class="px-3 py-1.5 rounded-lg bg-[var(--surface-hover)] border border-[var(--border)] text-xs font-semibold text-[var(--text)] hover:bg-[var(--primary)] hover:text-white transition-colors">
+            Switch
+          </button>
+        </div>
+        <div class="flex gap-2">
+          <input type="text" id="newProfileInput" placeholder="New profile name (e.g. Work, Study)..." class="flex-1 px-3 py-1.5 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-xs text-[var(--text)]" />
+          <button id="createProfileBtn" class="px-3 py-1.5 rounded-lg bg-[var(--primary)] text-white text-xs font-semibold hover:opacity-90">
+            Create
+          </button>
+        </div>
+      </div>
+
+      <!-- 1. Cloud Authentication (Identity) -->
+      <div class="pt-3 border-t border-[var(--border)] mb-4">
+        <div class="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">User Identity & Authentication</div>
+        <div id="cloudAuthSection">
+          <div id="authLoggedOutView">
+            <div class="space-y-2 mb-3">
+              <input type="email" id="cloudAuthEmail" placeholder="Email address" class="w-full px-3 py-1.5 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-xs text-[var(--text)]" />
+              <input type="password" id="cloudAuthPassword" placeholder="Password" class="w-full px-3 py-1.5 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-xs text-[var(--text)]" />
+            </div>
+            <div class="flex gap-2">
+              <button id="cloudSignInBtn" class="flex-1 py-1.5 rounded-lg bg-[var(--primary)] text-white text-xs font-semibold hover:opacity-90">Sign In</button>
+              <button id="cloudSignUpBtn" class="flex-1 py-1.5 rounded-lg bg-[var(--surface-hover)] border border-[var(--border)] text-xs font-semibold text-[var(--text)] hover:bg-[var(--surface)]">Create Account</button>
+            </div>
+          </div>
+          <div id="authLoggedInView" class="hidden">
+            <div class="flex items-center justify-between p-2.5 rounded bg-[var(--surface)] border border-[var(--border)]">
+              <div>
+                <div id="loggedInUserEmail" class="text-xs font-bold text-[var(--text)]">user@example.com</div>
+                <div id="loggedInUserUid" class="text-[10px] font-mono text-[var(--text-muted)]">uid: ...</div>
+              </div>
+              <button id="cloudSignOutBtn" class="px-2.5 py-1 text-xs font-semibold text-[var(--danger)] hover:bg-[var(--danger-dim)] rounded">Sign Out</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Cloud Synchronization Engine (Independent Toggle) -->
+      <div class="pt-3 border-t border-[var(--border)]">
+        <div class="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">Cloud Synchronization Engine</div>
+        <div class="p-3 rounded-lg bg-[var(--surface-alt)] border border-[var(--border)] space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="text-xs font-bold text-[var(--text)] block">Enable Cloud Sync</span>
+              <span class="text-[11px] text-[var(--text-muted)]">Realtime sync with Firestore web companion</span>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="cloudSyncToggleSwitch" class="sr-only peer" checked>
+              <div class="w-9 h-5 bg-[var(--border)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--primary)]"></div>
+            </label>
+          </div>
+          <button id="cloudSyncNowBtn" class="w-full py-1.5 rounded-lg bg-[var(--surface-hover)] border border-[var(--border)] text-[var(--text)] text-xs font-semibold hover:bg-[var(--surface)] flex items-center justify-center gap-1.5 transition-colors">
+            <span class="material-symbols-outlined text-sm">sync</span>
+            <span>Sync Now</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- 7. Keyboard Shortcuts Modal -->
   <div id="shortcutsModal" class="modal-overlay">
     <div class="modal-box">

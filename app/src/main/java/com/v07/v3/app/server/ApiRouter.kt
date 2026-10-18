@@ -935,6 +935,16 @@ class ApiRouter(
             clean == "/api/v3/companion/status" && method == "GET" -> {
                 HttpResponse.json(JSONObject().put("ok", true).put("status", syncManager.getSyncStatus()).toString())
             }
+            clean == "/api/v3/companion/sync/toggle" && method == "POST" -> {
+                val body = JSONObject(request.body.ifBlank { "{}" })
+                val enabled = if (body.has("enabled")) body.optBoolean("enabled") else !syncManager.isSyncEnabled()
+                syncManager.setSyncEnabled(enabled)
+                HttpResponse.json(JSONObject().apply {
+                    put("ok", true)
+                    put("sync_enabled", syncManager.isSyncEnabled())
+                    put("status", syncManager.getSyncStatus())
+                }.toString())
+            }
             clean == "/api/v3/companion/sync" && method == "POST" -> {
                 var syncOk = false
                 var syncErr: String? = null

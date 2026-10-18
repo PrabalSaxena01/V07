@@ -132,6 +132,7 @@ class V07Database private constructor(context: Context, dbPath: String) :
             """.trimIndent())
             db.execSQL("CREATE INDEX IF NOT EXISTS idx_recycle_bin_time ON recycle_bin(deleted_at);")
             db.execSQL("CREATE INDEX IF NOT EXISTS idx_recycle_bin_cat ON recycle_bin(category);")
+            db.execSQL("CREATE INDEX IF NOT EXISTS idx_recycle_bin_orig_id ON recycle_bin(original_id);")
 
             // 7. Plugin Platform Storage (Isolated key-value partition per plugin ID)
             db.execSQL("""

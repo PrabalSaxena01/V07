@@ -293,7 +293,7 @@
             notes: notes,
             rating: rating,
             category: 'session',
-            date: window.SanctuaryViews.selectedDate
+            date: window.SanctuaryViews.getTodayDateString(new Date(chrono.startTime || Date.now()))
           });
 
           chrono.reset();
@@ -418,7 +418,7 @@
         });
       }
 
-      // Cloud Auth Wire
+      // Cloud Auth Wire (Decoupled from Sync)
       const signInBtn = document.getElementById('cloudSignInBtn');
       if (signInBtn) {
         signInBtn.addEventListener('click', async () => {
@@ -428,12 +428,30 @@
             alert('Please enter email and password');
             return;
           }
+          signInBtn.disabled = true;
+          signInBtn.textContent = 'Signing In...';
           try {
-            await firebase.auth().signInWithEmailAndPassword(email, pass);
-            this.closeAllModals();
-            window.SanctuaryViews.showToast(`Authenticated as ${email}`);
+            if (window.V07Platform?.companion?.signIn) {
+              const res = await window.V07Platform.companion.signIn(email, pass, false);
+              if (res && res.success) {
+                await window.V07StorageEngine.syncFromNativeBridge();
+                this.closeAllModals();
+                window.SanctuaryViews.renderAll();
+                window.SanctuaryViews.showToast(`Authenticated as ${email}`);
+              } else {
+                alert('Sign In Failed: ' + (res?.error || 'Authentication error'));
+              }
+            } else if (typeof firebase !== 'undefined' && firebase.auth) {
+              await firebase.auth().signInWithEmailAndPassword(email, pass);
+              this.closeAllModals();
+              window.SanctuaryViews.renderAll();
+              window.SanctuaryViews.showToast(`Authenticated as ${email}`);
+            }
           } catch (err) {
             alert('Sign In Failed: ' + err.message);
+          } finally {
+            signInBtn.disabled = false;
+            signInBtn.textContent = 'Sign In';
           }
         });
       }
@@ -447,12 +465,30 @@
             alert('Please enter email and password');
             return;
           }
+          signUpBtn.disabled = true;
+          signUpBtn.textContent = 'Creating...';
           try {
-            await firebase.auth().createUserWithEmailAndPassword(email, pass);
-            this.closeAllModals();
-            window.SanctuaryViews.showToast(`Account created for ${email}`);
+            if (window.V07Platform?.companion?.signIn) {
+              const res = await window.V07Platform.companion.signIn(email, pass, true);
+              if (res && res.success) {
+                await window.V07StorageEngine.syncFromNativeBridge();
+                this.closeAllModals();
+                window.SanctuaryViews.renderAll();
+                window.SanctuaryViews.showToast(`Account created for ${email}`);
+              } else {
+                alert('Account Creation Failed: ' + (res?.error || 'Failed'));
+              }
+            } else if (typeof firebase !== 'undefined' && firebase.auth) {
+              await firebase.auth().createUserWithEmailAndPassword(email, pass);
+              this.closeAllModals();
+              window.SanctuaryViews.renderAll();
+              window.SanctuaryViews.showToast(`Account created for ${email}`);
+            }
           } catch (err) {
             alert('Account Creation Failed: ' + err.message);
+          } finally {
+            signUpBtn.disabled = false;
+            signUpBtn.textContent = 'Create Account';
           }
         });
       }
@@ -461,12 +497,37 @@
       if (signOutBtn) {
         signOutBtn.addEventListener('click', async () => {
           try {
-            await firebase.auth().signOut();
+            if (window.V07Platform?.companion?.signOut) {
+              await window.V07Platform.companion.signOut();
+              window.V07StorageEngine.currentUser = null;
+              await window.V07StorageEngine.syncFromNativeBridge();
+            } else if (typeof firebase !== 'undefined' && firebase.auth) {
+              await firebase.auth().signOut();
+            }
             this.closeAllModals();
+            window.SanctuaryViews.renderAll();
             window.SanctuaryViews.showToast('Signed out to Offline Guest mode');
           } catch (err) {
             alert('Sign Out Failed: ' + err.message);
           }
+        });
+      }
+
+      // Independent Cloud Sync Toggle Wire
+      const syncToggleSwitch = document.getElementById('cloudSyncToggleSwitch');
+      if (syncToggleSwitch) {
+        syncToggleSwitch.addEventListener('change', async (e) => {
+          const enabled = e.target.checked;
+          await window.V07StorageEngine.setSyncEnabled(enabled);
+          const badgeEl = document.getElementById('profileSyncStatusBadge');
+          if (badgeEl) {
+            badgeEl.textContent = enabled ? 'Sync Active' : 'Sync Paused';
+            badgeEl.className = enabled 
+              ? 'text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[var(--success-dim)] text-[var(--success)]'
+              : 'text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[var(--warning-dim)] text-[var(--warning)]';
+          }
+          window.SanctuaryViews.renderTopBarHUD();
+          window.SanctuaryViews.showToast(enabled ? 'Cloud sync enabled' : 'Cloud sync paused (Offline local mode)');
         });
       }
 
@@ -475,12 +536,21 @@
         syncNowBtn.addEventListener('click', async () => {
           syncNowBtn.disabled = true;
           syncNowBtn.innerHTML = '<span class="material-symbols-outlined text-sm animate-spin">autorenew</span> Syncing...';
-          await window.V07StorageEngine.syncPendingToCloud();
-          setTimeout(() => {
+          try {
+            if (window.V07Platform?.companion?.syncNow) {
+              await window.V07Platform.companion.syncNow();
+              await window.V07StorageEngine.syncFromNativeBridge();
+            } else {
+              await window.V07StorageEngine.syncPendingToCloud();
+            }
+            window.SanctuaryViews.renderAll();
+            window.SanctuaryViews.showToast('Cloud synchronization complete');
+          } catch (err) {
+            window.SanctuaryViews.showToast('Sync error: ' + (err.message || 'Check network'));
+          } finally {
             syncNowBtn.disabled = false;
-            syncNowBtn.innerHTML = '<span class="material-symbols-outlined text-sm">sync</span> Sync Cloud Partition Now';
-            window.SanctuaryViews.showToast('Cloud partition synchronized');
-          }, 600);
+            syncNowBtn.innerHTML = '<span class="material-symbols-outlined text-sm">sync</span> Sync Now';
+          }
         });
       }
     }
@@ -492,11 +562,24 @@
       const labelEl = document.getElementById('activeProfileLabel');
       if (labelEl) labelEl.textContent = activeProf;
 
+      const syncToggleSwitch = document.getElementById('cloudSyncToggleSwitch');
+      if (syncToggleSwitch) {
+        syncToggleSwitch.checked = se.isSyncEnabled !== false;
+      }
+
       const badgeEl = document.getElementById('profileSyncStatusBadge');
       if (badgeEl) {
-        if (se.mode === 'cloud_firestore') {
-          badgeEl.className = 'text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[var(--success-dim)] text-[var(--success)]';
-          badgeEl.textContent = 'Cloud Synced';
+        const syncOn = se.isSyncEnabled !== false;
+        if (se.mode === 'app_sqlite') {
+          badgeEl.className = syncOn 
+            ? 'text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[var(--primary-dim)] text-[var(--primary)]'
+            : 'text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[var(--warning-dim)] text-[var(--warning)]';
+          badgeEl.textContent = syncOn ? 'App Native (Sync Enabled)' : 'App Native (Sync Paused)';
+        } else if (se.mode === 'cloud_firestore') {
+          badgeEl.className = syncOn 
+            ? 'text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[var(--success-dim)] text-[var(--success)]'
+            : 'text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[var(--warning-dim)] text-[var(--warning)]';
+          badgeEl.textContent = syncOn ? 'Cloud Synced' : 'Sync Paused';
         } else {
           badgeEl.className = 'text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[var(--warning-dim)] text-[var(--warning)]';
           badgeEl.textContent = 'Offline Partition';
@@ -517,7 +600,7 @@
         const emailEl = document.getElementById('loggedInUserEmail');
         const uidEl = document.getElementById('loggedInUserUid');
         if (emailEl) emailEl.textContent = se.currentUser.email || 'Authenticated User';
-        if (uidEl) uidEl.textContent = 'uid: ' + se.currentUser.uid;
+        if (uidEl) uidEl.textContent = 'uid: ' + (se.currentUser.uid || 'active');
       } else {
         if (loggedInView) loggedInView.classList.add('hidden');
         if (loggedOutView) loggedOutView.classList.remove('hidden');

@@ -46,6 +46,7 @@
       this.mode = 'offline_local'; // 'offline_local' | 'cloud_firestore' | 'app_sqlite'
       this.currentUser = null;
       this.deviceId = this.getOrCreateDeviceUuid();
+      this.isSyncEnabled = localStorage.getItem('v07_cloud_sync_enabled') !== 'false';
       this.firestoreDb = null;
       this.firebaseAuth = null;
       this.indexedDb = null;
@@ -101,12 +102,126 @@
       const bridgeConnected = await this.detectNativeBridge();
       if (bridgeConnected) {
         this.mode = 'app_sqlite';
+        await this.syncFromNativeBridge();
         this.notifyStateChanged();
         return;
       }
 
       // 5. Try Firebase Cloud Initialization (if configured and authenticated)
       this.initFirebase();
+      this.notifyStateChanged();
+    }
+
+    // --- Sync directly from Android SQLite via Native Bridge ---
+    async syncFromNativeBridge() {
+      if (!window.V07Platform) return;
+      try {
+        console.log('[V07StorageEngine] Syncing state from Android SQLite bridge...');
+        
+        // 1. Check sync & auth status
+        if (window.V07Platform.companion && window.V07Platform.companion.getStatus) {
+          const status = await window.V07Platform.companion.getStatus();
+          if (status) {
+            this.isSyncEnabled = status.sync_enabled !== false;
+            if (status.authenticated) {
+              this.currentUser = { email: status.user_email || 'Authenticated User', uid: status.uid };
+            } else {
+              this.currentUser = null;
+            }
+          }
+        }
+
+        // 2. Fetch Tasks from SQLite
+        if (window.V07Platform.tasks && window.V07Platform.tasks.list) {
+          const rawTasks = await window.V07Platform.tasks.list();
+          if (Array.isArray(rawTasks)) {
+            this.tasks = rawTasks.map(t => ({
+              id: t.id,
+              title: t.title,
+              priority: (t.priority || 'MEDIUM').toLowerCase(),
+              status: t.status || (t.done ? 'completed' : 'pending'),
+              createdAt: t.created_at || t.createdAt || Date.now(),
+              completedAt: t.completed_at || t.completedAt || (t.status === 'completed' ? Date.now() : null),
+              deadline: t.deadline || null
+            }));
+          }
+        }
+
+        // 3. Fetch Thoughts from SQLite
+        if (window.V07Platform.thoughts && window.V07Platform.thoughts.list) {
+          const rawThoughts = await window.V07Platform.thoughts.list();
+          if (Array.isArray(rawThoughts)) {
+            this.thoughts = rawThoughts.map(th => ({
+              id: th.id,
+              content: th.content,
+              title: th.topic || 'Reflection',
+              topic: th.topic || 'Reflection',
+              date: th.date,
+              ts: th.timestamp,
+              tags: th.tags || null
+            }));
+          }
+        }
+
+        // 4. Fetch Sessions from SQLite
+        if (window.V07Platform.sessions && window.V07Platform.sessions.list) {
+          const rawSessions = await window.V07Platform.sessions.list();
+          if (Array.isArray(rawSessions)) {
+            this.sessions = rawSessions.map(s => ({
+              id: s.id,
+              activity: s.activity,
+              title: s.activity,
+              startTime: s.start_time || s.startTime,
+              endTime: s.end_time || s.endTime,
+              durationSec: s.duration_sec || s.durationSec || 0,
+              notes: s.notes || '',
+              date: s.date || (s.start_time ? new Date(s.start_time).toISOString().split('T')[0] : '')
+            }));
+          }
+        }
+
+        // 5. Fetch Habit logs from SQLite entries
+        if (window.V07Platform.entries && window.V07Platform.entries.query) {
+          const rawHabits = await window.V07Platform.entries.query({ category: 'habit', limit: 200 });
+          if (Array.isArray(rawHabits)) {
+            this.habitLogs = rawHabits.map(h => {
+              const habitId = h.note || h.subtitle || h.id;
+              const canonical = this.canonicalizeHabit(habitId) || { id: habitId, title: h.title };
+              return {
+                id: h.id,
+                habit_id: canonical.id,
+                habit_name: canonical.title,
+                date: h.date,
+                completed: h.score > 0 || (h.count && h.count > 0) || (h.content && h.content.includes('Completed')) || true,
+                ts: h.timestamp,
+                category: 'habits'
+              };
+            });
+          }
+        }
+      } catch (err) {
+        console.warn('[V07StorageEngine] Error reading from native bridge:', err);
+      }
+    }
+
+    async setSyncEnabled(enabled) {
+      this.isSyncEnabled = !!enabled;
+      localStorage.setItem('v07_cloud_sync_enabled', enabled ? 'true' : 'false');
+      
+      if (this.mode === 'app_sqlite' && window.V07Platform?.companion?.setSyncEnabled) {
+        try {
+          await window.V07Platform.companion.setSyncEnabled(enabled);
+        } catch (e) {
+          console.warn('[V07StorageEngine] Failed to toggle native sync:', e);
+        }
+      } else if (this.mode === 'cloud_firestore') {
+        if (enabled && this.currentUser) {
+          this.startFirestoreListeners(this.currentUser.uid);
+          this.syncPendingToCloud();
+        } else {
+          this.stopFirestoreListeners();
+        }
+      }
       this.notifyStateChanged();
     }
 
@@ -166,8 +281,12 @@
             this.clearInMemoryCaches();
             this.loadLocalTombstones();
             await this.loadAllLocalData();
-            this.startFirestoreListeners(user.uid);
-            this.syncPendingToCloud();
+            if (this.isSyncEnabled) {
+              this.startFirestoreListeners(user.uid);
+              this.syncPendingToCloud();
+            } else {
+              this.stopFirestoreListeners();
+            }
           } else {
             console.log('[V07StorageEngine] Offline Sanctuary Guest Mode Active');
             this.currentUser = null;
@@ -531,6 +650,21 @@
       }
 
       this.persistToLocalStorage('habitLogs', this.habitLogs);
+      
+      // Route to native SQLite when running inside app
+      if (this.mode === 'app_sqlite' && window.V07Platform?.capture?.quick) {
+        try {
+          await window.V07Platform.capture.quick({
+            category: 'habit',
+            title: canonical.title,
+            note: canonical.id,
+            count: updatedLog.completed ? 1 : 0
+          });
+        } catch (err) {
+          console.warn('[V07StorageEngine] Native habit save warning:', err);
+        }
+      }
+
       await this.commitEntityMutation('habits', updatedLog);
       this.notifyStateChanged();
       return updatedLog;
@@ -542,8 +676,13 @@
       entity.updated_at = Date.now();
       entity.device_id = this.deviceId;
 
-      // 1. Cloud Firestore write if authenticated
-      if (this.mode === 'cloud_firestore' && this.currentUser && this.firestoreDb) {
+      // 1. Android SQLite mode: writes are handled natively via SQLite bridge
+      if (this.mode === 'app_sqlite') {
+        return;
+      }
+
+      // 2. Cloud Firestore write if authenticated AND sync is enabled
+      if (this.mode === 'cloud_firestore' && this.isSyncEnabled && this.currentUser && this.firestoreDb) {
         try {
           const userRef = this.firestoreDb.collection('users').doc(this.currentUser.uid);
           let targetCol;
@@ -562,14 +701,16 @@
         }
       }
 
-      // 2. Queue mutation for future sync
-      this.pendingMutations.push({ collection: collectionName, entity: entity, ts: Date.now() });
-      this.uncommittedCount = this.pendingMutations.length;
-      this.persistToLocalStorage('pendingMutations', this.pendingMutations);
+      // 3. Queue mutation for future sync if sync is enabled
+      if (this.isSyncEnabled) {
+        this.pendingMutations.push({ collection: collectionName, entity: entity, ts: Date.now() });
+        this.uncommittedCount = this.pendingMutations.length;
+        this.persistToLocalStorage('pendingMutations', this.pendingMutations);
+      }
     }
 
     async syncPendingToCloud() {
-      if (!this.currentUser || !this.firestoreDb || this.pendingMutations.length === 0) return;
+      if (!this.isSyncEnabled || !this.currentUser || !this.firestoreDb || this.pendingMutations.length === 0) return;
       console.log(`[V07StorageEngine] Flushing ${this.pendingMutations.length} pending mutations to cloud...`);
       const queue = [...this.pendingMutations];
       this.pendingMutations = [];
@@ -595,6 +736,20 @@
       else this.sessions.unshift(sessionRecord);
 
       this.persistToLocalStorage('sessions', this.sessions);
+
+      // Route to native SQLite when running inside app
+      if (this.mode === 'app_sqlite' && window.V07Platform?.sessions) {
+        try {
+          await window.V07Platform.sessions.add(
+            sessionRecord.activity || sessionRecord.title || 'Focus Session',
+            sessionRecord.durationSec || 0,
+            sessionRecord.notes || ''
+          );
+        } catch (err) {
+          console.warn('[V07StorageEngine] Native session save warning:', err);
+        }
+      }
+
       await this.commitEntityMutation('sessions', sessionRecord);
       this.notifyStateChanged();
       return sessionRecord;
@@ -612,11 +767,29 @@
     async saveTask(taskRecord) {
       if (!taskRecord.id) taskRecord.id = 'task_' + Date.now();
       taskRecord.updated_at = Date.now();
+      if (taskRecord.status === 'completed' && !taskRecord.completedAt) {
+        taskRecord.completedAt = Date.now();
+      }
       const existingIdx = this.tasks.findIndex(t => t.id === taskRecord.id);
       if (existingIdx >= 0) this.tasks[existingIdx] = taskRecord;
       else this.tasks.unshift(taskRecord);
 
       this.persistToLocalStorage('tasks', this.tasks);
+
+      // Route to native SQLite when running inside app
+      if (this.mode === 'app_sqlite' && window.V07Platform?.tasks) {
+        try {
+          if (existingIdx >= 0) {
+            await window.V07Platform.tasks.update(taskRecord.id, taskRecord.title, taskRecord.priority, taskRecord.deadline);
+          } else {
+            const added = await window.V07Platform.tasks.add(taskRecord.title, taskRecord.priority, taskRecord.deadline);
+            if (added && added.id) taskRecord.id = added.id;
+          }
+        } catch (err) {
+          console.warn('[V07StorageEngine] Native task save warning:', err);
+        }
+      }
+
       await this.commitEntityMutation('tasks', taskRecord);
       this.notifyStateChanged();
       return taskRecord;
@@ -637,10 +810,12 @@
         item: target,
         type: 'task',
         index: idx,
-        timer: setTimeout(() => {
+        timer: setTimeout(async () => {
           // Commit permanent tombstone
           this.recordTombstone(taskId, 'task');
-          if (this.mode === 'cloud_firestore' && this.currentUser && this.firestoreDb) {
+          if (this.mode === 'app_sqlite' && window.V07Platform?.tasks) {
+            try { await window.V07Platform.tasks.delete(taskId); } catch (_) {}
+          } else if (this.mode === 'cloud_firestore' && this.isSyncEnabled && this.currentUser && this.firestoreDb) {
             this.firestoreDb.collection('users').doc(this.currentUser.uid).collection('tasks').doc(taskId).delete().catch(console.warn);
           }
           this.softDeleteQuarantine = null;
@@ -672,11 +847,25 @@
     async saveThought(thoughtRecord) {
       if (!thoughtRecord.id) thoughtRecord.id = 'th_' + Date.now();
       thoughtRecord.updated_at = Date.now();
+      const topic = thoughtRecord.topic || thoughtRecord.title || 'Reflection';
+      thoughtRecord.topic = topic;
+      thoughtRecord.title = topic;
+
       const existingIdx = this.thoughts.findIndex(t => t.id === thoughtRecord.id);
       if (existingIdx >= 0) this.thoughts[existingIdx] = thoughtRecord;
       else this.thoughts.unshift(thoughtRecord);
 
       this.persistToLocalStorage('thoughts', this.thoughts);
+
+      // Route to native SQLite when running inside app
+      if (this.mode === 'app_sqlite' && window.V07Platform?.thoughts) {
+        try {
+          await window.V07Platform.thoughts.add(thoughtRecord.content, topic, thoughtRecord.tags);
+        } catch (err) {
+          console.warn('[V07StorageEngine] Native thought save warning:', err);
+        }
+      }
+
       await this.commitEntityMutation('thoughts', thoughtRecord);
       this.notifyStateChanged();
       return thoughtRecord;

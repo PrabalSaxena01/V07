@@ -162,7 +162,7 @@ class PlatformJsBridge(
                         val tl = repository.getDayTimeline(requestedDate)
                         Triple(requestedDate, tl.totalScreenTimeMs, 0)
                     } else {
-                        val summary = runBlocking { screenTimeTracker.collectNow() }
+                        val summary = screenTimeTracker.getCachedTodaySummary() ?: runBlocking { screenTimeTracker.collectNow() }
                         Triple(summary.date, summary.totalDurationMs, summary.appCount)
                     }
                     val res = JSONObject().apply {
@@ -175,9 +175,10 @@ class PlatformJsBridge(
                 }
                 "telemetry:getDetailedScreenTime", "telemetry:getSummary" -> {
                     val requestedDate = params.optString("date", "").ifBlank { null }
-                    val summary = runBlocking {
-                        if (requestedDate != null) screenTimeTracker.collectForDate(requestedDate)
-                        else screenTimeTracker.collectNow()
+                    val summary = if (requestedDate != null) {
+                        screenTimeTracker.collectForDate(requestedDate)
+                    } else {
+                        screenTimeTracker.getCachedTodaySummary() ?: runBlocking { screenTimeTracker.collectNow() }
                     }
                     val todayDateStr = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
                     val hasPerm = screenTimeTracker.hasUsageStatsPermission() || summary.totalDurationMs > 0L || (requestedDate != null && requestedDate != todayDateStr)
@@ -1469,6 +1470,14 @@ class PlatformJsBridge(
                 "companion:getStatus" -> {
                     successJson(syncManager.getSyncStatus())
                 }
+                "companion:setSyncEnabled" -> {
+                    val enabled = params.optBoolean("enabled", true)
+                    syncManager.setSyncEnabled(enabled)
+                    successJson(JSONObject().put("success", true).put("sync_enabled", syncManager.isSyncEnabled()).put("status", syncManager.getSyncStatus()))
+                }
+                "companion:isSyncEnabled" -> {
+                    successJson(JSONObject().put("success", true).put("sync_enabled", syncManager.isSyncEnabled()))
+                }
                 "companion:syncNow", "companion:sync" -> {
                     var syncOk = false
                     var syncErr: String? = null
@@ -1975,6 +1984,38 @@ class PlatformJsBridge(
                         }
                     },
 
+                    tasks: {
+                        list: async function(status) {
+                            const res = await callNative('tasks:list', { status: status || '' });
+                            return res.tasks || [];
+                        },
+                        add: async function(title, priority, deadline) {
+                            return await callNative('tasks:add', { title: title, priority: priority || 'MEDIUM', deadline: deadline || '' });
+                        },
+                        toggle: async function(id) {
+                            return await callNative('tasks:toggle', { id: id });
+                        },
+                        delete: async function(id) {
+                            return await callNative('tasks:delete', { id: id });
+                        },
+                        update: async function(id, title, priority, deadline) {
+                            return await callNative('tasks:update', { id: id, title: title || '', priority: priority || '', deadline: deadline || '' });
+                        }
+                    },
+
+                    thoughts: {
+                        list: async function() {
+                            const res = await callNative('thoughts:list', {});
+                            return res.thoughts || [];
+                        },
+                        add: async function(content, topic, tags) {
+                            return await callNative('thoughts:add', { content: content, topic: topic || 'Reflection', tags: tags || '' });
+                        },
+                        delete: async function(id) {
+                            return await callNative('thoughts:delete', { id: id });
+                        }
+                    },
+
                     gita: {
                         getDaily: async function() {
                             return await callNative('gita:getDaily', {});
@@ -1999,6 +2040,13 @@ class PlatformJsBridge(
                         },
                         syncNow: async function() {
                             return await callNative('companion:syncNow', {});
+                        },
+                        setSyncEnabled: async function(enabled) {
+                            return await callNative('companion:setSyncEnabled', { enabled: !!enabled });
+                        },
+                        isSyncEnabled: async function() {
+                            const res = await callNative('companion:isSyncEnabled', {});
+                            return res.sync_enabled !== false;
                         },
                         signIn: async function(email, password, createMode) {
                             return await callNative('companion:signIn', { email: email, password: password, createMode: !!createMode });

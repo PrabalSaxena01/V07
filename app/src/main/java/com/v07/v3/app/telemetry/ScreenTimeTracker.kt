@@ -55,6 +55,8 @@ class ScreenTimeTracker(
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private var pollingJob: Job? = null
     private val appLabelCache = ConcurrentHashMap<String, String>()
+    @Volatile private var cachedTodaySummary: ScreenTimeSummary? = null
+    @Volatile private var lastCacheTimeMs: Long = 0L
 
     data class ScreenTimeSummary(
         val date: String,
@@ -249,17 +251,26 @@ class ScreenTimeTracker(
         return collectForCalendar(cal, isToday = false)
     }
 
+    fun getCachedTodaySummary(): ScreenTimeSummary? = cachedTodaySummary
+
     /**
      * Queries and computes today's usage statistics from midnight to now.
      */
-    private fun collectAndPersistToday(): ScreenTimeSummary {
+    fun collectAndPersistToday(forceFresh: Boolean = false): ScreenTimeSummary {
+        val now = System.currentTimeMillis()
+        if (!forceFresh && cachedTodaySummary != null && (now - lastCacheTimeMs < 15_000L)) {
+            return cachedTodaySummary!!
+        }
         val cal = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 0)
             set(Calendar.MINUTE, 0)
             set(Calendar.SECOND, 0)
             set(Calendar.MILLISECOND, 0)
         }
-        return collectForCalendar(cal, isToday = true)
+        val summary = collectForCalendar(cal, isToday = true)
+        cachedTodaySummary = summary
+        lastCacheTimeMs = now
+        return summary
     }
 
     /**

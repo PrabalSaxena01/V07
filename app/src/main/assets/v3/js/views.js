@@ -65,9 +65,11 @@
       this.initGitaLoader();
     }
 
-    getTodayDateString() {
-      const d = new Date();
-      return d.toISOString().split('T')[0];
+    getTodayDateString(d = new Date()) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
     }
 
     formatDateHeader(dateStr) {
@@ -123,17 +125,26 @@
 
       if (statusPill && statusText && statusIcon) {
         statusPill.style.cursor = 'pointer';
-        statusPill.title = 'Click to manage Profile & Cloud Sync';
+        statusPill.title = 'Click to manage Profile, Account & Cloud Sync';
         statusPill.onclick = () => window.SanctuaryApp.openProfileModal();
         const activeProf = se.getActiveProfileId ? se.getActiveProfileId() : 'guest';
-        if (se.mode === 'cloud_firestore') {
-          statusPill.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[var(--success-dim)] text-[var(--success)] border border-[var(--success)]/20 cursor-pointer';
-          statusIcon.textContent = 'cloud_done';
-          statusText.textContent = se.currentUser?.email ? `${se.currentUser.email.split('@')[0]} (Cloud)` : `Profile: ${activeProf}`;
+        const isAuth = !!se.currentUser;
+        const syncOn = se.isSyncEnabled !== false;
+
+        if (se.mode === 'app_sqlite') {
+          statusPill.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[var(--primary-dim)] text-[var(--primary)] border border-[var(--primary)]/20 cursor-pointer';
+          statusIcon.textContent = syncOn ? (isAuth ? 'sync' : 'database') : 'cloud_off';
+          statusText.textContent = isAuth ? (syncOn ? 'App · Cloud Sync' : 'App · Sync Off') : 'App · Offline';
+        } else if (se.mode === 'cloud_firestore') {
+          statusPill.className = syncOn 
+            ? 'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[var(--success-dim)] text-[var(--success)] border border-[var(--success)]/20 cursor-pointer'
+            : 'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[var(--warning-dim)] text-[var(--warning)] border border-[var(--warning)]/20 cursor-pointer';
+          statusIcon.textContent = syncOn ? 'cloud_done' : 'cloud_off';
+          statusText.textContent = syncOn ? (se.currentUser?.email ? `${se.currentUser.email.split('@')[0]} (Cloud)` : 'Cloud Synced') : 'Sync Paused';
         } else {
           statusPill.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[var(--warning-dim)] text-[var(--warning)] border border-[var(--warning)]/20 cursor-pointer';
           statusIcon.textContent = 'person';
-          statusText.textContent = `Profile: ${activeProf}`;
+          statusText.textContent = `Offline: ${activeProf}`;
         }
       }
 
@@ -263,7 +274,7 @@
         for (let i = 139; i >= 0; i--) {
           const d = new Date(today);
           d.setDate(today.getDate() - i);
-          const dateStr = d.toISOString().split('T')[0];
+          const dateStr = this.getTodayDateString(d);
           const logs = se.getHabitCheckInsForDate(dateStr);
           const level = logs.length === 0 ? 0 : logs.length <= 3 ? 1 : logs.length <= 6 ? 2 : logs.length <= 9 ? 3 : 4;
           days.push(`<div class="heatmap-day" data-level="${level}" title="${dateStr}: ${logs.length} habits completed"></div>`);
@@ -278,7 +289,7 @@
       for (let i = 6; i >= 0; i--) {
         const d = new Date(now);
         d.setDate(now.getDate() - i);
-        past7Dates.push(d.toISOString().split('T')[0]);
+        past7Dates.push(this.getTodayDateString(d));
       }
 
       if (daysRow) {

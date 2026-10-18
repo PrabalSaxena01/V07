@@ -40,6 +40,7 @@ class V3CompanionSyncManager private constructor(
         private const val TAG = "V3CompanionSync"
         private const val PREFS_NAME = "v07_v3_sync_prefs"
         private const val KEY_LAST_SYNCED = "last_synced_timestamp"
+        private const val KEY_SYNC_ENABLED = "sync_enabled_state"
 
         @Volatile
         private var instance: V3CompanionSyncManager? = null
@@ -61,7 +62,24 @@ class V3CompanionSyncManager private constructor(
     private val realtimeRegistrations = mutableListOf<ListenerRegistration>()
     private var heartbeatJob: kotlinx.coroutines.Job? = null
 
+    fun isSyncEnabled(): Boolean = prefs.getBoolean(KEY_SYNC_ENABLED, true)
+
+    fun setSyncEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_SYNC_ENABLED, enabled).apply()
+        if (enabled && isUserAuthenticated()) {
+            startRealtimeSync()
+            syncNow { _, _ -> }
+        } else {
+            stopRealtimeSync()
+        }
+    }
+
+    fun isUserAuthenticated(): Boolean {
+        return getSafeAuth()?.currentUser != null
+    }
+
     fun isCloudSyncEnabled(): Boolean {
+        if (!isSyncEnabled()) return false
         val user = getSafeAuth()?.currentUser
         val custom = prefs.getString("custom_companion_uid", null)?.trim()
         return user != null || !custom.isNullOrBlank()
@@ -132,7 +150,8 @@ class V3CompanionSyncManager private constructor(
 
         return JSONObject().apply {
             put("authenticated", user != null)
-            put("user_email", user?.email ?: "companion-user@v07-dashboard")
+            put("sync_enabled", isSyncEnabled())
+            put("user_email", user?.email ?: (if (user != null) "authenticated-user" else "Offline Guest"))
             put("uid", activeUid)
             put("active_profile", V07Database.getCurrentProfileId())
             put("available_profiles", JSONArray(V07Database.listProfiles(context)))
@@ -145,15 +164,16 @@ class V3CompanionSyncManager private constructor(
 
     fun switchProfile(profileId: String): Boolean {
         val success = V07Database.switchProfile(context, profileId)
-        if (success) {
+        if (success && isSyncEnabled()) {
             val active = V07Database.getCurrentProfileId()
             if (active.startsWith("user_")) {
                 val uid = active.removePrefix("user_")
                 prefs.edit().putString("custom_companion_uid", uid).apply()
                 startRealtimeSync()
                 syncNow { _, _ -> }
-            } else {
-                stopRealtimeSync()
+            } else if (isUserAuthenticated()) {
+                startRealtimeSync()
+                syncNow { _, _ -> }
             }
         }
         return success
@@ -176,10 +196,9 @@ class V3CompanionSyncManager private constructor(
 
         task.addOnCompleteListener { t ->
             if (t.isSuccessful) {
-                val user = auth.currentUser
-                if (user != null) {
-                    val profileId = "user_${user.uid}"
-                    V07Database.switchProfile(context, profileId)
+                // Decoupled: Authentication does NOT forcibly overwrite the active database profile.
+                // Sync only starts if sync is explicitly enabled.
+                if (isSyncEnabled()) {
                     startRealtimeSync()
                     syncNow { _, _ -> }
                 }
@@ -196,7 +215,7 @@ class V3CompanionSyncManager private constructor(
             getSafeAuth()?.signOut()
         } catch (_: Exception) {}
         prefs.edit().remove("custom_companion_uid").apply()
-        V07Database.switchProfile(context, V07Database.DEFAULT_PROFILE_ID)
+        // Decoupled: Local database profile is preserved; do not overwrite profile!
     }
 
     /**
@@ -278,14 +297,16 @@ class V3CompanionSyncManager private constructor(
                             if (repository.isDeletedOrTombstoned(doc.id)) continue
                             val d = doc.data ?: continue
                             val (epoch, _) = parseTimestamp(d["createdAt"] ?: d["ts"] ?: d["timestamp"], null)
+                            val statusStr = d["status"] as? String ?: "pending"
+                            val isCompleted = statusStr.equals("completed", ignoreCase = true) || statusStr.equals("done", ignoreCase = true)
                             repository.insertTask(
                                 V3Task(
                                     id = doc.id,
                                     title = d["title"] as? String ?: "Task",
                                     priority = d["priority"] as? String ?: "MEDIUM",
-                                    status = d["status"] as? String ?: "pending",
+                                    status = if (isCompleted) "completed" else "pending",
                                     createdAt = epoch,
-                                    completedAt = (d["completedAt"] as? Number)?.toLong(),
+                                    completedAt = (d["completedAt"] as? Number)?.toLong() ?: if (isCompleted) epoch else null,
                                     deadline = d["deadline"] as? String
                                 )
                             )
@@ -308,7 +329,7 @@ class V3CompanionSyncManager private constructor(
                                     id = doc.id,
                                     timestamp = epoch,
                                     date = dateStr,
-                                    topic = d["topic"] as? String,
+                                    topic = (d["topic"] as? String) ?: (d["title"] as? String) ?: "Reflection",
                                     content = d["content"] as? String ?: d["text"] as? String ?: "",
                                     pinned = d["pinned"] as? Boolean ?: false,
                                     tags = d["tags"] as? String
@@ -573,7 +594,7 @@ class V3CompanionSyncManager private constructor(
                         priority = prio,
                         status = if (isDone) "completed" else "pending",
                         createdAt = epoch,
-                        completedAt = if (isDone) epoch else null,
+                        completedAt = (data["completedAt"] as? Number)?.toLong() ?: if (isDone) epoch else null,
                         deadline = deadline
                     )
                     repository.insertTask(task)
@@ -603,7 +624,7 @@ class V3CompanionSyncManager private constructor(
                         priority = "MEDIUM",
                         status = if (isDone) "completed" else "pending",
                         createdAt = epoch,
-                        completedAt = if (isDone) epoch else null,
+                        completedAt = (data["completedAt"] as? Number)?.toLong() ?: if (isDone) epoch else null,
                         deadline = dateStr
                     )
                     repository.insertTask(task)
@@ -623,7 +644,7 @@ class V3CompanionSyncManager private constructor(
 
                 "thought", "thought_ui" -> {
                     val text = data["text"] as? String ?: data["content"] as? String ?: ""
-                    val topic = data["topic"] as? String ?: "Reflection"
+                    val topic = (data["topic"] as? String) ?: (data["title"] as? String) ?: "Reflection"
                     val info = data["info"] as? String
 
                     val thought = V3Thought(
@@ -1197,7 +1218,10 @@ class V3CompanionSyncManager private constructor(
                     map["timestamp"] = th.timestamp
                     map["ts"] = th.timestamp
                     map["date"] = th.date
-                    th.topic?.let { map["topic"] = it }
+                    th.topic?.let { 
+                        map["topic"] = it
+                        map["title"] = it
+                    }
                     map["content"] = th.content
                     map["pinned"] = th.pinned
                     th.tags?.let { map["tags"] = it }
@@ -1396,14 +1420,16 @@ class V3CompanionSyncManager private constructor(
                         val d = doc.data ?: continue
                         if (repository.isDeletedOrTombstoned(doc.id)) continue
                         val (epoch, _) = parseTimestamp(d["createdAt"] ?: d["ts"] ?: d["timestamp"], null)
+                        val statusStr = d["status"] as? String ?: "pending"
+                        val isDone = statusStr.equals("completed", ignoreCase = true) || statusStr.equals("done", ignoreCase = true)
                         repository.insertTask(
                             V3Task(
                                 id = doc.id,
                                 title = d["title"] as? String ?: "Task",
                                 priority = d["priority"] as? String ?: "MEDIUM",
-                                status = d["status"] as? String ?: "pending",
+                                status = if (isDone) "completed" else "pending",
                                 createdAt = epoch,
-                                completedAt = (d["completedAt"] as? Number)?.toLong(),
+                                completedAt = (d["completedAt"] as? Number)?.toLong() ?: if (isDone) epoch else null,
                                 deadline = d["deadline"] as? String
                             )
                         )
@@ -1419,7 +1445,7 @@ class V3CompanionSyncManager private constructor(
                                 id = doc.id,
                                 timestamp = epoch,
                                 date = dateStr,
-                                topic = d["topic"] as? String,
+                                topic = (d["topic"] as? String) ?: (d["title"] as? String) ?: "Reflection",
                                 content = d["content"] as? String ?: d["text"] as? String ?: "",
                                 pinned = d["pinned"] as? Boolean ?: false,
                                 tags = d["tags"] as? String
