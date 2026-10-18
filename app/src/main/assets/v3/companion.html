@@ -6,7 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#0E1217">
-  <title>V07 Sanctuary · Sovereign Operating Platform</title>
+  <title>v07 · Sovereign Operating Platform</title>
 
   <!-- Typography: Plus Jakarta Sans & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -49,14 +49,15 @@
        TOP APP BAR HUD
        ========================================================================== -->
   <header class="top-bar">
-    <!-- Brand Title & Sanctuary Pill -->
-    <div class="flex items-center gap-3">
-      <div class="w-8 h-8 rounded-lg bg-[var(--surface-hover)] border border-[var(--border)] flex items-center justify-center">
-        <span class="material-symbols-outlined text-[var(--primary)] text-xl">spa</span>
+    <!-- Brand Title: v07 with Status Beacon -->
+    <div class="brand-wrapper flex items-center gap-2.5 cursor-pointer select-none" onclick="window.SanctuaryApp.switchTab('cockpit')" title="v07 Sovereign Sanctuary">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--surface-alt)] to-[var(--surface-hover)] border border-[var(--border)] flex items-center justify-center font-bold tracking-tighter text-xs text-[var(--primary)] shadow-sm font-mono">
+        v07
       </div>
-      <div>
-        <h1 class="text-sm font-bold tracking-tight text-[var(--text)]">V07 SANCTUARY</h1>
-        <p class="text-[10px] text-[var(--text-muted)] font-medium">v3.0 Calm Sanctuary</p>
+      <div class="flex items-center gap-1.5">
+        <span class="text-sm font-extrabold tracking-tight text-[var(--text)] font-mono">v07</span>
+        <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-[var(--surface-alt)] border border-[var(--border)] text-[var(--primary)] font-mono">v3</span>
+        <span class="status-beacon active inline-block w-2 h-2 rounded-full bg-[var(--success)] ml-0.5" id="vector-status-beacon" title="Engine Active"></span>
       </div>
     </div>
 
@@ -75,11 +76,11 @@
     </div>
 
     <!-- HUD State Controls & Theme Switcher -->
-    <div class="flex items-center gap-2.5">
+    <div class="flex items-center gap-2">
       <!-- Sync Status Pill -->
-      <div id="hudStatusPill" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[var(--warning-dim)] text-[var(--warning)] border border-[var(--warning)]/20">
+      <div id="hudStatusPill" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[var(--warning-dim)] text-[var(--warning)] border border-[var(--warning)]/20 cursor-pointer btn-press" title="Account & Cloud Sync Settings">
         <span id="hudStatusIcon" class="material-symbols-outlined text-sm">cloud_off</span>
-        <span id="hudStatusText">Offline Sanctuary</span>
+        <span id="hudStatusText" class="truncate max-w-[110px] sm:max-w-none">Offline</span>
         <span id="hudMutationBadge" class="hidden ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-[var(--warning)] text-[var(--text-inverse)] font-bold">0</span>
       </div>
 
@@ -88,13 +89,18 @@
         <span id="themeToggleIcon" class="material-symbols-outlined text-lg">light_mode</span>
       </button>
 
-      <!-- Admin Cockpit Link -->
-      <a href="/admin" target="_blank" class="w-8 h-8 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--primary)] hover:border-[var(--primary)]/50 flex items-center justify-center btn-press" title="Open Admin Console (/admin)">
+      <!-- Profile & Settings Modal Trigger (Direct access for mobile & desktop) -->
+      <button onclick="window.SanctuaryApp.openProfileModal()" class="w-8 h-8 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text)] flex items-center justify-center btn-press" title="Profile & Partition Settings">
+        <span class="material-symbols-outlined text-lg">manage_accounts</span>
+      </button>
+
+      <!-- Desktop-Only: Admin Cockpit Link -->
+      <a href="/admin" target="_blank" class="desktop-only w-8 h-8 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--primary)] hover:border-[var(--primary)]/50 items-center justify-center btn-press" title="Open Admin Console (/admin)">
         <span class="material-symbols-outlined text-lg">admin_panel_settings</span>
       </a>
 
-      <!-- Keyboard Shortcuts Help -->
-      <button onclick="window.SanctuaryApp.openModal('shortcutsModal')" class="w-8 h-8 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text)] flex items-center justify-center btn-press" title="Keyboard Shortcuts (?)">
+      <!-- Desktop-Only: Keyboard Shortcuts Help -->
+      <button onclick="window.SanctuaryApp.openModal('shortcutsModal')" class="desktop-only w-8 h-8 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text)] items-center justify-center btn-press" title="Keyboard Shortcuts (?)">
         <span class="material-symbols-outlined text-lg">help</span>
       </button>
     </div>
@@ -823,8 +829,8 @@
     </div>
   </div>
 
-  <!-- 7. Keyboard Shortcuts Modal -->
-  <div id="shortcutsModal" class="modal-overlay">
+  <!-- 7. Keyboard Shortcuts Modal (Desktop-Only) -->
+  <div id="shortcutsModal" class="modal-overlay desktop-only">
     <div class="modal-box">
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-base font-bold text-[var(--text)]">Keyboard Shortcuts</h3>

@@ -18,9 +18,22 @@
   'use strict';
 
   // --- Impeccable String Escaping & Markdown Parser ---
+  function cleanText(input) {
+    if (input == null) return '';
+    if (typeof input === 'object') {
+      if (input.value) input = input.value;
+      else if (Array.isArray(input)) input = input.join(', ');
+      else input = '';
+    }
+    const str = String(input).replace(/<[^>]+>/g, ' ');
+    const txt = document.createElement('textarea');
+    txt.innerHTML = str;
+    return txt.value.replace(/\s+/g, ' ').trim();
+  }
+
   function esc(str) {
     if (str == null) return '';
-    return String(str)
+    return cleanText(str)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
@@ -132,19 +145,19 @@
         const syncOn = se.isSyncEnabled !== false;
 
         if (se.mode === 'app_sqlite') {
-          statusPill.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[var(--primary-dim)] text-[var(--primary)] border border-[var(--primary)]/20 cursor-pointer';
+          statusPill.className = 'flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-semibold bg-[var(--primary-dim)] text-[var(--primary)] border border-[var(--primary)]/20 cursor-pointer';
           statusIcon.textContent = syncOn ? (isAuth ? 'sync' : 'database') : 'cloud_off';
-          statusText.textContent = isAuth ? (syncOn ? 'App · Cloud Sync' : 'App · Sync Off') : 'App · Offline';
+          statusText.textContent = isAuth ? (syncOn ? 'Cloud Sync' : 'Sync Off') : 'App Local';
         } else if (se.mode === 'cloud_firestore') {
           statusPill.className = syncOn 
-            ? 'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[var(--success-dim)] text-[var(--success)] border border-[var(--success)]/20 cursor-pointer'
-            : 'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[var(--warning-dim)] text-[var(--warning)] border border-[var(--warning)]/20 cursor-pointer';
+            ? 'flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-semibold bg-[var(--success-dim)] text-[var(--success)] border border-[var(--success)]/20 cursor-pointer'
+            : 'flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-semibold bg-[var(--warning-dim)] text-[var(--warning)] border border-[var(--warning)]/20 cursor-pointer';
           statusIcon.textContent = syncOn ? 'cloud_done' : 'cloud_off';
-          statusText.textContent = syncOn ? (se.currentUser?.email ? `${se.currentUser.email.split('@')[0]} (Cloud)` : 'Cloud Synced') : 'Sync Paused';
+          statusText.textContent = syncOn ? (se.currentUser?.email ? `${se.currentUser.email.split('@')[0]}` : 'Cloud') : 'Paused';
         } else {
-          statusPill.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[var(--warning-dim)] text-[var(--warning)] border border-[var(--warning)]/20 cursor-pointer';
+          statusPill.className = 'flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-semibold bg-[var(--warning-dim)] text-[var(--warning)] border border-[var(--warning)]/20 cursor-pointer';
           statusIcon.textContent = 'person';
-          statusText.textContent = `Offline: ${activeProf}`;
+          statusText.textContent = `${activeProf}`;
         }
       }
 

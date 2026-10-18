@@ -174,6 +174,50 @@ html, body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  touch-action: manipulation;
+}
+
+/* Status Beacon (Engine Running Indicator) */
+.status-beacon {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--success);
+  transition: all 0.25s ease;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.status-beacon.active {
+  box-shadow: 0 0 6px var(--success);
+  animation: pulseBeacon 2.2s infinite ease-in-out;
+}
+
+@keyframes pulseBeacon {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.65; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Platform & Device Visibility Utilities */
+.desktop-only {
+  display: none !important;
+}
+
+@media (min-width: 1025px) {
+  body:not(.is-android-app) .desktop-only {
+    display: inline-flex !important;
+  }
+}
+
+.mobile-only {
+  display: flex !important;
+}
+
+@media (min-width: 1025px) {
+  .mobile-only {
+    display: none !important;
+  }
 }
 
 /* Custom Scrollbars */
@@ -203,10 +247,10 @@ html, body {
 
 /* Top Bar HUD */
 .top-bar {
-  height: 60px;
+  height: 54px;
   background: var(--surface-glass);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
@@ -214,8 +258,15 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
+  padding: 0 12px;
   padding-top: env(safe-area-inset-top, 0px);
+}
+
+@media (min-width: 640px) {
+  .top-bar {
+    height: 60px;
+    padding: 0 16px;
+  }
 }
 
 /* App Body: Sidebar + Main Content */
@@ -278,14 +329,14 @@ html, body {
   font-size: 20px;
 }
 
-/* Mobile Bottom Dock */
+/* Mobile Bottom Dock (Ergonomic 48px+ Touch Targets) */
 .mobile-nav-bar {
   display: none;
-  height: calc(58px + env(safe-area-inset-bottom, 0px));
+  height: calc(56px + env(safe-area-inset-bottom, 0px));
   padding-bottom: env(safe-area-inset-bottom, 0px);
   background: var(--surface-glass);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-top: 1px solid var(--border);
   position: fixed;
   bottom: 0;
@@ -294,8 +345,8 @@ html, body {
   z-index: 40;
   align-items: center;
   justify-content: space-around;
-  padding-left: 4px;
-  padding-right: 4px;
+  padding-left: 2px;
+  padding-right: 2px;
 }
 
 @media (max-width: 1024px) {
@@ -311,14 +362,21 @@ html, body {
   justify-content: center;
   gap: 2px;
   flex: 1;
-  height: 52px;
+  min-width: 44px;
+  height: 50px;
   color: var(--text-secondary);
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 500;
   background: none;
   border: none;
   outline: none;
   user-select: none;
+  border-radius: var(--radius-sm);
+  transition: transform 0.08s ease, color 0.15s ease;
+}
+
+.mobile-nav-btn:active {
+  transform: scale(0.92);
 }
 
 .mobile-nav-btn.active {
@@ -327,22 +385,30 @@ html, body {
 }
 
 .mobile-nav-btn .material-symbols-outlined {
-  font-size: 22px;
+  font-size: 21px;
 }
 
 /* Main Content Workspace */
 .main-workspace {
   flex: 1;
   min-width: 0;
-  padding: 24px;
+  padding: 14px 12px;
   padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
   max-width: 1280px;
   margin: 0 auto;
   width: 100%;
 }
 
+@media (min-width: 640px) {
+  .main-workspace {
+    padding: 20px 18px;
+    padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 @media (min-width: 1025px) {
   .main-workspace {
+    padding: 28px 32px;
     padding-bottom: 40px;
   }
 }

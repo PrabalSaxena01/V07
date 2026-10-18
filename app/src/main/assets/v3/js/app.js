@@ -21,13 +21,19 @@
     async init() {
       console.log('[SanctuaryApp] Initializing V3 Sanctuary Web Companion...');
 
-      // 1. Apply initial theme
+      // 1. Detect Android App WebView environment & apply class
+      if (window.V07Platform || navigator.userAgent.includes('wv') || /Android/i.test(navigator.userAgent)) {
+        document.documentElement.classList.add('is-android-app');
+        document.body.classList.add('is-android-app');
+      }
+
+      // 2. Apply initial theme
       this.applyTheme(this.currentTheme, false);
 
-      // 2. Initialize Storage Engine
+      // 3. Initialize Storage Engine
       await window.V07StorageEngine.init();
 
-      // 3. Setup Listeners
+      // 4. Setup Listeners
       this.initKeyboardShortcuts();
       this.initModals();
       this.initNavigation();
@@ -163,8 +169,13 @@
       }
     }
 
-    // --- Global Keyboard Shortcuts ---
+    // --- Global Keyboard Shortcuts (Desktop Only) ---
     initKeyboardShortcuts() {
+      // Do not bind hardware keyboard listeners on Android touchscreens
+      if (document.body.classList.contains('is-android-app') || window.V07Platform) {
+        return;
+      }
+
       window.addEventListener('keydown', (ev) => {
         // Ignore if user is actively typing in an input or textarea
         const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
