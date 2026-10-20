@@ -487,7 +487,12 @@ private fun handleClient(input: java.io.InputStream, output: java.io.OutputStrea
                     if (ctx != null && !path.startsWith("/api")) {
                         try {
                             val assetPath = path.removePrefix("/")
-                            ctx.assets.open(assetPath).use { stream ->
+                            val stream = try {
+                                ctx.assets.open("v3/$assetPath")
+                            } catch (_: Exception) {
+                                ctx.assets.open(assetPath)
+                            }
+                            stream.use { s ->
                                 val mime = when {
                                     path.endsWith(".png", true) -> "image/png"
                                     path.endsWith(".jpg", true) || path.endsWith(".jpeg", true) -> "image/jpeg"
@@ -504,7 +509,7 @@ private fun handleClient(input: java.io.InputStream, output: java.io.OutputStrea
                                     else -> "application/octet-stream"
                                 }
                                 contentType = mime
-                                val bytes = stream.readBytes()
+                                val bytes = s.readBytes()
                                 output.write("HTTP/1.1 200 OK\r\nContent-Type: $contentType\r\nContent-Length: ${bytes.size}\r\nAccess-Control-Allow-Origin: *\r\nConnection: close\r\n\r\n".toByteArray())
                                 output.write(bytes)
                                 output.flush()
@@ -3047,7 +3052,7 @@ private fun loadIndexHtml(): String {
     try {
         val ctx = appContext
         if (ctx != null) {
-            val stream = ctx.assets.open("index.html")
+            val stream = try { ctx.assets.open("v3/index.html") } catch (_: Exception) { ctx.assets.open("index.html") }
             return String(stream.readBytes())
         }
     } catch (_: Exception) {}

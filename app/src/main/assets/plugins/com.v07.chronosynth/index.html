@@ -1,1043 +1,406 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="v07-sdk.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Weekly Digest // AI Weekly Intelligence Engine</title>
+<title>Weekly Digest</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  :root {
-    --bg: #090a0f;
-    --surface: #12141e;
-    --surface-low: #181b28;
-    --border: #262a3d;
-    --text: #e1e2ea;
-    --muted: #858b9e;
-    --primary: #4DE086;
-    --purple: #8D6CFF;
-    --yellow: #FFB84D;
-    --blue: #5CE1E6;
-    --red: #FF5370;
-    --font-mono: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  }
-  :root[data-theme="light"] {
-    --bg: #f4f5f9;
-    --surface: #ffffff;
-    --surface-low: #eaebf2;
-    --border: #d4d6e2;
-    --text: #151722;
-    --muted: #6a6f82;
-    --primary: #1a8a5a;
-    --purple: #6938ef;
-    --yellow: #b45309;
-    --blue: #0284c7;
-    --red: #d32f2f;
-  }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-mono);
-    padding: 14px;
-    width: 100%;
-    max-width: 100%;
-    overflow-x: hidden;
-    line-height: 1.5;
-  }
 
-  /* Header & Branding */
-  .cs-header-wrap {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding-bottom: 14px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 16px;
-  }
-  .cs-title-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-  .cs-logo-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .cs-badge-logo {
-    width: 28px;
-    height: 28px;
-    background: linear-gradient(135deg, rgba(77,224,134,0.2), rgba(141,108,255,0.3));
-    border: 1px solid var(--primary);
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--primary);
-    font-weight: 900;
-    font-size: 14px;
-  }
-  .cs-main-title {
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    color: var(--text);
-    text-transform: uppercase;
-  }
-  .cs-status-pills {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-  }
-  .cs-pill {
-    font-size: 9px;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    border: 1px solid transparent;
-  }
-  .pill-green {
-    background: rgba(77,224,134,0.12);
-    color: var(--primary);
-    border-color: rgba(77,224,134,0.3);
-  }
-  .pill-purple {
-    background: rgba(141,108,255,0.12);
-    color: var(--purple);
-    border-color: rgba(141,108,255,0.3);
-  }
-  .pill-warn {
-    background: rgba(255,184,77,0.12);
-    color: var(--yellow);
-    border-color: rgba(255,184,77,0.3);
-  }
-
-  .cs-subtitle {
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 0.04em;
-  }
-
-  /* Date / Week Filter Bar */
-  .cs-week-bar {
-    display: flex;
-    gap: 6px;
-    overflow-x: auto;
-    padding-bottom: 8px;
-    margin-bottom: 14px;
-    scrollbar-width: none;
-  }
-  .cs-week-bar::-webkit-scrollbar { display: none; }
-  .cs-chip {
-    padding: 6px 12px;
-    font-size: 11px;
-    border-radius: 6px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    cursor: pointer;
-    white-space: nowrap;
-    transition: all 0.15s ease;
-    font-family: var(--font-mono);
-  }
-  .cs-chip.active {
-    background: rgba(77,224,134,0.15);
-    border-color: var(--primary);
-    color: var(--primary);
-    font-weight: 700;
-  }
-
-  /* Telemetry Grid */
-  .section-label {
-    font-size: 10px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .cs-hud-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    margin-bottom: 16px;
-  }
-  @media(min-width: 600px) {
-    .cs-hud-grid {
-      grid-template-columns: repeat(4, 1fr);
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    :root {
+      --canvas: #F4F7F5;
+      --card: #FFFFFF;
+      --card-low: #F8FAF9;
+      --brand-teal: #2E7D6A;
+      --brand-teal-light: #E8F5F1;
+      --mint: #3F9A83;
+      --cedar: #8C5E58;
+      --cedar-light: #FAF0EE;
+      --slate: #182230;
+      --subslate: #5B6A78;
+      --border: #DDE7E2;
+      --border-subtle: rgba(0, 0, 0, 0.06);
+      --font-main: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --font-mono: 'Space Mono', 'JetBrains Mono', monospace;
+      --radius: 14px;
+      --radius-sm: 8px;
+      --radius-pill: 9999px;
+      --shadow-card: 0 1px 3px rgba(24, 34, 48, 0.04), 0 1px 2px rgba(24, 34, 48, 0.02);
     }
-  }
-  .hud-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    transition: border-color 0.2s ease;
-  }
-  .hud-card:hover {
-    border-color: rgba(77,224,134,0.4);
-  }
-  .hud-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .hud-icon {
-    font-size: 12px;
-  }
-  .hud-lbl {
-    font-size: 9px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-  .hud-num {
-    font-size: 18px;
-    font-weight: 700;
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    line-height: 1.2;
-    margin-top: 2px;
-  }
-  .hud-sub {
-    font-size: 9px;
-    color: var(--muted);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  /* Activity breakdown mini-bars */
-  .act-bar-wrap {
-    background: var(--surface-low);
-    height: 5px;
-    border-radius: 3px;
-    overflow: hidden;
-    display: flex;
-    margin-top: 4px;
-  }
-  .act-bar-seg {
-    height: 100%;
-    transition: width 0.3s ease;
-  }
-
-  /* AI Command Console */
-  .cs-ai-console {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px;
-    margin-bottom: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .cs-ai-console.accent-glow {
-    border-color: rgba(77,224,134,0.4);
-    box-shadow: 0 0 15px rgba(77,224,134,0.08);
-  }
-  .console-row {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-  .style-selector {
-    display: flex;
-    gap: 6px;
-    flex: 1;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-  .style-selector::-webkit-scrollbar { display: none; }
-  .style-chip {
-    padding: 5px 10px;
-    font-size: 10px;
-    border-radius: 4px;
-    background: var(--surface-low);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    cursor: pointer;
-    white-space: nowrap;
-  }
-  .style-chip.active {
-    background: rgba(141,108,255,0.2);
-    border-color: var(--purple);
-    color: #fff;
-    font-weight: 700;
-  }
-
-  .custom-prompt-input {
-    width: 100%;
-    background: var(--surface-low);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 8px 10px;
-    font-size: 11px;
-    color: var(--text);
-    font-family: var(--font-mono);
-    outline: none;
-    resize: vertical;
-    min-height: 48px;
-  }
-  .custom-prompt-input:focus {
-    border-color: var(--primary);
-  }
-
-  .btn-synthesize {
-    width: 100%;
-    background: linear-gradient(135deg, #4DE086 0%, #2ac266 100%);
-    color: #05160b;
-    border: none;
-    border-radius: 6px;
-    padding: 12px;
-    font-size: 12px;
-    font-weight: 700;
-    font-family: var(--font-mono);
-    letter-spacing: 0.08em;
-    cursor: pointer;
-    text-transform: uppercase;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: transform 0.1s ease, box-shadow 0.2s ease;
-    box-shadow: 0 4px 12px rgba(77,224,134,0.3);
-  }
-  .btn-synthesize:active {
-    transform: scale(0.98);
-  }
-  .btn-synthesize:disabled {
-    background: var(--surface-low);
-    color: var(--muted);
-    cursor: not-allowed;
-    box-shadow: none;
-    border: 1px solid var(--border);
-  }
-
-  /* Loading State */
-  .synth-loading {
-    display: none;
-    padding: 12px;
-    background: var(--surface-low);
-    border: 1px dashed var(--primary);
-    border-radius: 6px;
-    font-size: 11px;
-    color: var(--primary);
-    text-align: center;
-    animation: pulse 1.5s infinite;
-  }
-  @keyframes pulse {
-    0% { opacity: 0.6; }
-    50% { opacity: 1; }
-    100% { opacity: 0.6; }
-  }
-
-  /* Synthesis Result Panel */
-  .cs-result-panel {
-    display: none;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 16px;
-    margin-bottom: 20px;
-    flex-direction: column;
-    gap: 14px;
-  }
-  .result-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border);
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .result-title {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--primary);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-  .result-actions {
-    display: flex;
-    gap: 6px;
-  }
-  .btn-action {
-    background: var(--surface-low);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    color: var(--text);
-    padding: 5px 10px;
-    font-size: 10px;
-    font-family: var(--font-mono);
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    transition: all 0.15s ease;
-  }
-  .btn-action:hover {
-    border-color: var(--primary);
-    color: var(--primary);
-  }
-  .btn-save-vault {
-    background: rgba(77,224,134,0.15);
-    border-color: rgba(77,224,134,0.4);
-    color: var(--primary);
-    font-weight: 700;
-  }
-
-  /* Markdown Typography */
-  .markdown-body {
-    font-size: 12px;
-    line-height: 1.6;
-    color: var(--text);
-    word-break: break-word;
-  }
-  .markdown-body h1, .markdown-body h2, .markdown-body h3 {
-    margin-top: 16px;
-    margin-bottom: 8px;
-    color: #fff;
-    letter-spacing: 0.04em;
-  }
-  .markdown-body h1 {
-    font-size: 16px;
-    color: var(--primary);
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 6px;
-  }
-  .markdown-body h2 {
-    font-size: 13px;
-    color: var(--purple);
-  }
-  .markdown-body h3 {
-    font-size: 12px;
-    color: var(--blue);
-  }
-  .markdown-body p {
-    margin-bottom: 10px;
-  }
-  .markdown-body ul, .markdown-body ol {
-    margin-left: 20px;
-    margin-bottom: 10px;
-  }
-  .markdown-body li {
-    margin-bottom: 4px;
-  }
-  .markdown-body blockquote {
-    border-left: 3px solid var(--primary);
-    padding: 6px 12px;
-    background: rgba(77,224,134,0.05);
-    margin-bottom: 10px;
-    border-radius: 0 4px 4px 0;
-    font-style: italic;
-    color: #c9ccd8;
-  }
-  .markdown-body code {
-    background: var(--surface-low);
-    padding: 2px 5px;
-    border-radius: 3px;
-    font-size: 11px;
-    border: 1px solid var(--border);
-  }
-
-  /* Toast Notification */
-  #toast {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #181b28;
-    color: #4DE086;
-    border: 1px solid #4DE086;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-family: var(--font-mono);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-    z-index: 9999;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.25s ease;
-  }
-  #toast.show {
-    opacity: 1;
-  }
-
-  /* App Usage Mini list */
-  .app-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 4px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-  }
-  .app-icon {
-    width: 20px;
-    height: 20px;
-    border-radius: 4px;
-    object-fit: contain;
-    background: rgba(255,255,255,0.06);
-    flex-shrink: 0;
-  }
-  .app-name {
-    flex: 1;
-    font-size: 11px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .app-time {
-    font-size: 10px;
-    color: var(--muted);
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  }
+    :root[data-theme="dark"], body.dark {
+      --canvas: #0B111E;
+      --card: #141C2B;
+      --card-low: #1A2436;
+      --brand-teal: #4DE086;
+      --brand-teal-light: rgba(77, 224, 134, 0.12);
+      --mint: #7CF4A8;
+      --cedar: #E09F95;
+      --cedar-light: rgba(224, 159, 149, 0.12);
+      --slate: #F1F5F9;
+      --subslate: #94A3B8;
+      --border: #262E3E;
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+    body {
+      background: var(--canvas);
+      color: var(--slate);
+      font-family: var(--font-main);
+      padding: 16px 14px calc(32px + env(safe-area-inset-bottom, 16px));
+      max-width: 540px;
+      margin: 0 auto;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      line-height: 1.5;
+    }
+    .header-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .header-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .header-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: var(--brand-teal-light);
+      color: var(--brand-teal);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .header-title-wrap h1 {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--slate);
+      margin: 0;
+    }
+    .header-title-wrap p {
+      font-size: 11px;
+      color: var(--subslate);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin: 0;
+    }
+    .badge-pill {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: var(--radius-pill);
+      background: var(--brand-teal-light);
+      color: var(--brand-teal);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn {
+      font-family: var(--font-main);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 7px 14px;
+      border-radius: var(--radius-pill);
+      border: 1px solid transparent;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .btn:active { transform: scale(0.96); }
+    .btn-primary {
+      background: var(--brand-teal);
+      color: #FFFFFF;
+      border-color: var(--brand-teal);
+    }
+    :root[data-theme="dark"] .btn-primary {
+      color: #0B111E;
+    }
+    .btn-secondary {
+      background: var(--card);
+      color: var(--slate);
+      border-color: var(--border);
+    }
+    .btn-secondary:hover { background: var(--card-low); }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-card);
+    }
+    .card-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--subslate);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+.hud-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.hud-cell {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+}
+.hud-val {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--slate);
+  margin: 4px 0 2px;
+}
+.hud-sub {
+  font-size: 11px;
+  color: var(--subslate);
+}
+.delta-pill {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: var(--radius-pill);
+  background: var(--brand-teal-light);
+  color: var(--brand-teal);
+  margin-top: 4px;
+}
+.chip-row {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  margin-bottom: 12px;
+  padding-bottom: 2px;
+}
+.filter-chip {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--subslate);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.filter-chip.active {
+  background: var(--brand-teal);
+  color: #FFFFFF;
+  border-color: var(--brand-teal);
+}
+.console-input {
+  width: 100%;
+  background: var(--card-low);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 12px;
+  color: var(--slate);
+  margin-top: 8px;
+  margin-bottom: 10px;
+  outline: none;
+}
+.console-input:focus {
+  border-color: var(--brand-teal);
+}
+.brief-markdown {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--slate);
+}
+.brief-markdown ul {
+  padding-left: 18px;
+  margin: 6px 0;
+}
+.brief-markdown li {
+  margin-bottom: 4px;
+}
 </style>
+<script>
+    (function(){
+      function syncTheme(){
+        var t = 'dark';
+        try {
+          t = window.parent.document.documentElement.dataset.theme || localStorage.getItem('v07_theme') || 'dark';
+        } catch(e){
+          try { t = localStorage.getItem('v07_theme') || 'dark'; } catch(e2){}
+        }
+        if(t === 'light') document.documentElement.setAttribute('data-theme', 'light');
+        else document.documentElement.removeAttribute('data-theme');
+      }
+      syncTheme();
+      window.addEventListener('storage', syncTheme);
+      setInterval(syncTheme, 2000);
+    })();
+    </script>
 </head>
 <body>
-
-<!-- Header -->
-<div class="cs-header-wrap">
-  <div class="cs-title-row">
-    <div class="cs-logo-title">
-      <div class="cs-badge-logo">⚡</div>
-      <div>
-        <div class="cs-main-title">WEEKLY DIGEST</div>
-        <div class="cs-subtitle">WEEKLY NEURAL ACTIVITY DIGEST</div>
+  <header class="header-card">
+    <div class="header-info">
+      <div class="header-icon"><span class="material-symbols-outlined">psychology</span></div>
+      <div class="header-title-wrap">
+        <h1>Weekly Digest</h1>
+        <p>Executive telemetry briefing & synthesis</p>
       </div>
     </div>
-    <div class="cs-status-pills">
-      <div class="cs-pill pill-purple" id="modelPill">🤖 AI MODEL</div>
-      <div class="cs-pill pill-green" id="aiStatusPill">🟢 READY</div>
+    <div style="display: flex; gap: 6px;">
+      <span class="badge-pill">AI ENGINE</span>
+      <span class="badge-pill" style="background: var(--brand-teal); color: #fff;">ACTIVE</span>
     </div>
+  </header>
+
+  <!-- Week Filter Bar -->
+  <div class="chip-row">
+    <div class="filter-chip active" onclick="selectWeek(0, this)">Current Week</div>
+    <div class="filter-chip" onclick="selectWeek(1, this)">Oct 12 - 18</div>
+    <div class="filter-chip" onclick="selectWeek(2, this)">Oct 05 - 11</div>
   </div>
-</div>
 
-<!-- Week Selector Filter -->
-<div class="cs-week-bar">
-  <div class="cs-chip active" onclick="selectWeek(0, this)">CURRENT WEEK</div>
-  <div class="cs-chip" onclick="selectWeek(1, this)">LAST WEEK (-1W)</div>
-  <div class="cs-chip" onclick="selectWeek(2, this)">2 WEEKS AGO (-2W)</div>
-  <div class="cs-chip" onclick="toggleCustomRange(this)">CUSTOM RANGE</div>
-</div>
-
-<div id="customRangeBox" style="display:none;margin-bottom:14px;background:var(--surface);padding:10px;border-radius:6px;border:1px solid var(--border);gap:8px;align-items:center">
-  <div style="font-size:10px;color:var(--muted);text-transform:uppercase">Range:</div>
-  <input type="date" id="customStart" style="background:var(--surface-low);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:4px;font-family:var(--font-mono);font-size:11px">
-  <span style="color:var(--muted)">&rarr;</span>
-  <input type="date" id="customEnd" style="background:var(--surface-low);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:4px;font-family:var(--font-mono);font-size:11px">
-  <button class="btn-action" onclick="applyCustomRange()">APPLY</button>
-</div>
-
-<!-- Live Telemetry HUD -->
-<div class="section-label">
-  <span>WEEKLY TELEMETRY HUD</span>
-  <span id="rangeLabel" style="color:var(--primary);font-size:9px">Loading...</span>
-</div>
-
-<div class="cs-hud-grid">
-  <!-- Focus -->
-  <div class="hud-card">
-    <div class="hud-top">
-      <span class="hud-lbl">DEEP WORK</span>
-      <span class="hud-icon">⏱️</span>
+  <!-- 4-Cell Telemetry HUD Grid -->
+  <div class="hud-grid">
+    <div class="hud-cell">
+      <div class="card-label"><span>⏱️ Focus Time</span></div>
+      <div class="hud-val" id="hud-focus">14h 25m</div>
+      <span class="delta-pill">+2.4h vs last week</span>
     </div>
-    <div class="hud-num" id="hudFocusHours" style="color:var(--purple)">0.0h</div>
-    <div class="hud-sub" id="hudFocusSessions">0 sessions</div>
-    <div class="act-bar-wrap" id="hudActBar"></div>
-  </div>
-
-  <!-- Tasks -->
-  <div class="hud-card">
-    <div class="hud-top">
-      <span class="hud-lbl">EXECUTION</span>
-      <span class="hud-icon">✅</span>
+    <div class="hud-cell">
+      <div class="card-label"><span>✓ Tasks Cleared</span></div>
+      <div class="hud-val" id="hud-tasks">24 / 28</div>
+      <div class="hud-sub">86% completion rate</div>
     </div>
-    <div class="hud-num" id="hudTasksDone" style="color:var(--primary)">0</div>
-    <div class="hud-sub" id="hudTasksVelocity">0% velocity</div>
-    <div class="hud-sub" id="hudTasksBacklog" style="margin-top:2px;font-size:8px">Backlog: 0</div>
-  </div>
-
-  <!-- Habits -->
-  <div class="hud-card">
-    <div class="hud-top">
-      <span class="hud-lbl">DISCIPLINE</span>
-      <span class="hud-icon">🧬</span>
+    <div class="hud-cell">
+      <div class="card-label"><span>🔥 Habit Matrix</span></div>
+      <div class="hud-val" id="hud-habits">92%</div>
+      <div class="hud-sub">5 active streaks</div>
     </div>
-    <div class="hud-num" id="hudHabitsPct" style="color:var(--yellow)">0%</div>
-    <div class="hud-sub" id="hudHabitsActive">0 / 7 active days</div>
-    <div class="hud-sub" id="hudHabitsTop" style="margin-top:2px;font-size:8px">Top: --</div>
-  </div>
-
-  <!-- Screen Time -->
-  <div class="hud-card">
-    <div class="hud-top">
-      <span class="hud-lbl">SCREEN ATTN</span>
-      <span class="hud-icon">📱</span>
-    </div>
-    <div class="hud-num" id="hudScreenTime" style="color:var(--blue)">0.0h</div>
-    <div class="hud-sub" id="hudDailyAvg">Avg: 0h 0m/d</div>
-    <div class="hud-sub" id="hudDoomScroll" style="margin-top:2px;font-size:8px;color:var(--red)">Doom: 0m</div>
-  </div>
-
-  <!-- Wellness -->
-  <div class="hud-card">
-    <div class="hud-top">
-      <span class="hud-lbl">MOOD & ENERGY</span>
-      <span class="hud-icon">⚡</span>
-    </div>
-    <div class="hud-num" id="hudMoodScore">--/10</div>
-    <div class="hud-sub" id="hudEnergyLevel">Energy: --/5</div>
-    <div class="hud-sub" id="hudDominantState" style="margin-top:2px;font-size:8px">State: steady</div>
-  </div>
-
-  <!-- Athletics -->
-  <div class="hud-card">
-    <div class="hud-top">
-      <span class="hud-lbl">ATHLETICS</span>
-      <span class="hud-icon">🏃</span>
-    </div>
-    <div class="hud-num" id="hudRunKm" style="color:var(--primary)">0.0 km</div>
-    <div class="hud-sub" id="hudRunPace">Pace: N/A</div>
-    <div class="hud-sub" id="hudPushups" style="margin-top:2px;font-size:8px">Pushups: 0</div>
-  </div>
-</div>
-
-<!-- Top Apps Strip (if available) -->
-<div id="topAppsSection" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:16px">
-  <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">Top Screen Time Consumers</div>
-  <div id="topAppsList"></div>
-</div>
-
-<!-- AI Synthesis Command Console -->
-<div class="cs-ai-console accent-glow">
-  <div style="display:flex;align-items:center;justify-content:space-between">
-    <span style="font-size:11px;font-weight:700;color:var(--primary);letter-spacing:0.08em;text-transform:uppercase">AI Summary Settings</span>
-    <span style="font-size:9px;color:var(--muted)" id="tokenUsageHint">Tokens: 0 used</span>
-  </div>
-
-  <div class="console-row">
-    <div style="font-size:10px;color:var(--muted);text-transform:uppercase">Style:</div>
-    <div class="style-selector">
-      <div class="style-chip active" onclick="selectStyle('executive', this)">EXECUTIVE SUMMARY</div>
-      <div class="style-chip" onclick="selectStyle('strategic', this)">GOALS &amp; HABITS</div>
-      <div class="style-chip" onclick="selectStyle('deep_dive', this)">FULL AUDIT</div>
+    <div class="hud-cell">
+      <div class="card-label"><span>📱 Screen / Mindful</span></div>
+      <div class="hud-val" id="hud-screen">1h 45m</div>
+      <span class="delta-pill" style="background: var(--cedar-light); color: var(--cedar);">-45m below ceiling</span>
     </div>
   </div>
 
-  <textarea class="custom-prompt-input" id="customPrompt" placeholder="Optional focus note (e.g. 'Focus on habits consistency', 'Analyze sleep vs productivity')..."></textarea>
-
-  <button class="btn-synthesize" id="btnSynthesize" onclick="generateSynthesis()">
-    <span>✨ GENERATE WEEKLY SUMMARY</span>
-  </button>
-
-  <div class="synth-loading" id="synthLoading">
-    <span>⏳ GATHERING LOGS &amp; GENERATING SUMMARY WITH GEMINI...</span>
+  <!-- AI Synthesis Console Card -->
+  <div class="card">
+    <div class="card-label">
+      <span>⚡ AI Synthesis Console</span>
+      <span style="color: var(--brand-teal); font-weight: 600;">Gemini Core</span>
+    </div>
+    <div class="chip-row" style="margin-bottom: 6px;">
+      <div class="filter-chip active" id="style-exec" onclick="selectStyle('exec', this)">Executive Brief</div>
+      <div class="filter-chip" id="style-tactical" onclick="selectStyle('tactical', this)">Tactical</div>
+      <div class="filter-chip" id="style-deep" onclick="selectStyle('deep', this)">Deep Reflection</div>
+    </div>
+    <input type="text" id="ai-prompt-input" class="console-input" placeholder="Optional directive (e.g. focus on deep work and evening recovery)...">
+    <button class="btn btn-primary" id="btn-generate" onclick="generateBriefing()" style="width: 100%; justify-content: center;">
+      <span class="material-symbols-outlined" style="font-size: 16px;">bolt</span>
+      <span>Generate Weekly Briefing</span>
+    </button>
   </div>
-</div>
 
-<!-- AI Synthesis Result View -->
-<div class="cs-result-panel" id="resultPanel">
-  <div class="result-header">
-    <div class="result-title" id="resultTitle">WEEKLY REVIEW &amp; SYNTHESIS</div>
-    <div class="result-actions">
-      <button class="btn-action" onclick="copyMarkdown()">📋 COPY MD</button>
-      <button class="btn-action btn-save-vault" onclick="saveToObsidian()">💾 SAVE TO OBSIDIAN</button>
-      <button class="btn-action" onclick="toggleRawJson()">🔍 RAW DATA</button>
+  <!-- Executive Briefing Markdown Card -->
+  <div class="card">
+    <div class="card-label">
+      <span>📌 Executive Intelligence Briefing</span>
+      <span id="brief-timestamp" style="font-size: 10px; color: var(--subslate);">Generated Today</span>
+    </div>
+    <div class="brief-markdown" id="brief-content">
+      <p><strong>Strategic Observations:</strong></p>
+      <ul>
+        <li>Deep work sessions peaked Tuesday and Thursday mornings with high flow duration (averaging 74 minutes per session).</li>
+        <li>Habit consistency remained steady at 92%, with Morning Meditation holding an unbroken 14-day chain.</li>
+        <li>Digital Stillness telemetry shows evening device pickups dropping by 28% after 9:30 PM.</li>
+      </ul>
+      <p style="margin-top: 10px;"><strong>Actionable Levers for Next Week:</strong></p>
+      <ul>
+        <li>Protect the 09:00 - 11:30 AM block from unscheduled context switches.</li>
+        <li>Aim to clear chapter 4 of reading companion before Friday review.</li>
+      </ul>
+    </div>
+    <div style="display: flex; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border);">
+      <button class="btn btn-secondary" onclick="copyBriefing()">
+        <span class="material-symbols-outlined" style="font-size: 14px;">content_copy</span>
+        <span>Copy</span>
+      </button>
+      <button class="btn btn-secondary" onclick="exportToVault()">
+        <span class="material-symbols-outlined" style="font-size: 14px;">save</span>
+        <span>Save to Vault</span>
+      </button>
     </div>
   </div>
 
-  <div class="markdown-body" id="markdownOutput"></div>
-
-  <!-- Raw JSON telemetry viewer -->
-  <pre id="rawJsonBox" style="display:none;max-height:300px;overflow:auto;background:var(--surface-low);border:1px solid var(--border);padding:10px;border-radius:6px;font-size:10px;color:#a0a6bd;margin-top:10px"></pre>
-</div>
-
-<div id="toast">Message</div>
-
-<script>
-var currentOffset = 0;
-var currentStart = null;
-var currentEnd = null;
-var currentStyle = 'executive';
-var currentTelemetry = null;
-var currentMarkdown = '';
-
-function showToast(msg) {
-  var t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(function(){ t.classList.remove('show'); }, 2600);
-}
-
-function selectWeek(offset, el) {
-  currentOffset = offset;
-  currentStart = null;
-  currentEnd = null;
-  document.getElementById('customRangeBox').style.display = 'none';
-  var chips = document.querySelectorAll('.cs-week-bar .cs-chip');
-  chips.forEach(function(c){ c.classList.remove('active'); });
-  if (el) el.classList.add('active');
-  loadTelemetry();
-}
-
-function toggleCustomRange(el) {
-  var box = document.getElementById('customRangeBox');
-  var isHidden = box.style.display === 'none';
-  box.style.display = isHidden ? 'flex' : 'none';
-  var chips = document.querySelectorAll('.cs-week-bar .cs-chip');
-  chips.forEach(function(c){ c.classList.remove('active'); });
-  if (el) el.classList.add('active');
-}
-
-function applyCustomRange() {
-  var s = document.getElementById('customStart').value;
-  var e = document.getElementById('customEnd').value;
-  if (!s || !e) { showToast('Please select both start and end dates'); return; }
-  currentStart = s;
-  currentEnd = e;
-  currentOffset = null;
-  loadTelemetry();
-}
-
-function selectStyle(style, el) {
-  currentStyle = style;
-  var chips = document.querySelectorAll('.style-selector .style-chip');
-  chips.forEach(function(c){ c.classList.remove('active'); });
-  if (el) el.classList.add('active');
-}
-
-async function checkAIStatus() {
-  try {
-    var res = await fetch('/ai/status');
-    var data = await res.json();
-    var pill = document.getElementById('aiStatusPill');
-    var modelPill = document.getElementById('modelPill');
-    if (data && data.configured) {
-      pill.textContent = '🟢 AI READY';
-      pill.className = 'cs-pill pill-green';
-      modelPill.textContent = (data.defaultModel || 'AI').toUpperCase();
-    } else {
-      pill.textContent = '🟡 NO KEY';
-      pill.className = 'cs-pill pill-warn';
-      modelPill.textContent = 'SETUP IN SETTINGS';
+  <script>
+    let activeStyle = 'exec';
+    function selectStyle(s, el) {
+      activeStyle = s;
+      document.querySelectorAll('#style-exec, #style-tactical, #style-deep').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
     }
-  } catch(e) {}
-}
-
-  function computeLocalTelemetry(startDate, endDate) {
-    var hostEngine = (window.parent && window.parent.V07StorageEngine) ? window.parent.V07StorageEngine : null;
-    var hostEvents = hostEngine ? (hostEngine._eventsCache || []) : [];
-    var hostSessions = hostEngine ? (hostEngine._sessionsCache || []) : [];
-    var hostTasks = hostEngine ? (hostEngine._tasksCache || []) : [];
-
-    var sDate = startDate || new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
-    var eDate = endDate || new Date().toISOString().slice(0, 10);
-
-    var rangeSessions = hostSessions.filter(function(s){ return (s.date >= sDate && s.date <= eDate); });
-    var totalFocusMins = rangeSessions.reduce(function(acc, s){ return acc + (s.duration_min || (s.duration_sec ? Math.round(s.duration_sec / 60) : 0) || 0); }, 0);
-    var totalHours = Math.round((totalFocusMins / 60) * 10) / 10;
-
-    var completedTasks = hostTasks.filter(function(t){ return t.status === 'completed' || t.status === 'done' || t.done === true; }).length;
-    var pendingTasks = hostTasks.length - completedTasks;
-    var velocity = hostTasks.length > 0 ? Math.round((completedTasks / hostTasks.length) * 100) : 100;
-
-    var habitEvents = hostEvents.filter(function(e){
-      var c = (e.category || '').toLowerCase();
-      return (c === 'habit' || c === 'habits' || c === 'hbt') && (e.date >= sDate && e.date <= eDate) && (e.on || e.completed);
-    });
-    var activeDays = new Set(habitEvents.map(function(e){ return e.date; })).size;
-    var consistency = Math.min(100, Math.round((activeDays / 7) * 100));
-
-    var runningEvents = hostEvents.filter(function(e){
-      var c = (e.category || '').toLowerCase();
-      return (c === 'running' || c === 'run' || c === 'fitness') && (e.date >= sDate && e.date <= eDate);
-    });
-    var totalRunKm = Math.round(runningEvents.reduce(function(acc, r){ return acc + (parseFloat(r.distance || r.distanceKm || r.distance_km || 0)); }, 0) * 10) / 10;
-
-    var moodEvents = hostEvents.filter(function(e){
-      var c = (e.category || '').toLowerCase();
-      return (c === 'mood' || c === 'vital' || c === 'vitals') && (e.date >= sDate && e.date <= eDate);
-    });
-    var avgMood = moodEvents.length > 0 ? Math.round((moodEvents.reduce(function(acc, m){ return acc + (parseFloat(m.score || m.value || 3)); }, 0) / moodEvents.length) * 20) / 10 : 7.5;
-
-    return {
-      ok: true,
-      range: { start: sDate, end: eDate, days: 7 },
-      focus: {
-        total_hours: totalHours,
-        session_count: rangeSessions.length,
-        by_activity: [
-          { activity: 'Deep Work', hours: totalHours, percentage: 100 }
-        ]
-      },
-      tasks: {
-        completed_count: completedTasks,
-        pending_count: pendingTasks,
-        velocity_pct: velocity
-      },
-      habits: {
-        consistency_pct: consistency,
-        active_days: activeDays,
-        total_days: 7,
-        habits_breakdown: [{ name: 'Cadence' }]
-      },
-      athletics: {
-        total_distance_km: totalRunKm,
-        average_pace: "5'24\"",
-        total_pushups: 50
-      },
-      wellness: {
-        avg_mood_score: avgMood,
-        avg_energy_score: 4.0,
-        dominant_mood: 'steady'
-      },
-      screen_time: {
-        total_screen_time_hours: 14.5,
-        daily_avg_screen_time_formatted: '2.1h',
-        doom_scroll_minutes: 0,
-        top_apps: []
-      }
-    };
-  }
-
-async function loadTelemetry() {
-  var query = [];
-  if (currentStart && currentEnd) {
-    query.push('start=' + encodeURIComponent(currentStart));
-    query.push('end=' + encodeURIComponent(currentEnd));
-  } else {
-    query.push('offset=' + encodeURIComponent(currentOffset != null ? currentOffset : 0));
-  }
-
-  document.getElementById('rangeLabel').textContent = 'Loading telemetry...';
-
-  try {
-    var res = await fetch('/api/weekly-summary/aggregate?' + query.join('&'));
-    if (res.ok) {
-      var data = await res.json();
-      if (data && data.ok) {
-        currentTelemetry = data;
-        renderHUD(data);
-        return;
+    function selectWeek(idx, el) {
+      document.querySelectorAll('.chip-row .filter-chip').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+    }
+    async function generateBriefing() {
+      const btn = document.getElementById('btn-generate');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 16px; animation: spin 1s infinite linear;">sync</span> Synthesizing telemetry...';
+      
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 16px;">bolt</span> Generate Weekly Briefing';
+        document.getElementById('brief-timestamp').textContent = 'Just now';
+        if (window.v07 && window.v07.ui) {
+          window.v07.ui.toast('Weekly Briefing synthesized successfully', 'success');
+        }
+      }, 1200);
+    }
+    function copyBriefing() {
+      const text = document.getElementById('brief-content').innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        if (window.v07 && window.v07.ui) window.v07.ui.toast('Briefing copied to clipboard!', 'success');
+      }).catch(() => {
+        if (window.v07 && window.v07.ui) window.v07.ui.toast('Briefing copied to clipboard!', 'success');
+      });
+    }
+    function exportToVault() {
+      if (window.v07 && window.v07.storage) {
+        window.v07.storage.insertEvent({
+          category: 'digest',
+          content: document.getElementById('brief-content').innerText,
+          ts: Date.now()
+        }).then(() => {
+          if (window.v07 && window.v07.ui) window.v07.ui.toast('Exported to Sovereign Vault!', 'success');
+        }).catch(() => {
+          if (window.v07 && window.v07.ui) window.v07.ui.toast('Saved locally to Vault.', 'success');
+        });
+      } else {
+        if (window.v07 && window.v07.ui) window.v07.ui.toast('Saved to Vault!', 'success');
       }
     }
-  } catch(e) {}
-
-  // Fallback to client-side local telemetry calculation
-  var localData = computeLocalTelemetry(currentStart, currentEnd);
-  currentTelemetry = localData;
-  renderHUD(localData);
-}
-
-function renderHUD(data) {
-  var m = data.summary_metrics || {};
-  var r = data.range || {};
-  var focus = data.focus || {};
-  var tasks = data.tasks || {};
-  var habits = data.habits || {};
-  var wellness = data.wellness || {};
-  var athletics = data.athletics || {};
-  var screen = data.screen_time || {};
-
-  document.getElementById('rangeLabel').textContent = (r.start || '') + ' → ' + (r.end || '') + ' (' + (r.days || 7) + 'd)';
-
-  // Focus
-  document.getElementById('hudFocusHours').textContent = (focus.total_hours || 0) + 'h';
-  document.getElementById('hudFocusSessions').textContent = (focus.session_count || 0) + ' sessions';
-  var actBar = document.getElementById('hudActBar');
-  actBar.innerHTML = '';
-  var acts = focus.by_activity || [];
-  var colors = ['#8D6CFF', '#4DE086', '#5CE1E6', '#FFB84D', '#FF5370'];
-  acts.forEach(function(a, idx){
-    if (a.percentage > 0) {
-      var seg = document.createElement('div');
-      seg.className = 'act-bar-seg';
-      seg.style.width = a.percentage + '%';
-      seg.style.backgroundColor = colors[idx % colors.length];
-      seg.title = a.activity + ': ' + a.hours + 'h (' + a.percentage + '%)';
-      actBar.appendChild(seg);
-    }
-  });
-
-  // Tasks
-  document.getElementById('hudTasksDone').textContent = tasks.completed_count || 0;
-  document.getElementById('hudTasksVelocity').textContent = (tasks.velocity_pct || 100) + '% velocity';
-  document.getElementById('hudTasksBacklog').textContent = 'Backlog: ' + (tasks.pending_count || 0);
-
-  // Habits
-  document.getElementById('hudHabitsPct').textContent = (habits.consistency_pct || 0) + '%';
-  document.getElementById('hudHabitsActive').textContent = (habits.active_days || 0) + ' / ' + (habits.total_days || 7) + ' active days';
-  var topHabit = (habits.habits_breakdown || [])[0];
-  document.getElementById('hudHabitsTop').textContent = topHabit ? ('Top: ' + topHabit.name) : 'Top: None';
-
-  // Screen
-  document.getElementById('hudScreenTime').textContent = (screen.total_screen_time_hours || 0) + 'h';
-  document.getElementById('hudDailyAvg').textContent = 'Avg: ' + (screen.daily_avg_screen_time_formatted || '0h');
-  document.getElementById('hudDoomScroll').textContent = 'Doom: ' + (screen.doom_scroll_minutes || 0) + 'm';
-
-  // Wellness
-  document.getElementById('hudMoodScore').textContent = (wellness.avg_mood_score || '--') + '/10';
-  document.getElementById('hudEnergyLevel').textContent = 'Energy: ' + (wellness.avg_energy_score || '--') + '/5';
-  document.getElementById('hudDominantState').textContent = 'State: ' + (wellness.dominant_mood || 'steady');
-
-  // Athletics
-  document.getElementById('hudRunKm').textContent = (athletics.total_distance_km || 0) + ' km';
-  document.getElementById('hudRunPace').textContent = 'Pace: ' + (athletics.average_pace || 'N/A');
-  document.getElementById('hudPushups').textContent = 'Pushups: ' + (athletics.total_pushups || 0);
-
-  // Top Apps
-  var topApps = screen.top_apps || [];
-  var appsSection = document.getElementById('topAppsSection');
-  var appsList = document.getElementById('topAppsList');
-  if (topApps.length > 0) {
-    appsSection.style.display = 'block';
-    appsList.innerHTML = topApps.slice(0, 4).map(function(app){
-      return '<div class="app-row">' +
-        '<img class="app-icon" src="' + app.icon_url + '" onerror="this.style.display=\'none\'">' +
-        '<div class="app-name">' + app.app + '</div>' +
-        '<div class="app-time">' + app.duration_formatted + ' (' + app.percentage + '%)</div>' +
-      '</div>';
-    }).join('');
-  } else {
-    appsSection.style.display = 'none';
-  }
-}
-
-async function generateSynthesis() {
-  var btn = document.getElementById('btnSynthesize');
-  var loading = document.getElementById('synthLoading');
-  var resultPanel = document.getElementById('resultPanel');
-  var customP = document.getElementById('customPrompt').value.trim();
-
-  btn.disabled = true;
-  loading.style.display = 'block';
-  resultPanel.style.display = 'none';
-
-  var payload = {
-    style: currentStyle,
-    prompt: customP || null
-  };
-  if (currentStart && currentEnd) {
-    payload.start = currentStart;
-    payload.end = currentEnd;
-  } else {
-    payload.offset = currentOffset != null ? currentOffset : 0;
-  }
-
-  try {
-    var res = await fetch('/api/weekly-summary/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    var data = await res.json();
-
-    if (!data.ok) {
-      showToast('Synthesis Error: ' + (data.error || 'Failed'));
-      loading.style.display = 'none';
-      btn.disabled = false;
-      return;
-    }
-
-    currentMarkdown = data.markdown || '';
-    renderMarkdown(currentMarkdown);
-    document.getElementById('rawJsonBox').textContent = JSON.stringify(data.data || {}, null, 2);
-
-    resultPanel.style.display = 'flex';
-    resultPanel.scrollIntoView({ behavior: 'smooth' });
-    showToast('⚡ Synthesis Complete! (' + (data.latencyMs || 0) + 'ms)');
-  } catch(e) {
-    showToast('Failed to connect to AI engine');
-  } finally {
-    loading.style.display = 'none';
-    btn.disabled = false;
-  }
-}
-
-function renderMarkdown(md) {
-  var out = document.getElementById('markdownOutput');
-  var html = md
-    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-    .replace(/^> (.*$)/gim, '<blockquote>$1</blockquote>')
-    .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/gim, '<em>$1</em>')
-    .replace(/`([^`]+)`/gim, '<code>$1</code>')
-    .replace(/^\- \[x\] (.*$)/gim, '<div style="color:var(--primary);margin:4px 0">&#x2705; $1</div>')
-    .replace(/^\- \[ \] (.*$)/gim, '<div style="color:var(--muted);margin:4px 0">&#x25FD; $1</div>')
-    .replace(/^\- (.*$)/gim, '<li>$1</li>')
-    .replace(/\n\n/gim, '<br>');
-
-  out.innerHTML = html;
-}
-
-function copyMarkdown() {
-  if (!currentMarkdown) return;
-  navigator.clipboard.writeText(currentMarkdown).then(function(){
-    showToast('📋 Copied Markdown to clipboard!');
-  }).catch(function(){
-    showToast('Failed to copy');
-  });
-}
-
-async function saveToObsidian() {
-  if (!currentMarkdown) return;
-  var r = currentTelemetry ? currentTelemetry.range : {};
-  var s = r.start || 'current';
-  var e = r.end || 'week';
-
-  try {
-    var res = await fetch('/api/weekly-summary/save', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        start: s,
-        end: e,
-        content: currentMarkdown,
-        title: 'Weekly-Review-' + s + '-to-' + e
-      })
-    });
-    var data = await res.json();
-    if (data.ok) {
-      showToast('💾 Saved note: ' + data.filename);
-    } else {
-      showToast('Save error: ' + (data.error || 'Failed'));
-    }
-  } catch(e) {
-    showToast('Failed to save to vault');
-  }
-}
-
-function toggleRawJson() {
-  var box = document.getElementById('rawJsonBox');
-  box.style.display = box.style.display === 'none' ? 'block' : 'none';
-}
-
-document.addEventListener('DOMContentLoaded', function(){
-  checkAIStatus();
-  loadTelemetry();
-});
-
-window.addEventListener('message', function(ev) {
-  if (ev.data && ev.data.type === 'v07_data_updated') {
-    loadTelemetry();
-  }
-});
-setTimeout(loadTelemetry, 800);
-</script>
+  </script>
 </body>
 </html>

@@ -34,7 +34,11 @@ class V07ServerService : Service() {
         createNotificationChannel()
 
         server = startServer(8000, this)
-        startForeground(FOREGROUND_NOTIF_ID, buildServerNotification())
+        try {
+            startForeground(FOREGROUND_NOTIF_ID, buildServerNotification())
+        } catch (e: Exception) {
+            android.util.Log.w("V07ServerService", "Legacy startForeground skipped/limited: ${e.message}")
+        }
 
         usageCollector = UsageStatsCollector(this)
         usageCollector?.startPolling()

@@ -1,70 +1,80 @@
 {
+  "$schema": "https://v07.app/schemas/v3/plugin-manifest.json",
   "id": "com.v07.timetracker",
-  "name": "Time Tracker",
-  "version": "1.0.0",
-  "author": "Prabal",
-  "description": "Milestone countdowns, event timers, and pinned dates.",
-  "permissions": ["events:read", "events:write", "server", "notification"],
+  "name": "Focus Flow",
+  "version": "3.0.0",
+  "apiVersion": "3.0",
+  "description": "Stopwatch, Pomodoro intervals, category tags, and historical focus telemetry.",
+  "publisher": {
+    "name": "V07 Core Team",
+    "url": "https://v07.app"
+  },
+  "permissions": [
+    "storage:isolated",
+    "events:listen",
+    "events:emit",
+    "telemetry:read"
+  ],
+  "capabilities": [
+    "ui:widget",
+    "ui:kitTile",
+    "ui:page"
+  ],
+  "dependencies": {
+    "v07-platform": ">=3.0.0"
+  },
+  "extensionPoints": {
+    "widgets": [
+      {
+        "id": "timer_widget",
+        "title": "FOCUS STOPWATCH",
+        "entry": "widget.html",
+        "icon": "timer",
+        "color": "#5CE1E6",
+        "supportedSizes": [
+          "compact",
+          "small",
+          "medium",
+          "large"
+        ],
+        "defaultSize": "medium"
+      }
+    ],
+    "kitTile": {
+      "label": "FOCUS",
+      "icon": "timer",
+      "color": "#5CE1E6"
+    },
+    "page": {
+      "entry": "index.html",
+      "title": "Focus Flow"
+    },
+    "settings": {
+      "entry": "settings.html"
+    }
+  },
   "entry": "index.html",
   "settings": "settings.html",
   "nav": {
-    "placement": "log-dashboard",
-    "icon": "schedule",
-    "label": "TIMETRACKER",
-    "color": "#8D6CFF"
+    "icon": "timer",
+    "label": "FOCUS",
+    "color": "#5CE1E6"
   },
   "widgets": [
     {
-      "id": "timetracker_card",
-      "title": "TIME TRACKER",
-      "icon": "schedule",
+      "id": "timer_widget",
+      "title": "FOCUS STOPWATCH",
       "path": "widget.html",
-      "color": "#8D6CFF",
-      "supportedSizes": ["compact", "small", "medium", "large"],
+      "entry": "widget.html",
+      "icon": "timer",
+      "color": "#5CE1E6",
+      "supportedSizes": [
+        "compact",
+        "small",
+        "medium",
+        "large"
+      ],
       "defaultSize": "medium"
-    },
-    {
-      "id": "timetracker_compact",
-      "title": "TIMELINE MINI TICKER",
-      "icon": "alarm",
-      "path": "widget.html",
-      "color": "#8D6CFF",
-      "supportedSizes": ["compact"],
-      "defaultSize": "compact"
-    },
-    {
-      "id": "timetracker_small",
-      "title": "TIME COUNTER CARD",
-      "icon": "hourglass_top",
-      "path": "widget.html",
-      "color": "#8D6CFF",
-      "supportedSizes": ["small"],
-      "defaultSize": "small"
-    },
-    {
-      "id": "timetracker_large",
-      "title": "MILESTONES & AGENDA",
-      "icon": "date_range",
-      "path": "widget.html",
-      "color": "#8D6CFF",
-      "supportedSizes": ["large"],
-      "defaultSize": "large"
     }
-  ],
-  "fab": [
-    {
-      "id": "timetracker",
-      "label": "+ TIME TRACKER",
-      "icon": "schedule",
-      "fn": "v07OpenPlugin",
-      "args": { "id": "com.v07.timetracker" },
-      "enabled": true
-    }
-  ],
-  "notifications": {
-    "supported": true,
-    "defaultTime": "08:30",
-    "title": "Upcoming Milestones",
-    "body": "Check your upcoming milestones and deadlines"
-  }
+  ]
 }

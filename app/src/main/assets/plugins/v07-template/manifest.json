@@ -1,18 +1,55 @@
 {
+  "$schema": "https://v07.app/schemas/v3/plugin-manifest.json",
   "id": "com.v07.template",
-  "name": "Custom Companion",
-  "version": "1.0.0",
+  "name": "Companion Template",
+  "version": "3.0.0",
   "apiVersion": "3.0",
-  "description": "Boilerplate template demonstrating SQLite persistence, Ledger integration, and UI styling for modular sideloaded plugins.",
+  "description": "Standard starter template for building high-craft offline V07 Sanctuary plugins.",
   "publisher": {
-    "name": "Community Developer",
+    "name": "V07 Core Team",
     "url": "https://v07.app"
   },
   "permissions": [
     "storage:isolated",
-    "events:write",
-    "events:read"
+    "events:listen",
+    "events:emit"
   ],
+  "capabilities": [
+    "ui:widget",
+    "ui:kitTile",
+    "ui:page"
+  ],
+  "dependencies": {
+    "v07-platform": ">=3.0.0"
+  },
+  "extensionPoints": {
+    "widgets": [
+      {
+        "id": "template_widget",
+        "title": "COMPANION WIDGET",
+        "entry": "widget.html",
+        "icon": "extension",
+        "color": "#4DE086",
+        "supportedSizes": [
+          "small",
+          "medium"
+        ],
+        "defaultSize": "medium"
+      }
+    ],
+    "kitTile": {
+      "label": "TEMPLATE",
+      "icon": "extension",
+      "color": "#4DE086"
+    },
+    "page": {
+      "entry": "index.html",
+      "title": "Companion Template"
+    },
+    "settings": {
+      "entry": "settings.html"
+    }
+  },
   "entry": "index.html",
   "settings": "settings.html",
   "nav": {
@@ -22,12 +59,16 @@
   },
   "widgets": [
     {
-      "id": "main_widget",
-      "title": "COMPANION",
+      "id": "template_widget",
+      "title": "COMPANION WIDGET",
+      "path": "widget.html",
       "entry": "widget.html",
       "icon": "extension",
       "color": "#4DE086",
-      "supportedSizes": ["small", "medium"],
+      "supportedSizes": [
+        "small",
+        "medium"
+      ],
       "defaultSize": "medium"
     }
   ]

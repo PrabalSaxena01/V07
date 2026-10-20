@@ -616,6 +616,48 @@ Administrators and power users need a dedicated, comprehensive administrative da
 ## Date
 2026-10-03
 
+---
+
+# ADR-016: Hybrid Jetpack Compose Shell & Navigation with Sandboxed WebView Plugin Host
+
+## Status
+Accepted
+
+## Context
+User requested a restoration of the calm, serene Sanctuary design aesthetic ("A few things for today" card, leaf branding, reading companion, calm reflection quote, floating bottom navigation dock) while utilizing Jetpack Compose.
+The application contains 9 dynamic sandboxed plugins (Gita, Habits, Tasks, Chronosynth, Vitals, TimeTracker, Running, Gamify, Reader) built with HTML/CSS/JavaScript and interacting via the V3 Native RPC Bridge (`V3NativeBridge` / `LoopbackServer`). A complete rewrite of all 9 plugins to native Jetpack Compose would break existing plugin extensibility.
+
+## Decision
+Adopt a **Hybrid Architecture**:
+1. **Native Jetpack Compose Top-Level Shell & Navigation**:
+   - Native Material3 / Sanctuary Theme (`SanctuaryTheme.kt`).
+   - Native Calm Sanctuary Top App Bar with leaf branding, date, and profile trigger (`SanctuaryTopBar.kt`).
+   - Native Floating Pill Bottom Navigation Dock (`SanctuaryBottomDock.kt`) providing instant switching between `Home`, `Tools`, `Journal/Ledger`, `Day`, and `You/Settings`.
+   - Native Sanctuary Home Screen (`HomeScreen.kt`) replicating the beloved design in `home_fixed.png`:
+     - "A few things for today" card with unhurried daily steps and "+ Add a gentle note" action.
+     - "Currently reading" card with Bhagavad Gita companion status ("Chapter 2, Verse 47", "Read Now" trigger).
+     - Serene daily reflection quote card.
+     - Gentle Focus Flow launcher connected to native `TimerManager`.
+2. **Seamless WebView Plugin & Tools Host (`SanctuaryWebHost.kt`)**:
+   - Single warm `WebView` instance hosted inside Compose via `AndroidView`.
+   - Reverts all web styling back to the calm, organic Sanctuary theme (`--brand-teal: #2E7D6A`, soft cards, `--brand-mint: #3F9A83`, `--brand-cedar: #8C5E58`).
+   - Seamlessly serves Tools, Ledger, Day, Settings, and dynamic plugins without unmounting or reloading.
+   - Preserves all plugin contracts, storage sandboxing, and background telemetry synchronization.
+
+## Consequences
+### Positive
+- Delivers the responsiveness and tactile craft of native Jetpack Compose for the main application shell, navigation dock, and home screen.
+- 100% preservation of all 9 dynamic web plugins and plugin developer contracts.
+- Zero flicker or state loss when switching tabs.
+- Restores the beloved calm organic Sanctuary aesthetic across both native Compose and hosted web views.
+
+### Negative
+- Requires maintaining both Compose theme tokens and CSS theme variables in harmony.
+
+## Date
+2026-10-19
+
+
 
 
 

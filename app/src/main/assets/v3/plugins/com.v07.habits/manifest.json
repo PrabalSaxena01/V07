@@ -1,70 +1,89 @@
 {
+  "$schema": "https://v07.app/schemas/v3/plugin-manifest.json",
   "id": "com.v07.habits",
-  "name": "Habits",
-  "version": "1.0.0",
-  "author": "Prabal",
-  "description": "Track daily habits on a GitHub-style calendar heatmap. Log habits, build streaks, and see your consistency at a glance.",
-  "permissions": ["events:read", "events:write", "server", "notification"],
+  "name": "Habits Matrix",
+  "version": "3.0.0",
+  "apiVersion": "3.0",
+  "description": "Daily recurring consistency checklist and streak tracker on a calendar heatmap.",
+  "publisher": {
+    "name": "V07 Core Team",
+    "url": "https://v07.app"
+  },
+  "permissions": [
+    "storage:isolated",
+    "events:listen",
+    "events:emit",
+    "notifications:schedule"
+  ],
+  "capabilities": [
+    "ui:widget",
+    "ui:kitTile",
+    "ui:page"
+  ],
+  "dependencies": {
+    "v07-platform": ">=3.0.0"
+  },
+  "extensionPoints": {
+    "widgets": [
+      {
+        "id": "habits_matrix_card",
+        "title": "HABITS MATRIX",
+        "entry": "widget.html",
+        "icon": "local_fire_department",
+        "color": "#FFB454",
+        "supportedSizes": [
+          "compact",
+          "small",
+          "medium",
+          "large"
+        ],
+        "defaultSize": "medium"
+      }
+    ],
+    "kitTile": {
+      "label": "HABITS",
+      "icon": "local_fire_department",
+      "color": "#FFB454"
+    },
+    "page": {
+      "entry": "index.html",
+      "title": "Habits Matrix"
+    },
+    "settings": {
+      "entry": "settings.html",
+      "schema": "settings.schema.json"
+    }
+  },
   "entry": "index.html",
   "settings": "settings.html",
   "nav": {
-    "placement": "log-dashboard",
     "icon": "local_fire_department",
     "label": "HABITS",
     "color": "#FFB454"
   },
   "widgets": [
     {
-      "id": "habits_tracker",
-      "title": "HABIT TRACKER",
-      "icon": "local_fire_department",
+      "id": "habits_matrix_card",
+      "title": "HABITS MATRIX",
       "path": "widget.html",
+      "entry": "widget.html",
+      "icon": "local_fire_department",
       "color": "#FFB454",
-      "supportedSizes": ["compact", "small", "medium", "large"],
+      "supportedSizes": [
+        "compact",
+        "small",
+        "medium",
+        "large"
+      ],
       "defaultSize": "medium"
-    },
-    {
-      "id": "habits_compact",
-      "title": "HABIT STREAK BAR",
-      "icon": "bolt",
-      "path": "widget.html",
-      "color": "#FFB454",
-      "supportedSizes": ["compact"],
-      "defaultSize": "compact"
-    },
-    {
-      "id": "habits_small",
-      "title": "HABIT 7-DAY DOTS",
-      "icon": "calendar_view_week",
-      "path": "widget.html",
-      "color": "#FFB454",
-      "supportedSizes": ["small"],
-      "defaultSize": "small"
-    },
-    {
-      "id": "habits_large",
-      "title": "HABIT 20-WEEK HEATMAP",
-      "icon": "grid_on",
-      "path": "widget.html",
-      "color": "#FFB454",
-      "supportedSizes": ["large"],
-      "defaultSize": "large"
     }
   ],
-  "fab": [
-    {
-      "id": "habits",
-      "label": "+ HABITS",
-      "icon": "local_fire_department",
-      "fn": "v07OpenPlugin",
-      "args": { "id": "com.v07.habits" },
-      "enabled": true
+  "config": {
+    "dailyReminderTime": {
+      "type": "string",
+      "format": "time",
+      "default": "21:00",
+      "description": "Daily notification time to complete habits"
     }
-  ],
-  "notifications": {
-    "supported": true,
-    "defaultTime": "21:00",
-    "title": "Habits Check-in",
-    "body": "Check off your daily habits before the day ends!"
   }
 }

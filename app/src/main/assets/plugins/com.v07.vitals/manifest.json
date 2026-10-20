@@ -1,14 +1,61 @@
 {
+  "$schema": "https://v07.app/schemas/v3/plugin-manifest.json",
   "id": "com.v07.vitals",
   "name": "Mood & Energy",
-  "version": "1.0.0",
-  "author": "Prabal",
-  "description": "Log and track daily mental and physical state with quick ratings and vitals.",
-  "permissions": ["events:read", "events:write", "server", "notification"],
+  "version": "3.0.0",
+  "apiVersion": "3.0",
+  "description": "Log and track daily mental and physical state with quick ratings and vitals telemetry.",
+  "publisher": {
+    "name": "V07 Core Team",
+    "url": "https://v07.app"
+  },
+  "permissions": [
+    "storage:isolated",
+    "events:listen",
+    "events:emit",
+    "notifications:schedule"
+  ],
+  "capabilities": [
+    "ui:widget",
+    "ui:kitTile",
+    "ui:page"
+  ],
+  "dependencies": {
+    "v07-platform": ">=3.0.0"
+  },
+  "extensionPoints": {
+    "widgets": [
+      {
+        "id": "vitals_card",
+        "title": "MOOD & ENERGY",
+        "entry": "widget.html",
+        "icon": "battery_charging_full",
+        "color": "#4DE086",
+        "supportedSizes": [
+          "compact",
+          "small",
+          "medium",
+          "large"
+        ],
+        "defaultSize": "medium"
+      }
+    ],
+    "kitTile": {
+      "label": "VITALS",
+      "icon": "battery_charging_full",
+      "color": "#4DE086"
+    },
+    "page": {
+      "entry": "index.html",
+      "title": "Mood & Energy"
+    },
+    "settings": {
+      "entry": "settings.html"
+    }
+  },
   "entry": "index.html",
   "settings": "settings.html",
   "nav": {
-    "placement": "log-dashboard",
     "icon": "battery_charging_full",
     "label": "VITALS",
     "color": "#4DE086"
@@ -17,54 +64,17 @@
     {
       "id": "vitals_card",
       "title": "MOOD & ENERGY",
-      "icon": "battery_charging_full",
       "path": "widget.html",
+      "entry": "widget.html",
+      "icon": "battery_charging_full",
       "color": "#4DE086",
-      "supportedSizes": ["compact", "small", "medium", "large"],
+      "supportedSizes": [
+        "compact",
+        "small",
+        "medium",
+        "large"
+      ],
       "defaultSize": "medium"
-    },
-    {
-      "id": "vitals_compact",
-      "title": "VITALS MINI PULSE",
-      "icon": "bolt",
-      "path": "widget.html",
-      "color": "#4DE086",
-      "supportedSizes": ["compact"],
-      "defaultSize": "compact"
-    },
-    {
-      "id": "vitals_small",
-      "title": "VITALS DUAL CHIP",
-      "icon": "mood",
-      "path": "widget.html",
-      "color": "#4DE086",
-      "supportedSizes": ["small"],
-      "defaultSize": "small"
-    },
-    {
-      "id": "vitals_large",
-      "title": "VITALS FULL SPECTRUM",
-      "icon": "ecg_heart",
-      "path": "widget.html",
-      "color": "#4DE086",
-      "supportedSizes": ["large"],
-      "defaultSize": "large"
     }
-  ],
-  "fab": [
-    {
-      "id": "vitals",
-      "label": "+ MOOD & ENERGY",
-      "icon": "battery_charging_full",
-      "fn": "v07OpenPlugin",
-      "args": { "id": "com.v07.vitals" },
-      "enabled": true
-    }
-  ],
-  "notifications": {
-    "supported": true,
-    "defaultTime": "14:00",
-    "title": "Vitals Check-in",
-    "body": "How is your mood and energy level right now?"
-  }
+  ]
 }

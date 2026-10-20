@@ -1,11 +1,6 @@
-import re
+with open('D:/software/V07-Android/app/src/main/assets/v3/index.html', 'r', encoding='utf-8') as f:
+    lines = f.readlines()
 
-with open('app/src/main/assets/v3/index.html', 'r', encoding='utf-8') as f:
-    text = f.read()
+for j in range(560, min(len(lines), 720)):
+    print(f"{j+1}: {lines[j]}", end='')
 
-idx = text.find('id="tab-tools"')
-if idx == -1:
-    idx = text.find("id='tab-tools'")
-
-print("Found tab-tools at index", idx)
-print(text[idx:idx+4000])

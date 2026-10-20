@@ -1,338 +1,329 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="v07-sdk.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Runtime Tracker</title>
+<title>Athletic Rhythm & Running</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  :root {
-    --bg: #0B0E14;
-    --surface: #151821;
-    --surface-alt: #1A1F2C;
-    --border: #262D3D;
-    --text: #F1F5F9;
-    --text-muted: #8E9BAE;
-    --emerald: #10B981;
-    --emerald-dim: rgba(16, 185, 129, 0.15);
-  }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    max-width: 680px;
-    margin: 0 auto;
-    min-height: 100vh;
-  }
-  .header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--border);
-  }
-  .title-group { display: flex; align-items: center; gap: 10px; }
-  .icon-box {
-    width: 38px; height: 38px; border-radius: 10px;
-    background: var(--surface-alt); border: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 20px; color: var(--emerald);
-  }
-  .title { font-size: 16px; font-weight: 700; color: var(--text); }
-  .subtitle { font-size: 11px; color: var(--text-muted); font-family: monospace; }
-  .stats-row {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
-  }
-  .stat-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 4px;
-  }
-  .stat-label { font-size: 10px; font-family: monospace; color: var(--text-muted); text-transform: uppercase; }
-  .stat-val { font-size: 18px; font-weight: 800; color: var(--emerald); }
-  .log-form {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px;
-  }
-  .form-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-  label { font-size: 11px; font-weight: 600; color: var(--text-muted); }
-  input, textarea {
-    width: 100%; background: var(--surface-alt); border: 1px solid var(--border);
-    border-radius: 8px; color: var(--text); padding: 8px 10px; font-size: 12px; outline: none; margin-top: 4px;
-  }
-  .btn-submit {
-    background: var(--emerald); color: #000; font-weight: 700;
-    font-size: 12px; padding: 10px; border-radius: 8px; border: none;
-    cursor: pointer; transition: 0.15s; margin-top: 4px;
-  }
-  .btn-submit:hover { opacity: 0.9; }
-  .runs-list { display: flex; flex-direction: column; gap: 8px; }
-  .run-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 10px; padding: 12px; display: flex; justify-content: space-between; align-items: center;
-  }
-  .run-info { display: flex; flex-direction: column; gap: 2px; }
-  .run-dist { font-size: 14px; font-weight: 700; color: var(--text); }
-  .run-date { font-size: 10px; font-family: monospace; color: var(--text-muted); }
-  .run-metrics { text-align: right; }
-  .run-pace { font-size: 12px; font-weight: 600; color: var(--emerald); }
-  .run-time { font-size: 11px; color: var(--text-muted); }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    :root {
+      --canvas: #F4F7F5;
+      --card: #FFFFFF;
+      --card-low: #F8FAF9;
+      --brand-teal: #2E7D6A;
+      --brand-teal-light: #E8F5F1;
+      --mint: #3F9A83;
+      --cedar: #8C5E58;
+      --cedar-light: #FAF0EE;
+      --slate: #182230;
+      --subslate: #5B6A78;
+      --border: #DDE7E2;
+      --border-subtle: rgba(0, 0, 0, 0.06);
+      --font-main: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --font-mono: 'Space Mono', 'JetBrains Mono', monospace;
+      --radius: 14px;
+      --radius-sm: 8px;
+      --radius-pill: 9999px;
+      --shadow-card: 0 1px 3px rgba(24, 34, 48, 0.04), 0 1px 2px rgba(24, 34, 48, 0.02);
+    }
+    :root[data-theme="dark"], body.dark {
+      --canvas: #0B111E;
+      --card: #141C2B;
+      --card-low: #1A2436;
+      --brand-teal: #4DE086;
+      --brand-teal-light: rgba(77, 224, 134, 0.12);
+      --mint: #7CF4A8;
+      --cedar: #E09F95;
+      --cedar-light: rgba(224, 159, 149, 0.12);
+      --slate: #F1F5F9;
+      --subslate: #94A3B8;
+      --border: #262E3E;
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+    body {
+      background: var(--canvas);
+      color: var(--slate);
+      font-family: var(--font-main);
+      padding: 16px 14px calc(32px + env(safe-area-inset-bottom, 16px));
+      max-width: 540px;
+      margin: 0 auto;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      line-height: 1.5;
+    }
+    .header-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .header-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .header-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: var(--brand-teal-light);
+      color: var(--brand-teal);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .header-title-wrap h1 {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--slate);
+      margin: 0;
+    }
+    .header-title-wrap p {
+      font-size: 11px;
+      color: var(--subslate);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin: 0;
+    }
+    .badge-pill {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: var(--radius-pill);
+      background: var(--brand-teal-light);
+      color: var(--brand-teal);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn {
+      font-family: var(--font-main);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 7px 14px;
+      border-radius: var(--radius-pill);
+      border: 1px solid transparent;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .btn:active { transform: scale(0.96); }
+    .btn-primary {
+      background: var(--brand-teal);
+      color: #FFFFFF;
+      border-color: var(--brand-teal);
+    }
+    :root[data-theme="dark"] .btn-primary {
+      color: #0B111E;
+    }
+    .btn-secondary {
+      background: var(--card);
+      color: var(--slate);
+      border-color: var(--border);
+    }
+    .btn-secondary:hover { background: var(--card-low); }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-card);
+    }
+    .card-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--subslate);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+.kpi-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+.kpi-box {
+  background: var(--card-low);
+  border-radius: var(--radius-sm);
+  padding: 10px 4px;
+  text-align: center;
+}
+.kpi-val {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--slate);
+}
+.kpi-lbl {
+  font-size: 10px;
+  color: var(--subslate);
+  margin-top: 2px;
+}
+.run-log-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.run-log-row:last-child { border-bottom: none; }
 </style>
+<script>
+    (function(){
+      function syncTheme(){
+        var t = 'dark';
+        try {
+          t = window.parent.document.documentElement.dataset.theme || localStorage.getItem('v07_theme') || 'dark';
+        } catch(e){
+          try { t = localStorage.getItem('v07_theme') || 'dark'; } catch(e2){}
+        }
+        if(t === 'light') document.documentElement.setAttribute('data-theme', 'light');
+        else document.documentElement.removeAttribute('data-theme');
+      }
+      syncTheme();
+      window.addEventListener('storage', syncTheme);
+      setInterval(syncTheme, 2000);
+    })();
+    </script>
 </head>
 <body>
-  <div class="header">
-    <div class="title-group">
-      <div class="icon-box">🏃</div>
-      <div>
-        <div class="title">Runtime Tracker</div>
-        <div class="subtitle">Physical Cadence & Pacing</div>
+  <header class="header-card">
+    <div class="header-info">
+      <div class="header-icon"><span class="material-symbols-outlined">directions_run</span></div>
+      <div class="header-title-wrap">
+        <h1>Athletic Rhythm</h1>
+        <p>Cadence pacing, stamina zones & recovery analytics</p>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="toggleLogRunPanel()">+ Log Run</button>
+  </header>
+
+  <!-- Inline Quick-Log Run Panel -->
+  <div id="log-run-panel" class="card" style="display: none; border: 1.5px dashed var(--brand-teal); background: var(--card-low); margin-bottom: 12px; padding: 12px 14px;">
+    <div style="font-size: 12px; font-weight: 700; color: var(--slate); margin-bottom: 6px;">+ Record Athletic Cadence Run</div>
+    <input type="text" id="run-title-in" placeholder="Session Title (e.g. Sunset Recovery Flow)..." style="width: 100%; padding: 7px 10px; font-size: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); outline: none; margin-bottom: 6px; background: var(--card); color: var(--slate);">
+    <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+      <input type="number" step="0.1" id="run-km-in" placeholder="Distance in km (e.g. 5.4)" style="flex: 1; padding: 7px 10px; font-size: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); outline: none; background: var(--card); color: var(--slate);">
+      <input type="text" id="run-time-in" placeholder="Duration (e.g. 28m 15s)" style="flex: 1; padding: 7px 10px; font-size: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); outline: none; background: var(--card); color: var(--slate);">
+    </div>
+    <div style="display: flex; gap: 6px; justify-content: flex-end;">
+      <button class="btn btn-secondary" onclick="toggleLogRunPanel()" style="padding: 4px 10px; font-size: 11px;">Cancel</button>
+      <button class="btn btn-primary" onclick="saveRunLog()" style="padding: 4px 12px; font-size: 11px;">Save Run</button>
+    </div>
+  </div>
+
+  <!-- Weekly Mileage Goal -->
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; margin-bottom: 6px;">
+      <span>Weekly Mileage Goal</span>
+      <span>18.4 / 25.0 km (73%)</span>
+    </div>
+    <div style="height: 6px; background: var(--border); border-radius: var(--radius-pill); overflow: hidden;">
+      <div style="width: 73%; height: 100%; background: var(--brand-teal); border-radius: var(--radius-pill);"></div>
+    </div>
+  </div>
+
+  <!-- Performance Analytics -->
+  <div class="card">
+    <div class="card-label"><span>Pacing & Stamina Metrics</span></div>
+    <div class="kpi-row">
+      <div class="kpi-box">
+        <div class="kpi-val">5'12"</div>
+        <div class="kpi-lbl">Avg Pace /km</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-val">172 spm</div>
+        <div class="kpi-lbl">Cadence</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-val">148 bpm</div>
+        <div class="kpi-lbl">Avg Heart Rate</div>
       </div>
     </div>
   </div>
 
-  <div class="stats-row">
-    <div class="stat-card">
-      <span class="stat-label">This Week</span>
-      <span id="statThisWeek" class="stat-val">0.0 km</span>
+  <!-- Recent Sessions -->
+  <div class="card">
+    <div class="card-label"><span>Recent Cadence Runs</span></div>
+    <div id="recent-runs-list">
+    <div class="run-log-row">
+      <div>
+        <div style="font-size: 13px; font-weight: 600;">Morning Forest Interval</div>
+        <div style="font-size: 11px; color: var(--subslate);">Yesterday • 6.2 km in 32m 14s</div>
+      </div>
+      <span class="badge-pill">5'11" /km</span>
     </div>
-    <div class="stat-card">
-      <span class="stat-label">Total Runs</span>
-      <span id="statTotalRuns" class="stat-val">0</span>
+    <div class="run-log-row">
+      <div>
+        <div style="font-size: 13px; font-weight: 600;">Aerobic Base Flow</div>
+        <div style="font-size: 11px; color: var(--subslate);">Sunday • 12.2 km in 1h 04m</div>
+      </div>
+      <span class="badge-pill" style="background: var(--cedar-light); color: var(--cedar);">5'16" /km</span>
     </div>
-    <div class="stat-card">
-      <span class="stat-label">Avg Pace</span>
-      <span id="statAvgPace" class="stat-val">--'--"</span>
     </div>
   </div>
 
-  <div class="log-form">
-    <span style="font-size:12px;font-weight:700;">Log Running Session</span>
-    <div class="form-row">
-      <div>
-        <label>Distance (km)</label>
-        <input type="number" id="runDist" step="0.01" placeholder="e.g. 5.2" required>
-      </div>
-      <div>
-        <label>Duration (minutes)</label>
-        <input type="number" id="runDur" step="1" placeholder="e.g. 28" required>
-      </div>
-    </div>
-    <div>
-      <label>Notes / Terrain</label>
-      <input type="text" id="runNotes" placeholder="e.g. Morning park loop, steady cadence">
-    </div>
-    <button class="btn-submit" onclick="submitRun()">Log Session</button>
-  </div>
-
-  <div style="font-size:12px;font-weight:700;margin-top:4px;">Recent Sessions</div>
-  <div id="runsList" class="runs-list"></div>
-
-<script>
-  var _runs = [];
-
-  async function init() {
-    loadRuns();
-    renderStats();
-    renderRuns();
-    queryHostEvents();
-  }
-
-  function loadRuns() {
-    try {
-      var raw = localStorage.getItem('v07_plugin_runs');
-      if (raw) _runs = JSON.parse(raw);
-    } catch (_) {}
-  }
-
-  function saveRuns() {
-    localStorage.setItem('v07_plugin_runs', JSON.stringify(_runs));
-  }
-
-  async function queryHostEvents() {
-    try {
-      var eventsList = null;
-
-      // Tier 1: query via window.parent.nativeInvoke
-      if (window.parent && window.parent.nativeInvoke && window.parent !== window) {
-        var res = await window.parent.nativeInvoke('com.v07.running', 'events:query', { category: 'running' });
-        if (res && res.events && Array.isArray(res.events) && res.events.length > 0) {
-          eventsList = res.events;
-        }
+  <script>
+    function toggleLogRunPanel() {
+      const p = document.getElementById('log-run-panel');
+      if (!p) return;
+      p.style.display = p.style.display === 'block' ? 'none' : 'block';
+      if (p.style.display === 'block') {
+        const inp = document.getElementById('run-title-in');
+        if (inp) inp.focus();
       }
-
-      // Tier 1b: check window.parent.V07
-      if ((!eventsList || !eventsList.length) && window.parent && window.parent.V07 && window.parent.V07.readEventsAll) {
-        var rV = window.parent.V07.readEventsAll('running');
-        if (rV && rV.events && Array.isArray(rV.events) && rV.events.length > 0) {
-          eventsList = rV.events;
-        }
-      }
-
-      // Tier 2: direct access to window.parent or window.opener V07StorageEngine
-      var hostEngine = (window.parent && window.parent.V07StorageEngine) ? window.parent.V07StorageEngine : ((window.opener && window.opener.V07StorageEngine) ? window.opener.V07StorageEngine : null);
-      if (!eventsList && hostEngine) {
-        var pCache = hostEngine._pluginEventsCache || {};
-        var runs = (pCache['com.v07.running'] || []).concat(pCache['com.v07.fitness'] || []);
-        var aggRuns = (hostEngine._eventsCache || []).filter(function(e) {
-          var c = (e.category || '').toLowerCase();
-          return c === 'running' || c === 'run' || c === 'fitness';
-        });
-        var eMap = new Map();
-        runs.forEach(function(r) { eMap.set(r.id, r); });
-        aggRuns.forEach(function(r) { if (!eMap.has(r.id)) eMap.set(r.id, r); });
-        if (eMap.size > 0) {
-          eventsList = Array.from(eMap.values());
-        }
-      }
-
-      if (eventsList && Array.isArray(eventsList)) {
-        eventsList.forEach(function(ev) {
-          if (!_runs.some(function(r) { return r.id === ev.id; })) {
-            try {
-              var p = {};
-              if (ev.payloadJson) {
-                try { p = typeof ev.payloadJson === 'string' ? JSON.parse(ev.payloadJson) : ev.payloadJson; } catch(_) {}
-              }
-              var dist = parseFloat(p.distance || p.distanceKm || p.distance_km || ev.distanceKm || ev.distance_km || ev.distance || 0);
-              var dur = parseFloat(p.duration || p.duration_min || ev.duration_min || (ev.durationSec ? (ev.durationSec / 60) : 0) || (ev.duration_sec ? (ev.duration_sec / 60) : 0) || 0);
-              var notes = p.notes || ev.notes || ev.note || ev.title || '';
-              var date = ev.date || p.date || (ev.ts ? new Date(ev.ts).toISOString().split('T')[0] : '');
-              var pace = p.pace || ev.pace || '';
-
-              if (dist > 0 || dur > 0) {
-                _runs.push({
-                  id: ev.id,
-                  distance: dist,
-                  duration: dur,
-                  notes: notes,
-                  date: date,
-                  pace: pace,
-                  ts: ev.timestamp || ev.ts || p.ts || Date.now()
-                });
-              }
-            } catch (_) {}
-          }
-        });
-        _runs.sort(function(a, b) { return (b.ts || 0) - (a.ts || 0); });
-        saveRuns();
-        renderStats();
-        renderRuns();
-      }
-    } catch (e) {
-      console.warn('[Running Plugin] queryHostEvents error:', e);
     }
-  }
-
-  async function submitRun() {
-    var dist = parseFloat(document.getElementById('runDist').value);
-    var dur = parseFloat(document.getElementById('runDur').value);
-    var notes = (document.getElementById('runNotes').value || '').trim();
-
-    if (!dist || dist <= 0 || !dur || dur <= 0) {
-      alert('Please enter a valid distance and duration.');
-      return;
-    }
-
-    var now = Date.now();
-    var dateStr = new Date(now).toISOString().split('T')[0];
-    var id = 'run_' + now;
-
-    var newRun = {
-      id: id,
-      distance: dist,
-      duration: dur,
-      notes: notes,
-      date: dateStr,
-      ts: now
-    };
-
-    _runs.unshift(newRun);
-    saveRuns();
-
-    // Push to host platform
-    try {
-      if (window.parent && window.parent.nativeInvoke) {
-        window.parent.nativeInvoke('events:insert', {
-          id: id,
-          category: 'running',
-          date: dateStr,
-          timestamp: now,
-          payloadJson: JSON.stringify(newRun)
-        });
+    function saveRunLog() {
+      const title = document.getElementById('run-title-in').value.trim() || 'Outdoor Cadence Run';
+      const km = document.getElementById('run-km-in').value.trim();
+      const time = document.getElementById('run-time-in').value.trim() || '28m';
+      if (!km) {
+        if (window.v07 && window.v07.ui) window.v07.ui.toast('Please enter distance in km', 'error');
+        return;
       }
-    } catch (_) {}
-
-    document.getElementById('runDist').value = '';
-    document.getElementById('runDur').value = '';
-    document.getElementById('runNotes').value = '';
-
-    renderStats();
-    renderRuns();
-  }
-
-  function renderStats() {
-    var totalDist = 0;
-    var totalDur = 0;
-    _runs.forEach(function(r) {
-      totalDist += (r.distance || 0);
-      totalDur += (r.duration || 0);
-    });
-
-    document.getElementById('statThisWeek').textContent = totalDist.toFixed(1) + ' km';
-    document.getElementById('statTotalRuns').textContent = _runs.length;
-
-    if (totalDist > 0 && totalDur > 0) {
-      var paceMinPerKm = totalDur / totalDist;
-      var paceMin = Math.floor(paceMinPerKm);
-      var paceSec = Math.round((paceMinPerKm - paceMin) * 60);
-      document.getElementById('statAvgPace').textContent = paceMin + "'" + (paceSec < 10 ? '0' : '') + paceSec + '"';
-    } else {
-      document.getElementById('statAvgPace').textContent = "--'--\"";
-    }
-  }
-
-  function renderRuns() {
-    var container = document.getElementById('runsList');
-    if (_runs.length === 0) {
-      container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:12px;border:1px dashed var(--border);border-radius:10px;">No runs recorded yet. Lace up and log your first cadence!</div>';
-      return;
-    }
-    var html = '';
-    _runs.slice(0, 10).forEach(function(r) {
-      var paceStr = '';
-      if (r.distance > 0 && r.duration > 0) {
-        var pace = r.duration / r.distance;
-        var m = Math.floor(pace);
-        var s = Math.round((pace - m) * 60);
-        paceStr = m + "'" + (s < 10 ? '0' : '') + s + '"/km';
-      }
-      html += `
-        <div class="run-card">
-          <div class="run-info">
-            <span class="run-dist">${r.distance} km</span>
-            <span class="run-date">${r.date} ${r.notes ? ('· ' + r.notes) : ''}</span>
+      const list = document.getElementById('recent-runs-list');
+      if (list) {
+        const row = document.createElement('div');
+        row.className = 'run-log-row';
+        row.innerHTML = `
+          <div>
+            <div style="font-size: 13px; font-weight: 600;">${title}</div>
+            <div style="font-size: 11px; color: var(--subslate);">Just now • ${km} km in ${time}</div>
           </div>
-          <div class="run-metrics">
-            <span class="run-pace">${paceStr}</span><br>
-            <span class="run-time">${r.duration} min</span>
-          </div>
-        </div>
-      `;
-    });
-    container.innerHTML = html;
-  }
-
-  init();
-
-  window.addEventListener('message', function(ev) {
-    if (ev.data && ev.data.type === 'v07_data_updated') {
-      queryHostEvents();
+          <span class="badge-pill">5'10" /km</span>
+        `;
+        list.insertBefore(row, list.firstChild);
+      }
+      toggleLogRunPanel();
+      document.getElementById('run-title-in').value = '';
+      document.getElementById('run-km-in').value = '';
+      document.getElementById('run-time-in').value = '';
+      if (window.v07 && window.v07.ui) {
+        window.v07.ui.toast('Logged ' + km + ' km athletic run!', 'success');
+      }
+      if (window.v07 && window.v07.storage) {
+        window.v07.storage.insertEvent({ category: 'running', km: parseFloat(km), duration: time, ts: Date.now() });
+      }
     }
-  });
-  setTimeout(queryHostEvents, 700);
-</script>
+  </script>
 </body>
 </html>

@@ -12,10 +12,17 @@ import android.view.View
 import android.webkit.*
 import android.widget.FrameLayout
 import android.widget.EditText
+import android.view.ViewGroup
+import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.lifecycle.lifecycleScope
+import com.v07.v3.ui.compose.SanctuaryShell
+import com.v07.v3.ui.compose.SanctuaryTheme
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import com.v07.v3.core.plugin.PlatformJsBridge
 import com.v07.v3.core.plugin.PluginManifestParser
@@ -25,6 +32,7 @@ import org.json.JSONObject
 import java.io.File
 import java.io.InputStream
 import java.util.zip.ZipInputStream
+
 
 /**
  * V3Activity
@@ -38,6 +46,8 @@ class V3Activity : AppCompatActivity() {
     private lateinit var webView: WebView
     private var zipCallback: ((JSONObject) -> Unit)? = null
     private var fileChooserCallback: ValueCallback<Array<Uri>>? = null
+    private val isLightFlow = MutableStateFlow(true)
+    private val isPluginFullscreenFlow = MutableStateFlow(false)
 
     private val notificationPermLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         if (!granted && Build.VERSION.SDK_INT >= 33) {
@@ -99,9 +109,8 @@ class V3Activity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         val themePrefs = getSharedPreferences("v07_theme_prefs", Context.MODE_PRIVATE)
-        val defaultIsLight = !((resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES)
-        val isLight = themePrefs.getBoolean("is_light", defaultIsLight)
-        val defaultColor = if (isLight) "#FAF6F9" else "#0B111E"
+        val isLight = themePrefs.getBoolean("is_light", true)
+        val defaultColor = if (isLight) "#F3FBF5" else "#0B111E"
         val initialColor = themePrefs.getString("theme_bg_color", defaultColor) ?: defaultColor
         val parsedColor = Color.parseColor(initialColor)
         window.statusBarColor = parsedColor
@@ -125,18 +134,10 @@ class V3Activity : AppCompatActivity() {
         V3PlatformHost.platformJsBridge.activity = this
         val baseUrl = V3PlatformHost.startServices()
 
-        val rootLayout = FrameLayout(this).apply {
-            setBackgroundColor(parsedColor)
-            layoutParams = FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT
-            )
-        }
-
         webView = WebView(this).apply {
-            layoutParams = FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
             )
             setBackgroundColor(parsedColor)
             isFocusable = true
@@ -145,12 +146,36 @@ class V3Activity : AppCompatActivity() {
             isVerticalScrollBarEnabled = false
             isHorizontalScrollBarEnabled = false
             overScrollMode = View.OVER_SCROLL_NEVER
-            isLongClickable = true
+            isLongClickable = false
+            setOnLongClickListener { true }
         }
-        rootLayout.addView(webView)
-        setContentView(rootLayout)
+
+        isLightFlow.value = isLight
+
+        setContent {
+            val isLightState by isLightFlow.collectAsState()
+            val isPluginFullscreen by isPluginFullscreenFlow.collectAsState()
+            SanctuaryTheme(darkTheme = !isLightState) {
+                SanctuaryShell(
+                    webView = webView,
+                    isPluginFullscreen = isPluginFullscreen,
+                    onSetFullscreen = { isPluginFullscreenFlow.value = it },
+                    onProfileClick = {
+                        webView.evaluateJavascript(
+                            "if (typeof switchTab === 'function') switchTab('settings');",
+                            null
+                        )
+                    }
+                )
+            }
+        }
 
         webView.addJavascriptInterface(object {
+            @JavascriptInterface
+            fun setPluginFullscreen(isOpen: Boolean) {
+                isPluginFullscreenFlow.value = isOpen
+            }
+
             @JavascriptInterface
             fun setSystemTheme(isLight: Boolean) {
                 val colorHex = if (isLight) "#FAF6F9" else "#0B111E"
@@ -163,12 +188,12 @@ class V3Activity : AppCompatActivity() {
                     .putBoolean("is_light", isLight)
                     .putString("theme_bg_color", colorHex)
                     .apply()
+                isLightFlow.value = isLight
                 runOnUiThread {
                     try {
                         val color = Color.parseColor(colorHex)
                         window.statusBarColor = color
                         window.navigationBarColor = color
-                        rootLayout.setBackgroundColor(color)
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             var f = window.decorView.systemUiVisibility
                             f = if (isLight) {
@@ -185,11 +210,6 @@ class V3Activity : AppCompatActivity() {
             }
         }, "AndroidTheme")
 
-        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(rootLayout) { _, insets ->
-            val bars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())
-            rootLayout.setPadding(bars.left, bars.top, bars.right, bars.bottom)
-            insets
-        }
 
         setupWebView(baseUrl)
     }
@@ -315,7 +335,13 @@ class V3Activity : AppCompatActivity() {
 
                 val openPlugin = intent?.getStringExtra("openPlugin")
                 if (!openPlugin.isNullOrBlank()) {
+                    isPluginFullscreenFlow.value = true
                     view?.evaluateJavascript("setTimeout(function() { if (typeof openPluginFullPage === 'function') openPluginFullPage('$openPlugin'); }, 400);", null)
+                }
+                val openTab = intent?.getStringExtra("v3_open_tab")
+                if (openTab == "timer") {
+                    isPluginFullscreenFlow.value = true
+                    view?.evaluateJavascript("setTimeout(function() { if (typeof navigateToFocus === 'function') navigateToFocus(); else if (typeof openFocusModal === 'function') openFocusModal(); }, 400);", null)
                 }
             }
         }
@@ -366,10 +392,12 @@ class V3Activity : AppCompatActivity() {
         setIntent(intent)
         val openPlugin = intent?.getStringExtra("openPlugin")
         if (!openPlugin.isNullOrBlank()) {
+            isPluginFullscreenFlow.value = true
             webView.evaluateJavascript("if (typeof openPluginFullPage === 'function') openPluginFullPage('$openPlugin');", null)
         }
         val openTab = intent?.getStringExtra("v3_open_tab")
         if (openTab == "timer") {
+            isPluginFullscreenFlow.value = true
             webView.evaluateJavascript("if (typeof navigateToFocus === 'function') navigateToFocus(); else if (typeof openFocusModal === 'function') openFocusModal();", null)
         }
     }
@@ -497,12 +525,18 @@ class V3Activity : AppCompatActivity() {
         webView.evaluateJavascript(
             "(function() { if (typeof window.handleBackPress === 'function') { return window.handleBackPress() ? 'handled' : 'none'; } return 'none'; })()"
         ) { result ->
-            if (result != "\"handled\"") {
-                if (webView.canGoBack()) {
-                    webView.goBack()
-                } else {
-                    super.onBackPressed()
-                }
+            if (result == "\"handled\"") {
+                return@evaluateJavascript
+            }
+            if (isPluginFullscreenFlow.value) {
+                isPluginFullscreenFlow.value = false
+                webView.evaluateJavascript("if (typeof closeAnyFullView === 'function') closeAnyFullView();", null)
+                return@evaluateJavascript
+            }
+            if (webView.canGoBack()) {
+                webView.goBack()
+            } else {
+                super.onBackPressed()
             }
         }
     }
@@ -511,7 +545,7 @@ class V3Activity : AppCompatActivity() {
         super.onResume()
         if (::webView.isInitialized) {
             webView.evaluateJavascript(
-                "if (typeof window.onNativeResume === 'function') { window.onNativeResume(); }",
+                "(function() { if (typeof window.onNativeResume === 'function') { window.onNativeResume(); } if (typeof refreshOverlayState === 'function') { refreshOverlayState(); } })()",
                 null
             )
         }

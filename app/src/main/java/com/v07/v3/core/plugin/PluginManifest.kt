@@ -19,8 +19,10 @@ data class V3PluginManifest(
     val version: String,
     val apiVersion: String = "3.0",
     val description: String = "",
-    val publisher: String = "V07 Core",
+    val publisher: String = "V07 Core Team",
     val permissions: Set<String> = emptySet(),
+    val capabilities: Set<String> = emptySet(),
+    val dependencies: Map<String, String> = emptyMap(),
     val entry: String = "index.html",
     val settingsEntry: String? = null,
     val navIcon: String = "extension",
@@ -32,9 +34,12 @@ data class V3PluginManifest(
         // Universal permission matching
         if (permissions.contains("*")) return true
         if (permissions.contains(permission)) return true
-        // Legacy permission aliases
+        // Legacy and cross-spec permission aliases
         if (permission == "storage:isolated" && (permissions.contains("events:write") || permissions.contains("events:read"))) return true
-        if (permission == "telemetry:read" && permissions.contains("server")) return true
+        if (permission == "events:listen" && (permissions.contains("events:read") || permissions.contains("events:listen"))) return true
+        if (permission == "events:emit" && (permissions.contains("events:write") || permissions.contains("events:emit"))) return true
+        if (permission == "telemetry:read" && (permissions.contains("server") || permissions.contains("telemetry:read") || permissions.contains("sessions:read"))) return true
+        if (permission == "notifications:schedule" && (permissions.contains("notification") || permissions.contains("notifications:schedule"))) return true
         return false
     }
 }
@@ -42,8 +47,9 @@ data class V3PluginManifest(
 /**
  * PluginManifestParser
  *
- * Robust, resilient parser for V3 machine-readable plugin contracts.
- * Handles both the modern V3 schema and legacy plugin manifests seamlessly.
+ * Robust, resilient parser for V3 machine-readable plugin contracts conforming to PLUGIN_SPECIFICATION.md.
+ * Handles modern extensionPoints (widgets, kitTile, page, settings), capabilities, permissions,
+ * and legacy plugin manifests seamlessly.
  */
 object PluginManifestParser {
 
@@ -54,14 +60,14 @@ object PluginManifestParser {
             if (id.isBlank()) return null
 
             val name = json.optString("name", id)
-            val version = json.optString("version", "1.0.0")
+            val version = json.optString("version", "3.0.0")
             val apiVersion = json.optString("apiVersion", "3.0")
             val description = json.optString("description", "")
             val publisher = if (json.has("publisher")) {
                 val pubObj = json.optJSONObject("publisher")
-                pubObj?.optString("name", "V07 Core") ?: json.optString("publisher", "V07 Core")
+                pubObj?.optString("name", "V07 Core Team") ?: json.optString("publisher", "V07 Core Team")
             } else {
-                json.optString("author", "V07 Core")
+                json.optString("author", "V07 Core Team")
             }
 
             // Permissions
@@ -73,37 +79,60 @@ object PluginManifestParser {
                 }
             }
 
-            // Navigation & Kit Tile
-            val navObj = json.optJSONObject("nav")
-            val navIcon = navObj?.optString("icon") ?: "extension"
-            val navLabel = navObj?.optString("label") ?: name.uppercase()
-            val navColor = navObj?.optString("color") ?: "#4DE086"
+            // Capabilities
+            val capSet = mutableSetOf<String>()
+            val capArr = json.optJSONArray("capabilities")
+            if (capArr != null) {
+                for (i in 0 until capArr.length()) {
+                    capSet.add(capArr.getString(i).trim())
+                }
+            }
 
-            // Entry points
+            // Dependencies
+            val depMap = mutableMapOf<String, String>()
+            val depObj = json.optJSONObject("dependencies")
+            if (depObj != null) {
+                val keys = depObj.keys()
+                while (keys.hasNext()) {
+                    val k = keys.next()
+                    depMap[k] = depObj.optString(k, "")
+                }
+            }
+
+            // Extension Points
+            val extObj = json.optJSONObject("extensionPoints")
+
+            // Navigation & Kit Tile
+            val kitTileObj = extObj?.optJSONObject("kitTile") ?: json.optJSONObject("nav")
+            val navIcon = kitTileObj?.optString("icon") ?: "extension"
+            val navLabel = kitTileObj?.optString("label") ?: name.uppercase()
+            val navColor = kitTileObj?.optString("color") ?: "#4DE086"
+
+            // Entry points (Page & Settings)
             var entry = json.optString("entry", "index.html")
             var settingsEntry = json.optString("settings", "").ifBlank { null }
 
-            val extObj = json.optJSONObject("extensionPoints")
             if (extObj != null) {
                 val pageObj = extObj.optJSONObject("page")
                 if (pageObj != null && pageObj.has("entry")) {
                     entry = pageObj.getString("entry")
                 }
                 val setObj = extObj.optJSONObject("settings")
-                if (setObj != null && setObj.has("schema")) {
-                    settingsEntry = setObj.getString("schema")
+                if (setObj != null) {
+                    settingsEntry = setObj.optString("schema", setObj.optString("entry", ""))
+                    if (settingsEntry.isBlank()) settingsEntry = null
                 }
             }
 
-            // Widgets
+            // Widgets (from extensionPoints.widgets or root widgets)
             val widgetList = mutableListOf<V3WidgetInfo>()
-            val widgetsArr = json.optJSONArray("widgets")
+            val widgetsArr = extObj?.optJSONArray("widgets") ?: json.optJSONArray("widgets")
             if (widgetsArr != null) {
                 for (i in 0 until widgetsArr.length()) {
                     val w = widgetsArr.optJSONObject(i) ?: continue
                     val wId = w.optString("id", "${id}_w$i")
                     val wTitle = w.optString("title", name)
-                    val wPath = w.optString("path", w.optString("entry", "widget.html"))
+                    val wPath = w.optString("entry", w.optString("path", "widget.html"))
                     val wIcon = w.optString("icon", navIcon)
                     val wColor = w.optString("color", navColor)
                     val defSize = w.optString("defaultSize", "medium")
@@ -138,6 +167,8 @@ object PluginManifestParser {
                 description = description,
                 publisher = publisher,
                 permissions = permSet,
+                capabilities = capSet,
+                dependencies = depMap,
                 entry = entry,
                 settingsEntry = settingsEntry,
                 navIcon = navIcon,

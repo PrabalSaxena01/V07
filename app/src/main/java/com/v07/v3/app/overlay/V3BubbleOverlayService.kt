@@ -97,6 +97,8 @@ class V3BubbleOverlayService : Service() {
         }
 
         fun toggle(context: Context) {
+            val willRun = !isRunning
+            setOverlayEnabled(context, willRun)
             if (isRunning) {
                 stop(context)
             } else {
@@ -322,7 +324,8 @@ class V3BubbleOverlayService : Service() {
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("Sanctuary Bubble Active")
             .setContentText("Monitoring foreground application usage")
-            .setSmallIcon(R.drawable.v07_logo)
+            .setSmallIcon(com.v07.dashboard.R.drawable.ic_notification)
+            .setColor(com.v07.dashboard.PluginReminderReceiver.SANCTUARY_ACCENT_COLOR)
             .setOngoing(true)
             .setContentIntent(pendingIntent)
             .setPriority(NotificationCompat.PRIORITY_LOW)
@@ -368,12 +371,12 @@ class V3BubbleOverlayService : Service() {
             WindowManager.LayoutParams.WRAP_CONTENT,
             getOverlayWindowType(),
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START
-            x = (dm.widthPixels - dpToPx(100)).coerceAtLeast(0)
-            y = dpToPx(140)
+            x = (dm.widthPixels - dpToPx(110)).coerceAtLeast(dpToPx(16))
+            y = dpToPx(160)
         }
 
         setupBubbleTouch(bubbleView!!, bubbleParams)

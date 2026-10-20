@@ -1,14 +1,58 @@
 {
+  "$schema": "https://v07.app/schemas/v3/plugin-manifest.json",
   "id": "com.v07.gita",
   "name": "Gita Wisdom",
   "version": "3.0.0",
-  "author": "V07 Sanctuary",
-  "description": "Contemplative verses and philosophical clarity for daily life. Search, reflect, and internalize sacred teachings.",
-  "permissions": ["events:read", "events:write", "storage:isolated"],
+  "apiVersion": "3.0",
+  "description": "Contemplative verses and philosophical clarity for daily life. 700+ verses with search, reflections, and study tracking.",
+  "publisher": {
+    "name": "V07 Core Team",
+    "url": "https://v07.app"
+  },
+  "permissions": [
+    "storage:isolated",
+    "events:listen",
+    "events:emit"
+  ],
+  "capabilities": [
+    "ui:widget",
+    "ui:kitTile",
+    "ui:page"
+  ],
+  "dependencies": {
+    "v07-platform": ">=3.0.0"
+  },
+  "extensionPoints": {
+    "widgets": [
+      {
+        "id": "gita_daily_verse",
+        "title": "DAILY GITA CONTEMPLATION",
+        "entry": "widget.html",
+        "icon": "auto_stories",
+        "color": "#FF9F43",
+        "supportedSizes": [
+          "small",
+          "medium"
+        ],
+        "defaultSize": "medium"
+      }
+    ],
+    "kitTile": {
+      "label": "GITA",
+      "icon": "auto_stories",
+      "color": "#FF9F43"
+    },
+    "page": {
+      "entry": "index.html",
+      "title": "Gita Wisdom"
+    },
+    "settings": {
+      "entry": "settings.html"
+    }
+  },
   "entry": "index.html",
   "settings": "settings.html",
   "nav": {
-    "placement": "kit",
     "icon": "auto_stories",
     "label": "GITA",
     "color": "#FF9F43"
@@ -17,10 +61,14 @@
     {
       "id": "gita_daily_verse",
       "title": "DAILY GITA CONTEMPLATION",
-      "icon": "auto_stories",
       "path": "widget.html",
+      "entry": "widget.html",
+      "icon": "auto_stories",
       "color": "#FF9F43",
-      "supportedSizes": ["small", "medium"],
+      "supportedSizes": [
+        "small",
+        "medium"
+      ],
       "defaultSize": "medium"
     }
   ]

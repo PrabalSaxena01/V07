@@ -107,6 +107,9 @@ class ApiRouter(
                 // Plugin Compatibility: AI Status (Chronosynth)
                 path == "/ai/status" -> HttpResponse.json("""{"ok":true,"configured":false,"hasAccess":true,"models":[]}""")
 
+                // Gita Wisdom API (Access to 700+ Verses from gita.json)
+                path.startsWith("/api/v3/gita") -> handleGita(method, path, request)
+
                 else -> HttpResponse.error("Endpoint not found: $path", 404)
             }
         } catch (e: Exception) {
@@ -1502,6 +1505,34 @@ class ApiRouter(
             }
 
             else -> HttpResponse.error("Admin endpoint not found: $path", 404)
+        }
+    }
+
+    private fun handleGita(method: String, path: String, request: HttpRequest): HttpResponse {
+        val provider = GitaProvider.getInstance(context)
+        val clean = path.substringBefore('?')
+        return when {
+            clean == "/api/v3/gita/daily" || clean == "/api/v3/gita/today" -> {
+                val v = provider.getDailyVerse()
+                if (v != null) HttpResponse.json(v.toString()) else HttpResponse.error("Daily verse unavailable", 404)
+            }
+            clean == "/api/v3/gita/progress" -> {
+                HttpResponse.json(provider.getProgress().toString())
+            }
+            clean == "/api/v3/gita/random" -> {
+                val v = provider.getRandomVerse()
+                if (v != null) HttpResponse.json(v.toString()) else HttpResponse.error("Random verse unavailable", 404)
+            }
+            clean == "/api/v3/gita/verse" -> {
+                val ch = request.queryParams["chapter"]?.toIntOrNull() ?: 1
+                val vs = request.queryParams["verse"]?.toIntOrNull() ?: 1
+                val v = provider.getVerse(ch, vs)
+                if (v != null) HttpResponse.json(v.toString()) else HttpResponse.error("Verse $ch.$vs not found", 404)
+            }
+            else -> {
+                val v = provider.getDailyVerse()
+                if (v != null) HttpResponse.json(v.toString()) else HttpResponse.error("Gita endpoint not found", 404)
+            }
         }
     }
 

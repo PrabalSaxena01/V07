@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#0E1217">
-  <title>v07 · Sovereign Operating Platform</title>
+  <meta name="theme-color" content="#0D0F14">
+  <title>v07 · Precision Instrument OS Companion (Google Stitch)</title>
 
-  <!-- Typography: Plus Jakarta Sans & JetBrains Mono -->
+  <!-- Typography: Plus Jakarta Sans, JetBrains Mono & Space Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
   <!-- Tailwind CSS & Local Fallback -->
@@ -37,70 +37,70 @@
     };
   </script>
 
-  <!-- Chart.js for High-Clarity Visual Analytics -->
+  <!-- Chart.js for Visual Telemetry -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 
-  <!-- V3 Sanctuary Design System -->
+  <!-- Google Stitch Precision Monolith Stylesheet -->
   <link rel="stylesheet" href="css/sanctuary.css">
 </head>
-<body class="bg-[var(--bg)] text-[var(--text)] antialiased select-none">
+<body class="bg-[var(--color-background)] text-[var(--color-text-primary)] antialiased select-none">
 
   <!-- ==========================================================================
-       TOP APP BAR HUD
+       TOP APP HEADER HUD (STITCH EXPORT)
        ========================================================================== -->
-  <header class="top-bar">
+  <header class="app-header top-bar">
     <!-- Brand Title: v07 with Status Beacon -->
-    <div class="brand-wrapper flex items-center gap-2.5 cursor-pointer select-none" onclick="window.SanctuaryApp.switchTab('cockpit')" title="v07 Sovereign Sanctuary">
-      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--surface-alt)] to-[var(--surface-hover)] border border-[var(--border)] flex items-center justify-center font-bold tracking-tighter text-xs text-[var(--primary)] shadow-sm font-mono">
-        v07
-      </div>
-      <div class="flex items-center gap-1.5">
-        <span class="text-sm font-extrabold tracking-tight text-[var(--text)] font-mono">v07</span>
-        <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-[var(--surface-alt)] border border-[var(--border)] text-[var(--primary)] font-mono">v3</span>
-        <span class="status-beacon active inline-block w-2 h-2 rounded-full bg-[var(--success)] ml-0.5" id="vector-status-beacon" title="Engine Active"></span>
-      </div>
+    <div class="brand-wrapper cursor-pointer select-none" onclick="window.SanctuaryApp.switchTab('cockpit')" title="v07 Sovereign Sanctuary">
+      <span class="status-beacon active" id="vector-status-beacon" title="Engine Active"></span>
+      <span class="brand-title">v07 <span class="brand-tag">v3</span></span>
     </div>
 
-    <!-- Date Switcher Console -->
-    <div class="hidden sm:flex items-center gap-2 bg-[var(--surface)] border border-[var(--border)] px-2.5 py-1 rounded-full shadow-sm">
-      <button id="hudPrevDateBtn" class="text-[var(--text-muted)] hover:text-[var(--text)] p-1 rounded-full btn-press" title="Previous Day">
-        <span class="material-symbols-outlined text-base">chevron_left</span>
+    <!-- Date Switcher Console (Desktop/Tablet) -->
+    <div class="hidden sm:flex items-center gap-1.5 bg-[var(--color-surface)] border border-[var(--color-border)] px-2.5 py-1 rounded-md shadow-sm">
+      <button id="hudPrevDateBtn" class="btn btn-ghost !p-1 !min-h-0 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]" title="Previous Day">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
-      <span id="hudDateDisplay" class="text-xs font-semibold text-[var(--text)] px-2 tabular-nums">Friday, Oct 2</span>
-      <button id="hudNextDateBtn" class="text-[var(--text-muted)] hover:text-[var(--text)] p-1 rounded-full btn-press" title="Next Day">
-        <span class="material-symbols-outlined text-base">chevron_right</span>
+      <span id="hudDateDisplay" class="text-xs font-semibold text-[var(--color-text-primary)] px-2 tabular-nums">Friday, Oct 2</span>
+      <button id="hudNextDateBtn" class="btn btn-ghost !p-1 !min-h-0 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]" title="Next Day">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
-      <button id="hudTodayBtn" class="text-[10px] font-bold text-[var(--primary)] hover:underline ml-1 px-1.5 py-0.5 rounded bg-[var(--primary-dim)] btn-press">
+      <button id="hudTodayBtn" class="btn btn-primary !p-1 !px-2 !min-h-0 text-[10px] font-bold">
         TODAY
       </button>
     </div>
 
-    <!-- HUD State Controls & Theme Switcher -->
-    <div class="flex items-center gap-2">
-      <!-- Sync Status Pill -->
-      <div id="hudStatusPill" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[var(--warning-dim)] text-[var(--warning)] border border-[var(--warning)]/20 cursor-pointer btn-press" title="Account & Cloud Sync Settings">
-        <span id="hudStatusIcon" class="material-symbols-outlined text-sm">cloud_off</span>
-        <span id="hudStatusText" class="truncate max-w-[110px] sm:max-w-none">Offline</span>
-        <span id="hudMutationBadge" class="hidden ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-[var(--warning)] text-[var(--text-inverse)] font-bold">0</span>
+    <!-- Header Telemetry HUD Chips -->
+    <div class="header-telemetry">
+      <!-- HUD Chip: Focus Chrono Telemetry -->
+      <div class="hud-chip" id="hud-timer-pill" onclick="window.SanctuaryApp.switchTab('chrono')" title="Focus Chrono">
+        <span class="hud-chip-label">Timer</span>
+        <span class="hud-chip-value" id="hud-timer-label">00:00:00</span>
       </div>
 
-      <!-- Theme Switcher Button (Warm Paper / Night Ink) -->
-      <button id="themeToggleBtn" onclick="window.SanctuaryApp.toggleTheme()" class="w-8 h-8 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text)] flex items-center justify-center btn-press" title="Toggle Daylight Warm Paper / Night Ink">
+      <!-- HUD Chip: Sync & Storage Telemetry -->
+      <div class="hud-chip" id="hudStatusPill" onclick="window.SanctuaryApp.openProfileModal()" title="Account & Cloud Sync Settings">
+        <span class="material-symbols-outlined text-sm" id="hudStatusIcon">database</span>
+        <span class="hud-chip-label" id="hudStatusText">Local</span>
+        <span id="hudMutationBadge" class="hidden ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-[var(--color-warning)] text-[var(--color-background)] font-bold">0</span>
+      </div>
+
+      <!-- Theme Switcher Button -->
+      <button id="themeToggleBtn" onclick="window.SanctuaryApp.toggleTheme()" class="btn btn-ghost !p-2 !min-h-0" title="Toggle Daylight Warm Paper / Night Ink">
         <span id="themeToggleIcon" class="material-symbols-outlined text-lg">light_mode</span>
       </button>
 
-      <!-- Profile & Settings Modal Trigger (Direct access for mobile & desktop) -->
-      <button onclick="window.SanctuaryApp.openProfileModal()" class="w-8 h-8 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text)] flex items-center justify-center btn-press" title="Profile & Partition Settings">
+      <!-- Profile & Settings Button -->
+      <button onclick="window.SanctuaryApp.openProfileModal()" class="btn btn-ghost !p-2 !min-h-0" title="Profile & Partition Settings">
         <span class="material-symbols-outlined text-lg">manage_accounts</span>
       </button>
 
       <!-- Desktop-Only: Admin Cockpit Link -->
-      <a href="/admin" target="_blank" class="desktop-only w-8 h-8 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--primary)] hover:border-[var(--primary)]/50 items-center justify-center btn-press" title="Open Admin Console (/admin)">
+      <a href="/admin" target="_blank" class="desktop-only btn btn-ghost !p-2 !min-h-0 hover:text-[var(--color-info)]" title="Open Admin Console (/admin)">
         <span class="material-symbols-outlined text-lg">admin_panel_settings</span>
       </a>
 
       <!-- Desktop-Only: Keyboard Shortcuts Help -->
-      <button onclick="window.SanctuaryApp.openModal('shortcutsModal')" class="desktop-only w-8 h-8 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text)] items-center justify-center btn-press" title="Keyboard Shortcuts (?)">
+      <button onclick="window.SanctuaryApp.openModal('shortcutsModal')" class="desktop-only btn btn-ghost !p-2 !min-h-0" title="Keyboard Shortcuts (?)">
         <span class="material-symbols-outlined text-lg">help</span>
       </button>
     </div>
@@ -115,7 +115,7 @@
       <nav class="flex flex-col gap-1">
         <a href="#cockpit" data-tab="cockpit" class="nav-item active">
           <span class="material-symbols-outlined">dashboard</span>
-          <span>Sanctuary Cockpit</span>
+          <span>Home Cockpit</span>
         </a>
         <a href="#habits" data-tab="habits" class="nav-item">
           <span class="material-symbols-outlined">repeat</span>
@@ -127,11 +127,11 @@
         </a>
         <a href="#tasks" data-tab="tasks" class="nav-item">
           <span class="material-symbols-outlined">checklist</span>
-          <span>Directives & Tasks</span>
+          <span>Obligations & Tasks</span>
         </a>
         <a href="#journal" data-tab="journal" class="nav-item">
           <span class="material-symbols-outlined">edit_note</span>
-          <span>Contemplation</span>
+          <span>Thoughts & Notes</span>
         </a>
         <a href="#gita" data-tab="gita" class="nav-item">
           <span class="material-symbols-outlined">auto_stories</span>
@@ -139,7 +139,7 @@
         </a>
         <a href="#reader" data-tab="reader" class="nav-item">
           <span class="material-symbols-outlined">menu_book</span>
-          <span>Reading Journey</span>
+          <span>The Library</span>
         </a>
         <a href="#plugins" data-tab="plugins" class="nav-item">
           <span class="material-symbols-outlined">extension</span>
@@ -152,228 +152,330 @@
       </nav>
 
       <!-- Sidebar Footnote -->
-      <div class="mt-auto pt-4 border-t border-[var(--divider)] flex flex-col gap-2">
-        <a href="/admin" target="_blank" class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-[var(--surface-alt)] border border-[var(--border)] text-xs text-[var(--text-secondary)] hover:text-[var(--text)] hover:border-[var(--primary)] transition-all">
-          <span class="material-symbols-outlined text-sm text-[var(--primary)]">admin_panel_settings</span>
+      <div class="mt-auto pt-4 border-t border-[var(--color-border)] flex flex-col gap-2">
+        <a href="/admin" target="_blank" class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-[var(--color-surface-subtle)] border border-[var(--color-border)] text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-info)] transition-all">
+          <span class="material-symbols-outlined text-sm text-[var(--color-info)]">admin_panel_settings</span>
           <span class="font-medium">System Admin</span>
           <span class="material-symbols-outlined text-[10px] ml-auto opacity-50">open_in_new</span>
         </a>
-        <div class="text-[11px] text-[var(--text-muted)] flex items-center justify-between px-1">
-          <span>Data Sovereign</span>
-          <span class="font-mono text-[10px]">100% Local-First</span>
+        <div class="text-[11px] text-[var(--color-text-muted)] flex items-center justify-between px-1">
+          <span>Zero-Root SQLite</span>
+          <span class="font-mono text-[10px]">WAL Engine</span>
         </div>
       </div>
     </aside>
 
-    <!-- Main Workspace Area -->
-    <main class="main-workspace">
+    <!-- Main Workspace Viewport -->
+    <main class="main-workspace viewport">
 
       <!-- ======================================================================
-           PANEL 1: SANCTUARY COCKPIT
+           TAB 1: DASHBOARD HOME COCKPIT
            ====================================================================== -->
-      <section id="panel-cockpit" class="tab-panel active gap-6">
-        <!-- Metric KPI Pills Deck -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div class="kpi-pill">
-            <div class="kpi-icon-wrap bg-[var(--accent-chrono)]/10 text-[var(--accent-chrono)]">
-              <span class="material-symbols-outlined">timer</span>
-            </div>
-            <div>
-              <p class="text-[11px] text-[var(--text-muted)] font-medium">Focus Today</p>
-              <h3 id="kpiFocusMin" class="text-lg font-bold text-[var(--text)] tabular-nums">0m</h3>
+      <section id="panel-cockpit" class="tab-panel active">
+
+        <!-- Section: Focus Cockpit -->
+        <div class="section-header">
+          <span class="section-title">Focus Timer</span>
+          <span class="gauge-status-badge" id="dash-timer-status" style="color:var(--color-info); border-color:var(--color-info);">Ready</span>
+        </div>
+
+        <div class="focus-cockpit" id="dash-focus-card">
+          <div class="timer-gauge-wrapper" onclick="window.SanctuaryApp.switchTab('chrono')" style="cursor:pointer;" title="Click to open Full Focus Chronometer">
+            <svg class="timer-gauge-svg" viewBox="0 0 160 160">
+              <circle class="gauge-track" cx="80" cy="80" r="70" />
+              <circle class="gauge-progress" id="chronoProgressCircle" cx="80" cy="80" r="70" />
+            </svg>
+            <div class="gauge-content">
+              <div class="gauge-status-badge" id="dash-focus-category">Deep Work</div>
+              <div class="gauge-digits" id="chronoDigits">25:00</div>
+              <div class="gauge-topic" id="chronoModeLabel">V3 Core Engine</div>
             </div>
           </div>
 
-          <div class="kpi-pill">
-            <div class="kpi-icon-wrap bg-[var(--accent-habits)]/10 text-[var(--accent-habits)]">
-              <span class="material-symbols-outlined">repeat</span>
+          <div class="cockpit-controls">
+            <button class="btn btn-primary" id="chronoToggleBtn">
+              <span id="chronoToggleIcon" class="material-symbols-outlined text-sm">play_arrow</span>
+              <span>Begin Flow</span>
+            </button>
+            <button class="btn btn-warn" id="chronoFinishBtn" onclick="window.FocusChronometer.requestCancel()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Finish</span>
+            </button>
+            <button class="btn btn-ghost" id="chronoResetBtn" title="Reset / Discard">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              <span>Reset</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Section: Today's Activity -->
+        <div class="section-header">
+          <span class="section-title">Today's Activity</span>
+          <span class="section-action" onclick="window.SanctuaryApp.switchTab('habits')">View Timeline &rarr;</span>
+        </div>
+
+        <div class="overview-grid">
+          <div class="metric-card" onclick="window.SanctuaryApp.switchTab('chrono')">
+            <div class="metric-header">
+              <span class="metric-label">Focus Sessions</span>
+              <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="var(--color-info)" stroke-width="2">
+                <circle cx="12" cy="12" r="9"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
             </div>
-            <div>
-              <p class="text-[11px] text-[var(--text-muted)] font-medium">Cadence Ratio</p>
-              <h3 id="kpiHabitRatio" class="text-lg font-bold text-[var(--text)] tabular-nums">0%</h3>
-            </div>
+            <div class="metric-value" id="kpiFocusMin">0m</div>
+            <div class="metric-sub" id="dash-glance-focus">App chronometer</div>
           </div>
 
-          <div class="kpi-pill">
-            <div class="kpi-icon-wrap bg-[var(--primary)]/10 text-[var(--primary)]">
-              <span class="material-symbols-outlined">checklist</span>
+          <div class="metric-card" onclick="window.SanctuaryApp.switchTab('vault')">
+            <div class="metric-header">
+              <span class="metric-label">Screen Usage</span>
+              <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="var(--accent-vitals)" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2"/>
+                <line x1="8" y1="21" x2="16" y2="21"/>
+                <line x1="12" y1="17" x2="12" y2="21"/>
+              </svg>
             </div>
-            <div>
-              <p class="text-[11px] text-[var(--text-muted)] font-medium">Obligations</p>
-              <h3 id="kpiPendingTasks" class="text-lg font-bold text-[var(--text)] tabular-nums">0</h3>
-            </div>
+            <div class="metric-value" id="dash-glance-screen">Local WAL</div>
+            <div class="metric-sub">Zero-Root SQLite</div>
           </div>
 
-          <div class="kpi-pill">
-            <div class="kpi-icon-wrap bg-[var(--accent-gamify)]/10 text-[var(--accent-gamify)]">
-              <span class="material-symbols-outlined">military_tech</span>
+          <div class="metric-card" onclick="window.SanctuaryApp.switchTab('tasks')">
+            <div class="metric-header">
+              <span class="metric-label">Tasks Done</span>
+              <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
             </div>
-            <div>
-              <p class="text-[11px] text-[var(--text-muted)] font-medium">Mastery Rank</p>
-              <h3 class="text-lg font-bold text-[var(--text)]">Practitioner</h3>
+            <div class="metric-value" id="kpiPendingTasks">0</div>
+            <div class="metric-sub" id="dash-glance-tasks">Obligations finished</div>
+          </div>
+
+          <div class="metric-card" onclick="window.SanctuaryApp.switchTab('habits')">
+            <div class="metric-header">
+              <span class="metric-label">Ritual Cadence</span>
+              <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="var(--color-warning)" stroke-width="2">
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+              </svg>
+            </div>
+            <div class="metric-value" id="kpiHabitRatio">0%</div>
+            <div class="metric-sub" id="kpiHabitSub">Consistency index</div>
+          </div>
+        </div>
+
+        <!-- Pinned Milestones & Targets Ribbon -->
+        <div class="card" id="dash-daytracker-card">
+          <div class="card-header">
+            <span class="card-title">Active Targets & Countdowns</span>
+          </div>
+          <div id="dash-daytracker-list" style="display:flex; flex-direction:column; gap:6px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; background:var(--color-surface-subtle); padding:8px 12px; border-radius:var(--radius-sm); font-size:13px;">
+              <span style="font-weight:600; color:var(--color-text-primary);">V3 Production Launch</span>
+              <span style="font-family:var(--font-mono); font-weight:700; color:var(--color-warning); font-size:11px;">TODAY</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; background:var(--color-surface-subtle); padding:8px 12px; border-radius:var(--radius-sm); font-size:13px;">
+              <span style="font-weight:600; color:var(--color-text-primary);">Google Stitch Design System Alignment</span>
+              <span style="font-family:var(--font-mono); font-weight:700; color:var(--color-info); font-size:11px;">ACTIVE</span>
             </div>
           </div>
         </div>
 
-        <!-- 2-Column Cockpit Grid: Chrono Gauge + Activity Spine -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <!-- Left: Focus Chronometer Widget -->
-          <div class="lg:col-span-5 sanctuary-card flex flex-col justify-between">
-            <div class="flex items-center justify-between mb-4">
-              <div>
-                <h3 class="text-base font-bold text-[var(--text)]">Deep Focus Chrono</h3>
-                <p id="chronoModeLabel" class="text-xs text-[var(--text-muted)]">Deep Work · BLOCK MODE</p>
+        <!-- Section: Starter Plugins -->
+        <div class="section-header">
+          <span class="section-title">Starter Plugins</span>
+          <span class="section-action" onclick="window.SanctuaryApp.switchTab('plugins')">Manage Plugins &rarr;</span>
+        </div>
+
+        <div class="plugin-deck" id="kit-tiles-grid">
+          <div class="plugin-card" onclick="window.SanctuaryApp.switchTab('reader')">
+            <div class="plugin-icon-box" style="background:rgba(141, 108, 255, 0.12); border-color:var(--accent-reader);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-reader)" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            </div>
+            <div class="plugin-content">
+              <div class="plugin-meta-row">
+                <span class="plugin-name">The Library</span>
+                <span class="plugin-version">v1.2.0</span>
               </div>
-              <span class="material-symbols-outlined text-[var(--primary)] text-xl">self_improvement</span>
+              <div class="plugin-desc">EPUB reader, highlighted passages & reading shelf</div>
             </div>
-
-            <!-- Circular SVG Progress Gauge -->
-            <div class="gauge-container my-4">
-              <svg class="gauge-svg" viewBox="0 0 240 240">
-                <circle class="gauge-bg" cx="120" cy="120" r="100" stroke-width="10"></circle>
-                <circle id="chronoProgressCircle" class="gauge-progress" cx="120" cy="120" r="100" stroke-width="10" stroke-dasharray="628.3" stroke-dashoffset="0"></circle>
-              </svg>
-              <div class="gauge-inner-info">
-                <div id="chronoDigits" class="chrono-digits tabular-nums">25:00</div>
-                <span class="text-xs text-[var(--text-secondary)] mt-1 font-medium">Target Interval</span>
-              </div>
-            </div>
-
-            <!-- Chrono Preset Intervals Chips -->
-            <div class="flex items-center justify-center gap-2 mb-6">
-              <button onclick="window.FocusChronometer.setTargetMinutes(15)" class="px-3 py-1 text-xs rounded-full bg-[var(--surface-alt)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-[var(--text-secondary)] btn-press">15m</button>
-              <button onclick="window.FocusChronometer.setTargetMinutes(25)" class="px-3 py-1 text-xs rounded-full bg-[var(--primary-dim)] border border-[var(--primary)]/30 text-[var(--primary)] font-bold btn-press">25m</button>
-              <button onclick="window.FocusChronometer.setTargetMinutes(50)" class="px-3 py-1 text-xs rounded-full bg-[var(--surface-alt)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-[var(--text-secondary)] btn-press">50m</button>
-              <button onclick="window.FocusChronometer.setTargetMinutes(90)" class="px-3 py-1 text-xs rounded-full bg-[var(--surface-alt)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-[var(--text-secondary)] btn-press">90m</button>
-            </div>
-
-            <!-- Chrono Execution Buttons -->
-            <div class="flex items-center justify-center gap-3">
-              <button id="chronoToggleBtn" class="touch-target px-8 py-2.5 rounded-xl font-bold bg-[var(--primary)] text-white flex items-center gap-2 btn-press">
-                <span id="chronoToggleIcon" class="material-symbols-outlined text-lg">play_arrow</span>
-                <span>Begin Flow</span>
-              </button>
-              <button id="chronoResetBtn" class="touch-target px-4 py-2.5 rounded-xl bg-[var(--surface-alt)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-[var(--text-secondary)] btn-press" title="Release Interval">
-                <span class="material-symbols-outlined text-lg">restart_alt</span>
-              </button>
-            </div>
+            <div class="plugin-arrow">&rarr;</div>
           </div>
 
-          <!-- Right: Daily Sovereign Activity Spine -->
-          <div class="lg:col-span-7 sanctuary-card flex flex-col">
-            <div class="flex items-center justify-between mb-4">
-              <div>
-                <h3 class="text-base font-bold text-[var(--text)]">Daily Activity Spine</h3>
-                <p id="kpiHabitSub" class="text-xs text-[var(--text-muted)]">Chronological stream for selected date</p>
+          <div class="plugin-card" onclick="window.SanctuaryApp.switchTab('habits')">
+            <div class="plugin-icon-box" style="background:rgba(77, 224, 134, 0.12); border-color:var(--color-success);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="m9 16 2 2 4-4"/></svg>
+            </div>
+            <div class="plugin-content">
+              <div class="plugin-meta-row">
+                <span class="plugin-name">Habits & Cadence</span>
+                <span class="plugin-version">v1.0.4</span>
               </div>
-              <span class="material-symbols-outlined text-[var(--text-muted)] text-xl">timeline</span>
+              <div class="plugin-desc">Daily streaks, protocols & consistency tracking</div>
             </div>
+            <div class="plugin-arrow">&rarr;</div>
+          </div>
 
-            <!-- Activity Items Container -->
-            <div id="cockpitTimelineSpine" class="timeline-spine flex-1 overflow-y-auto max-h-[460px] pr-2">
-              <!-- Dynamically populated by SanctuaryViews -->
+          <div class="plugin-card" onclick="window.SanctuaryApp.switchTab('gita')">
+            <div class="plugin-icon-box" style="background:rgba(255, 184, 77, 0.12); border-color:var(--color-warning);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-warning)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polygon points="12 6 15 11 9 11 12 6"/></svg>
             </div>
+            <div class="plugin-content">
+              <div class="plugin-meta-row">
+                <span class="plugin-name">Timeless Wisdom</span>
+                <span class="plugin-version">v1.1.0</span>
+              </div>
+              <div class="plugin-desc">Bhagavad Gita shlokas, Hindi bhashya & reflections</div>
+            </div>
+            <div class="plugin-arrow">&rarr;</div>
+          </div>
+        </div>
+
+        <!-- Section: Activity Stream -->
+        <div class="section-header">
+          <span class="section-title">Daily Activity Stream</span>
+        </div>
+
+        <div class="card">
+          <div id="cockpitTimelineSpine">
+            <!-- Dynamically populated by SanctuaryViews.renderActivitySpine -->
           </div>
         </div>
       </section>
 
       <!-- ======================================================================
-           PANEL 2: HABIT CADENCE MATRIX
+           TAB 2: HABIT CADENCE & TIMELINE
            ====================================================================== -->
-      <section id="panel-habits" class="tab-panel gap-6">
+      <section id="panel-habits" class="tab-panel">
+        <div class="section-header">
+          <span class="section-title">Habit Cadence Matrix</span>
+          <span class="gauge-status-badge">140 Days</span>
+        </div>
+
         <!-- 140-Day Heatmap Card -->
-        <div class="sanctuary-card">
-          <div class="flex items-center justify-between mb-4">
+        <div class="card">
+          <div class="card-header">
             <div>
-              <h3 class="text-base font-bold text-[var(--text)]">140-Day Cadence Heatmap</h3>
-              <p class="text-xs text-[var(--text-muted)]">20 Weeks consistency trajectory</p>
+              <span class="card-title">Consistency Trajectory</span>
+              <div class="card-description">20-week daily check-in intensity</div>
             </div>
-            <div class="flex items-center gap-2 text-[10px] text-[var(--text-muted)]">
+            <div class="flex items-center gap-1.5 text-[10px] text-[var(--color-text-muted)]">
               <span>Less</span>
               <div class="flex gap-1">
-                <span class="w-3 h-3 rounded-xs bg-[var(--surface-alt)]"></span>
-                <span class="w-3 h-3 rounded-xs bg-[var(--success)]/25"></span>
-                <span class="w-3 h-3 rounded-xs bg-[var(--success)]/50"></span>
-                <span class="w-3 h-3 rounded-xs bg-[var(--success)]/75"></span>
-                <span class="w-3 h-3 rounded-xs bg-[var(--success)]"></span>
+                <span class="w-2.5 h-2.5 rounded-xs bg-[var(--color-surface-subtle)]"></span>
+                <span class="w-2.5 h-2.5 rounded-xs bg-[var(--color-success)]/25"></span>
+                <span class="w-2.5 h-2.5 rounded-xs bg-[var(--color-success)]/50"></span>
+                <span class="w-2.5 h-2.5 rounded-xs bg-[var(--color-success)]"></span>
               </div>
               <span>More</span>
             </div>
           </div>
           <div id="habitsHeatmapContainer" class="heatmap-grid overflow-x-auto py-2">
-            <!-- 140 days rendered dynamically -->
+            <!-- Dynamically populated -->
           </div>
         </div>
 
         <!-- 7-Day Matrix Table Card -->
-        <div class="sanctuary-card">
-          <div class="flex items-center justify-between pb-3 border-b border-[var(--divider)]">
+        <div class="card">
+          <div class="card-header">
             <div>
-              <h3 class="text-base font-bold text-[var(--text)]">Ritual Matrix</h3>
-              <p class="text-xs text-[var(--text-muted)]">Interactive past 7-day check-in cadence</p>
+              <span class="card-title">Daily Rituals</span>
+              <div class="card-description">Past 7 days interactive check-ins</div>
             </div>
-            <div id="habitMatrixDaysRow" class="habit-dots-week pr-3">
-              <!-- Past 7 days day initials -->
+            <div id="habitMatrixDaysRow" class="habit-dots-week">
+              <!-- Dynamically populated -->
             </div>
           </div>
 
-          <div id="habitsListContainer" class="divide-y divide-[var(--divider)]">
-            <!-- Habit rows rendered dynamically -->
+          <div id="habitsListContainer" class="divide-y divide-[var(--color-divider)]">
+            <!-- Dynamically populated -->
           </div>
         </div>
       </section>
 
       <!-- ======================================================================
-           PANEL 3: FOCUS CHRONOMETER FULL VIEW
+           TAB 3: FOCUS CHRONOMETER
            ====================================================================== -->
-      <section id="panel-chrono" class="tab-panel gap-6 max-w-2xl mx-auto w-full">
-        <div class="sanctuary-card text-center p-8">
-          <span class="material-symbols-outlined text-4xl text-[var(--accent-chrono)] mb-2">hourglass_top</span>
-          <h2 class="text-2xl font-bold text-[var(--text)] mb-1">Deep Work Sanctuary</h2>
-          <p class="text-xs text-[var(--text-secondary)] mb-6">Monotonic chronometer immune to tab backgrounding</p>
-
-          <!-- Modes Selector -->
-          <div class="flex justify-center gap-2 mb-8">
-            <button onclick="window.FocusChronometer.mode='block'; window.SanctuaryViews.renderCockpit();" class="px-4 py-1.5 text-xs font-bold rounded-lg bg-[var(--surface-alt)] text-[var(--text)] border border-[var(--border)] btn-press">COUNTDOWN</button>
-            <button onclick="window.FocusChronometer.mode='flow'; window.SanctuaryViews.renderCockpit();" class="px-4 py-1.5 text-xs font-bold rounded-lg bg-[var(--surface-alt)] text-[var(--text)] border border-[var(--border)] btn-press">FLOW (OPEN)</button>
-          </div>
-
-          <!-- Activity Chips -->
-          <div class="flex flex-wrap justify-center gap-2 mb-8">
-            <button onclick="window.FocusChronometer.setActivity('Deep Work')" class="px-3 py-1 rounded-full text-xs font-semibold bg-[var(--primary-dim)] text-[var(--primary)] border border-[var(--primary)]/30 btn-press">Deep Work</button>
-            <button onclick="window.FocusChronometer.setActivity('Development')" class="px-3 py-1 rounded-full text-xs font-semibold bg-[var(--surface-alt)] text-[var(--text-secondary)] border border-[var(--border)] btn-press">Development</button>
-            <button onclick="window.FocusChronometer.setActivity('Writing')" class="px-3 py-1 rounded-full text-xs font-semibold bg-[var(--surface-alt)] text-[var(--text-secondary)] border border-[var(--border)] btn-press">Writing</button>
-            <button onclick="window.FocusChronometer.setActivity('Reading')" class="px-3 py-1 rounded-full text-xs font-semibold bg-[var(--surface-alt)] text-[var(--text-secondary)] border border-[var(--border)] btn-press">Reading</button>
-            <button onclick="window.FocusChronometer.setActivity('Meditation')" class="px-3 py-1 rounded-full text-xs font-semibold bg-[var(--surface-alt)] text-[var(--text-secondary)] border border-[var(--border)] btn-press">Meditation</button>
-          </div>
-
-          <div class="p-4 rounded-xl bg-[var(--surface-alt)] border border-[var(--border)] text-xs text-[var(--text-muted)] text-left">
-            <p class="font-bold text-[var(--text)] mb-1">Immunity Guarantee:</p>
-            <p>Calculates elapsed seconds using wall-clock anchors: <span class="font-mono">now() - t_start - t_paused</span>. Switching to an IDE or minimizing this browser tab will never slow down your timer.</p>
-          </div>
+      <section id="panel-chrono" class="tab-panel">
+        <div class="section-header">
+          <span class="section-title">Focus Chronometer</span>
+          <span class="gauge-status-badge">Countdown & Flow</span>
         </div>
-      </section>
 
-      <!-- ======================================================================
-           PANEL 4: DIRECTIVES & TASKS
-           ====================================================================== -->
-      <section id="panel-tasks" class="tab-panel gap-6 max-w-3xl mx-auto w-full">
-        <!-- Quick Add Task Bar -->
-        <div class="sanctuary-card">
-          <div class="flex gap-2">
-            <input id="quickTaskInput" type="text" placeholder="Add an obligation to your sanctuary..." 
-                   class="flex-1 bg-[var(--surface-alt)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-sm text-[var(--text)] focus:outline-none focus:border-[var(--primary)]" />
-            <button id="quickTaskSubmitBtn" class="touch-target px-5 py-2.5 bg-[var(--primary)] text-white rounded-xl font-bold text-xs flex items-center gap-1.5 btn-press">
-              <span class="material-symbols-outlined text-base">add</span> Add
+        <div class="focus-cockpit">
+          <div style="font-size:18px; font-weight:700; color:var(--color-text-primary);">Deep Work Chronometer</div>
+          <div style="font-family:var(--font-mono); font-size:48px; font-weight:800; letter-spacing:-0.03em; color:var(--color-info); margin:6px 0;" id="dash-focus-digits">25:00</div>
+
+          <div class="cockpit-controls">
+            <button class="btn btn-primary" onclick="const c=window.FocusChronometer; if(c.state==='RUNNING') c.pause(); else c.start();">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Toggle Timer
+            </button>
+            <button class="btn btn-warn" onclick="window.FocusChronometer.requestCancel()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Finish Session
             </button>
           </div>
+        </div>
 
-          <!-- Filter Pills -->
-          <div class="flex items-center gap-2 mt-4 pt-3 border-t border-[var(--divider)]">
-            <button onclick="window.SanctuaryViews.taskFilter='pending'; window.SanctuaryViews.renderTasks();" class="px-3 py-1 rounded-lg text-xs font-bold bg-[var(--primary-dim)] text-[var(--primary)] btn-press">Pending</button>
-            <button onclick="window.SanctuaryViews.taskFilter='completed'; window.SanctuaryViews.renderTasks();" class="px-3 py-1 rounded-lg text-xs font-semibold text-[var(--text-muted)] hover:text-[var(--text)] btn-press">Completed</button>
-            <button onclick="window.SanctuaryViews.taskFilter='all'; window.SanctuaryViews.renderTasks();" class="px-3 py-1 rounded-lg text-xs font-semibold text-[var(--text-muted)] hover:text-[var(--text)] btn-press">All Obligations</button>
+        <!-- Cadence Presets -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Target Cadence</span>
           </div>
+          <div class="chip-row">
+            <span class="chip" onclick="window.FocusChronometer.setTargetMinutes(15)">15m Sprint</span>
+            <span class="chip active" onclick="window.FocusChronometer.setTargetMinutes(25)">25m Pomodoro</span>
+            <span class="chip" onclick="window.FocusChronometer.setTargetMinutes(50)">50m Deep Work</span>
+            <span class="chip" onclick="window.FocusChronometer.setTargetMinutes(90)">90m Flow State</span>
+          </div>
+        </div>
+
+        <!-- Category Setup -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Session Category</span>
+          </div>
+          <div class="chip-row">
+            <span class="chip active" onclick="window.FocusChronometer.setActivity('Deep Work')">Deep Work</span>
+            <span class="chip" onclick="window.FocusChronometer.setActivity('Development')">Development</span>
+            <span class="chip" onclick="window.FocusChronometer.setActivity('Writing')">Writing</span>
+            <span class="chip" onclick="window.FocusChronometer.setActivity('Reading')">Reading</span>
+            <span class="chip" onclick="window.FocusChronometer.setActivity('Meditation')">Meditation</span>
+          </div>
+        </div>
+
+        <!-- Immunity Card -->
+        <div class="card" style="border-left: 3px solid var(--color-info);">
+          <div class="text-xs font-semibold text-[var(--color-text-primary)] mb-1">Background Tab Immunity Guarantee:</div>
+          <p class="text-xs text-[var(--color-text-muted)]">Calculates elapsed seconds using wall-clock anchors (<span class="font-mono">Date.now() - t_start</span>). Switching apps or locking your device will never slow down your interval.</p>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           TAB 4: OBLIGATIONS & TASKS
+           ====================================================================== -->
+      <section id="panel-tasks" class="tab-panel">
+        <div class="section-header">
+          <span class="section-title">Directives & Tasks</span>
+          <span class="gauge-status-badge">Daily</span>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Add Obligation</span>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="quickTaskInput" class="input-field" placeholder="What needs to be accomplished?">
+            <button id="quickTaskSubmitBtn" class="btn btn-primary" style="flex-shrink:0;">Add Task</button>
+          </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-ghost" onclick="window.SanctuaryViews.taskFilter='pending'; window.SanctuaryViews.renderTasks();">Pending</button>
+          <button class="btn btn-ghost" onclick="window.SanctuaryViews.taskFilter='completed'; window.SanctuaryViews.renderTasks();">Completed</button>
+          <button class="btn btn-ghost" onclick="window.SanctuaryViews.taskFilter='all'; window.SanctuaryViews.renderTasks();">All Obligations</button>
         </div>
 
         <!-- Task List Items -->
@@ -383,36 +485,44 @@
       </section>
 
       <!-- ======================================================================
-           PANEL 5: CONTEMPLATIVE JOURNAL / THOUGHTS
+           TAB 5: THOUGHTS & NOTES
            ====================================================================== -->
-      <section id="panel-journal" class="tab-panel gap-6 max-w-3xl mx-auto w-full">
-        <div class="sanctuary-card">
-          <h3 class="text-base font-bold text-[var(--text)] mb-1">Quiet Reflection</h3>
-          <p class="text-xs text-[var(--text-muted)] mb-3">Markdown supported: headers, bullet lists, bold, italics, blockquotes.</p>
-          <textarea id="quickThoughtInput" rows="3" placeholder="What is present in your mind right now? Record without judgment..." 
-                    class="w-full bg-[var(--surface-alt)] border border-[var(--border)] rounded-xl p-3 text-sm text-[var(--text)] focus:outline-none focus:border-[var(--primary)]"></textarea>
-          <div class="flex justify-end mt-2">
-            <button id="quickThoughtSubmitBtn" class="touch-target px-5 py-2 bg-[var(--primary)] text-white rounded-xl font-bold text-xs flex items-center gap-1.5 btn-press">
-              <span class="material-symbols-outlined text-base">ink_pen</span> Commit Thought
-            </button>
+      <section id="panel-journal" class="tab-panel">
+        <div class="section-header">
+          <span class="section-title">Thoughts & Notes</span>
+          <span class="gauge-status-badge">Reflections</span>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Capture Realization</span>
+          </div>
+          <textarea id="quickThoughtInput" class="input-field" style="min-height:90px; resize:vertical;" placeholder="Write down an insight, observation, or idea..."></textarea>
+          <div style="display:flex; justify-content:flex-end;">
+            <button id="quickThoughtSubmitBtn" class="btn btn-primary">Commit Thought</button>
           </div>
         </div>
 
+        <!-- Notes Stream -->
         <div id="journalEntriesContainer">
           <!-- Populated by SanctuaryViews.renderJournal() -->
         </div>
       </section>
 
       <!-- ======================================================================
-           PANEL 6: TIMELESS WISDOM (BHAGAVAD GITA)
+           TAB 6: TIMELESS WISDOM (BHAGAVAD GITA)
            ====================================================================== -->
-      <section id="panel-gita" class="tab-panel gap-6 max-w-3xl mx-auto w-full">
-        <div class="sanctuary-card text-center p-6">
+      <section id="panel-gita" class="tab-panel">
+        <div class="section-header">
+          <span class="section-title">Timeless Wisdom</span>
+          <span class="gauge-status-badge">Gita Shloka</span>
+        </div>
+
+        <div class="card text-center p-6">
           <div class="flex items-center justify-between mb-4">
-            <span class="text-xs font-bold text-[var(--text-muted)] tracking-wider">SHRIMAD BHAGAVAD GITA</span>
-            <!-- Chapter & Verse Selectors -->
+            <span class="text-xs font-bold text-[var(--color-text-muted)] tracking-wider">SHRIMAD BHAGAVAD GITA</span>
             <div class="flex items-center gap-2">
-              <select id="gitaChapterSelect" onchange="window.SanctuaryViews.renderWisdomGita(parseInt(this.value), parseInt(document.getElementById('gitaVerseSelect').value))" class="bg-[var(--surface-alt)] border border-[var(--border)] rounded-lg text-xs px-2 py-1 text-[var(--text)]">
+              <select id="gitaChapterSelect" onchange="window.SanctuaryViews.renderWisdomGita(parseInt(this.value), parseInt(document.getElementById('gitaVerseSelect').value))" class="input-field !min-h-0 !py-1 !px-2 text-xs">
                 <option value="1">Chapter 1</option>
                 <option value="2" selected>Chapter 2</option>
                 <option value="3">Chapter 3</option>
@@ -421,7 +531,7 @@
                 <option value="6">Chapter 6</option>
                 <option value="18">Chapter 18</option>
               </select>
-              <select id="gitaVerseSelect" onchange="window.SanctuaryViews.renderWisdomGita(parseInt(document.getElementById('gitaChapterSelect').value), parseInt(this.value))" class="bg-[var(--surface-alt)] border border-[var(--border)] rounded-lg text-xs px-2 py-1 text-[var(--text)]">
+              <select id="gitaVerseSelect" onchange="window.SanctuaryViews.renderWisdomGita(parseInt(document.getElementById('gitaChapterSelect').value), parseInt(this.value))" class="input-field !min-h-0 !py-1 !px-2 text-xs">
                 <option value="47" selected>Verse 47</option>
                 <option value="48">Verse 48</option>
                 <option value="50">Verse 50</option>
@@ -430,142 +540,154 @@
             </div>
           </div>
 
-          <h4 id="gitaVerseHeading" class="text-xs font-bold text-[var(--accent-habits)] mb-4">CHAPTER 2 · SHLOKA 47</h4>
+          <h4 id="gitaVerseHeading" class="text-xs font-bold text-[var(--color-warning)] mb-4">CHAPTER 2 · SHLOKA 47</h4>
 
-          <!-- Sanskrit Original Verse -->
-          <div class="p-6 rounded-xl bg-[var(--surface-alt)] border border-[var(--border)] my-4">
-            <p id="gitaSanskritVerse" class="text-lg font-serif font-bold text-[var(--text)] leading-relaxed"></p>
+          <div class="p-6 rounded-md bg-[var(--color-surface-subtle)] border border-[var(--color-border)] my-4">
+            <p id="gitaSanskritVerse" class="text-lg font-serif font-bold text-[var(--color-text-primary)] leading-relaxed"></p>
           </div>
 
-          <!-- Hindi Translation -->
           <div class="my-4 text-left">
-            <span class="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider">Hindi Bhashya</span>
-            <p id="gitaHindiTranslation" class="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed"></p>
+            <span class="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider">Hindi Bhashya</span>
+            <p id="gitaHindiTranslation" class="text-xs text-[var(--color-text-secondary)] mt-1 leading-relaxed"></p>
           </div>
 
-          <!-- English Translation -->
-          <div class="my-4 text-left border-t border-[var(--divider)] pt-3">
-            <span class="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider">English Translation</span>
-            <p id="gitaEnglishTranslation" class="text-xs text-[var(--text)] italic mt-1 leading-relaxed"></p>
+          <div class="my-4 text-left border-t border-[var(--color-border)] pt-3">
+            <span class="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider">English Translation</span>
+            <p id="gitaEnglishTranslation" class="text-xs text-[var(--color-text-primary)] italic mt-1 leading-relaxed"></p>
           </div>
 
-          <!-- Contemplation Note Form -->
-          <div class="mt-6 pt-4 border-t border-[var(--divider)] text-left">
-            <span class="text-xs font-bold text-[var(--text)] mb-2 block">Contemplate this Verse:</span>
+          <div class="mt-6 pt-4 border-t border-[var(--color-border)] text-left">
+            <span class="text-xs font-bold text-[var(--color-text-primary)] mb-2 block">Contemplate this Verse:</span>
             <div class="flex gap-2">
-              <input id="gitaReflectionNote" type="text" placeholder="Record your personal interpretation of this shloka..." 
-                     class="flex-1 bg-[var(--surface-alt)] border border-[var(--border)] rounded-xl px-3 py-2 text-xs text-[var(--text)] focus:outline-none focus:border-[var(--primary)]" />
-              <button onclick="window.SanctuaryViews.saveGitaContemplation()" class="px-4 py-2 bg-[var(--primary)] text-white rounded-xl text-xs font-bold btn-press">Save</button>
+              <input id="gitaReflectionNote" type="text" placeholder="Record your personal interpretation of this shloka..." class="input-field" />
+              <button onclick="window.SanctuaryViews.saveGitaContemplation()" class="btn btn-primary" style="flex-shrink:0;">Save</button>
             </div>
           </div>
         </div>
       </section>
 
       <!-- ======================================================================
-           PANEL 7: READING JOURNEY
+           TAB 7: THE LIBRARY (READER)
            ====================================================================== -->
-      <section id="panel-reader" class="tab-panel gap-6 max-w-3xl mx-auto w-full">
-        <div class="sanctuary-card">
-          <div class="flex items-center justify-between mb-4">
-            <div>
-              <h3 class="text-base font-bold text-[var(--text)]">Sovereign Shelf</h3>
-              <p class="text-xs text-[var(--text-muted)]">Kindle & physical book reading journeys</p>
-            </div>
-            <span class="material-symbols-outlined text-[var(--accent-reader)] text-xl">auto_stories</span>
-          </div>
-          <div id="readingListContainer" class="grid grid-cols-1 gap-3">
-            <!-- Dynamically populated books -->
-          </div>
+      <section id="panel-reader" class="tab-panel">
+        <div class="section-header">
+          <span class="section-title">The Library</span>
+          <span class="gauge-status-badge">Reading Shelf</span>
+        </div>
+
+        <div id="readingListContainer" class="flex flex-col gap-3">
+          <!-- Dynamically populated books -->
         </div>
       </section>
 
       <!-- ======================================================================
-           PANEL 8: EXTENSION HUB
+           TAB 8: EXTENSION HUB & SYSTEM (SECTION 31)
            ====================================================================== -->
-      <section id="panel-plugins" class="tab-panel gap-6 max-w-4xl mx-auto w-full">
-        <div class="sanctuary-card">
-          <div class="flex items-center justify-between mb-2">
-            <div>
-              <h3 class="text-base font-bold text-[var(--text)]">Extensions Platform</h3>
-              <p class="text-xs text-[var(--text-muted)]">Sandboxed plugins with watchdog crash protection</p>
-            </div>
-            <span class="material-symbols-outlined text-[var(--primary)] text-xl">extension</span>
-          </div>
+      <section id="panel-plugins" class="tab-panel">
+        <div class="section-header">
+          <span class="section-title">Extension Hub & Modules</span>
+          <span class="gauge-status-badge">Sandboxed Plugins</span>
         </div>
 
+        <!-- Quick Access to Built-in Modules -->
+        <div class="grid grid-cols-3 gap-2.5">
+          <button onclick="window.SanctuaryApp.switchTab('gita')" class="card !p-3 text-center flex flex-col items-center justify-center gap-1.5 btn">
+            <span class="material-symbols-outlined text-[var(--color-info)] text-2xl">auto_stories</span>
+            <span class="text-xs font-bold text-[var(--color-text-primary)]">Wisdom</span>
+            <span class="text-[10px] text-[var(--color-text-muted)]">Gita Verses</span>
+          </button>
+          <button onclick="window.SanctuaryApp.switchTab('reader')" class="card !p-3 text-center flex flex-col items-center justify-center gap-1.5 btn">
+            <span class="material-symbols-outlined text-[var(--accent-reader)] text-2xl">menu_book</span>
+            <span class="text-xs font-bold text-[var(--color-text-primary)]">Reader</span>
+            <span class="text-[10px] text-[var(--color-text-muted)]">Book Shelf</span>
+          </button>
+          <button onclick="window.SanctuaryApp.switchTab('vault')" class="card !p-3 text-center flex flex-col items-center justify-center gap-1.5 btn">
+            <span class="material-symbols-outlined text-[var(--color-success)] text-2xl">shield</span>
+            <span class="text-xs font-bold text-[var(--color-text-primary)]">Vault</span>
+            <span class="text-[10px] text-[var(--color-text-muted)]">Data Sovereign</span>
+          </button>
+        </div>
+
+        <!-- Plugins Grid -->
         <div id="pluginCardsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <!-- Dynamically populated plugin cards -->
         </div>
       </section>
 
       <!-- ======================================================================
-           PANEL 9: SOVEREIGN VAULT & SETTINGS
+           TAB 9: SOVEREIGN VAULT & LOCAL STORAGE
            ====================================================================== -->
-      <section id="panel-vault" class="tab-panel gap-6 max-w-3xl mx-auto w-full">
-        <div class="sanctuary-card">
-          <h3 class="text-base font-bold text-[var(--text)] mb-1">Data Sovereignty Console</h3>
-          <p class="text-xs text-[var(--text-muted)] mb-4">Your records belong to you. Zero tracking, zero telemetry exfiltration.</p>
+      <section id="panel-vault" class="tab-panel">
+        <div class="section-header">
+          <span class="section-title">Sovereign Vault</span>
+          <span class="gauge-status-badge">Zero-Root SQLite</span>
+        </div>
 
-          <div class="p-4 rounded-xl bg-[var(--surface-alt)] border border-[var(--border)] mb-4">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-semibold text-[var(--text-muted)]">Active Storage Engine:</span>
-              <span id="vaultEngineBadge" class="text-xs font-bold text-[var(--primary)]">Offline Sanctuary</span>
-            </div>
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-semibold text-[var(--text-muted)]">Device UUID:</span>
-              <span id="vaultDeviceUuid" class="font-mono text-xs text-[var(--text-secondary)] truncate-single max-w-[200px]"></span>
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Storage Telemetry</span>
+          </div>
+
+          <div class="p-4 rounded-md bg-[var(--color-surface-subtle)] border border-[var(--color-border)] mb-4 space-y-2 text-xs">
+            <div class="flex items-center justify-between">
+              <span class="text-[var(--color-text-muted)] font-semibold">Active Storage Engine:</span>
+              <span id="vaultEngineBadge" class="font-bold text-[var(--color-info)]">Offline Sanctuary</span>
             </div>
             <div class="flex items-center justify-between">
-              <span class="text-xs font-semibold text-[var(--text-muted)]">Cached Entities:</span>
-              <span id="vaultStatsCounts" class="text-xs text-[var(--text)] font-medium"></span>
+              <span class="text-[var(--color-text-muted)] font-semibold">Device UUID:</span>
+              <span id="vaultDeviceUuid" class="font-mono text-[var(--color-text-secondary)] truncate-single max-w-[200px]"></span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[var(--color-text-muted)] font-semibold">Cached Entities:</span>
+              <span id="vaultStatsCounts" class="text-[var(--color-text-primary)] font-medium"></span>
             </div>
           </div>
 
           <!-- JSON Export & Schema-Validated Import Controls -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-            <button id="vaultExportBtn" class="touch-target p-3 rounded-xl bg-[var(--surface-alt)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-xs font-bold text-[var(--text)] flex items-center justify-center gap-2 btn-press">
-              <span class="material-symbols-outlined text-lg">download</span>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+            <button id="vaultExportBtn" class="btn btn-ghost">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               <span>Export Sovereign JSON</span>
             </button>
-            <label class="touch-target p-3 rounded-xl bg-[var(--surface-alt)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-xs font-bold text-[var(--text)] flex items-center justify-center gap-2 cursor-pointer btn-press">
-              <span class="material-symbols-outlined text-lg">upload</span>
+            <label class="btn btn-ghost cursor-pointer">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
               <span>Validate & Import JSON</span>
               <input id="vaultImportFileInput" type="file" accept=".json" class="hidden" />
             </label>
           </div>
 
           <!-- Danger Zone: Wipe Local Data -->
-          <div class="pt-4 border-t border-[var(--divider)] flex items-center justify-between">
+          <div class="pt-4 border-t border-[var(--color-border)] flex items-center justify-between">
             <div>
-              <h5 class="text-xs font-bold text-[var(--danger)]">Wipe Local Sanctuary</h5>
-              <p class="text-[11px] text-[var(--text-muted)]">Resets local storage cache cleanly on this device.</p>
+              <h5 class="text-xs font-bold text-[var(--color-danger)]">Wipe Local Sanctuary</h5>
+              <p class="text-[11px] text-[var(--color-text-muted)]">Resets local storage cache cleanly on this device.</p>
             </div>
-            <button onclick="if(confirm('Are you certain? This will wipe all local data from this browser.')) window.V07StorageEngine.wipeLocalData();" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-[var(--danger-dim)] text-[var(--danger)] hover:bg-[var(--danger)] hover:text-white transition-colors btn-press">
+            <button onclick="if(confirm('Are you certain? This will wipe all local data from this browser.')) window.V07StorageEngine.wipeLocalData();" class="btn btn-danger !py-1 !px-3 text-xs">
               Wipe Data
             </button>
           </div>
         </div>
 
         <!-- Standalone Admin Web Console Card -->
-        <div class="sanctuary-card border border-[var(--accent-chrono)]/30 bg-[var(--surface)]">
+        <div class="card border border-[var(--color-info)]/30">
           <div class="flex items-center justify-between mb-3">
             <div class="flex items-center gap-2.5">
-              <div class="w-8 h-8 rounded-lg bg-[var(--accent-chrono)]/10 text-[var(--accent-chrono)] flex items-center justify-center">
+              <div class="w-8 h-8 rounded-md bg-[var(--color-info)]/10 text-[var(--color-info)] flex items-center justify-center">
                 <span class="material-symbols-outlined text-lg">admin_panel_settings</span>
               </div>
               <div>
-                <h4 class="text-sm font-bold text-[var(--text)]">V07 Standalone Admin Console</h4>
-                <p class="text-[11px] text-[var(--text-muted)]">Full profile CRUD, live SQL workbench & table data explorer</p>
+                <h4 class="text-sm font-bold text-[var(--color-text-primary)]">V07 Standalone Admin Console</h4>
+                <p class="text-[11px] text-[var(--color-text-muted)]">Full profile CRUD, live SQL workbench & table data explorer</p>
               </div>
             </div>
-            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[var(--accent-chrono)]/15 text-[var(--accent-chrono)] border border-[var(--accent-chrono)]/20 font-mono">STANDALONE</span>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[var(--color-info)]/15 text-[var(--color-info)] border border-[var(--color-info)]/20 font-mono">STANDALONE</span>
           </div>
-          <p class="text-xs text-[var(--text-secondary)] mb-4">
+          <p class="text-xs text-[var(--color-text-secondary)] mb-4">
             Manage multi-user profiles, execute ad-hoc SQL, inspect and edit every database row with inline form editors, run SQLite VACUUM/REINDEX/PRAGMA checks, and inspect raw usage metrics.
           </p>
           <div class="flex items-center justify-between">
-            <span class="text-[11px] text-[var(--text-muted)] font-mono">http://127.0.0.1:8765/admin</span>
-            <a href="/admin" target="_blank" class="touch-target px-4 py-2 rounded-xl bg-[var(--accent-chrono)] text-white text-xs font-bold flex items-center gap-1.5 btn-press">
+            <span class="text-[11px] text-[var(--color-text-muted)] font-mono">http://127.0.0.1:8765/admin</span>
+            <a href="/admin" target="_blank" class="btn btn-primary text-xs">
               <span>Launch Admin</span>
               <span class="material-symbols-outlined text-sm">open_in_new</span>
             </a>
@@ -577,28 +699,52 @@
   </div>
 
   <!-- ==========================================================================
-       MOBILE BOTTOM NAVIGATION DOCK
+       BOTTOM APP NAVIGATION BAR (STITCH 6-TAB DOCK)
        ========================================================================== -->
-  <nav class="mobile-nav-bar">
-    <button data-tab="cockpit" class="mobile-nav-btn active">
-      <span class="material-symbols-outlined">dashboard</span>
-      <span>Cockpit</span>
+  <nav class="app-nav-bar mobile-nav-bar">
+    <button data-tab="cockpit" class="nav-tab mobile-nav-btn active" id="tab-btn-dashboard" title="Home Cockpit">
+      <svg class="nav-icon-svg" viewBox="0 0 24 24">
+        <rect x="3" y="3" width="7" height="7" rx="1"/>
+        <rect x="14" y="3" width="7" height="7" rx="1"/>
+        <rect x="14" y="14" width="7" height="7" rx="1"/>
+        <rect x="3" y="14" width="7" height="7" rx="1"/>
+      </svg>
+      <span class="nav-label">Home</span>
     </button>
-    <button data-tab="habits" class="mobile-nav-btn">
-      <span class="material-symbols-outlined">repeat</span>
-      <span>Cadence</span>
+    <button data-tab="habits" class="nav-tab mobile-nav-btn" id="tab-btn-timeline" title="Habits & Timeline">
+      <svg class="nav-icon-svg" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9"/>
+        <polyline points="12 6 12 12 16 14"/>
+      </svg>
+      <span class="nav-label">Habits</span>
     </button>
-    <button data-tab="chrono" class="mobile-nav-btn">
-      <span class="material-symbols-outlined">timer</span>
-      <span>Focus</span>
+    <button data-tab="chrono" class="nav-tab mobile-nav-btn" id="tab-btn-focus" title="Focus Chronometer">
+      <svg class="nav-icon-svg" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="8"/>
+        <line x1="12" y1="2" x2="12" y2="4"/>
+        <line x1="12" y1="12" x2="15" y2="9"/>
+      </svg>
+      <span class="nav-label">Focus</span>
     </button>
-    <button data-tab="tasks" class="mobile-nav-btn">
-      <span class="material-symbols-outlined">checklist</span>
-      <span>Tasks</span>
+    <button data-tab="tasks" class="nav-tab mobile-nav-btn" id="tab-btn-tasks" title="Obligations & Tasks">
+      <svg class="nav-icon-svg" viewBox="0 0 24 24">
+        <polyline points="9 11 12 14 22 4"/>
+        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+      </svg>
+      <span class="nav-label">Tasks</span>
     </button>
-    <button data-tab="journal" class="mobile-nav-btn">
-      <span class="material-symbols-outlined">edit_note</span>
-      <span>Journal</span>
+    <button data-tab="journal" class="nav-tab mobile-nav-btn" id="tab-btn-thoughts" title="Reflections & Notes">
+      <svg class="nav-icon-svg" viewBox="0 0 24 24">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+      <span class="nav-label">Notes</span>
+    </button>
+    <button data-tab="plugins" class="nav-tab mobile-nav-btn" id="tab-btn-system" title="Extension Hub & System">
+      <svg class="nav-icon-svg" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+      <span class="nav-label">Hub</span>
     </button>
   </nav>
 
@@ -608,28 +754,28 @@
   <!-- 1. Post-Session Reflection Modal -->
   <div id="postSessionModal" class="modal-overlay">
     <div class="modal-box">
-      <h3 class="text-lg font-bold text-[var(--text)] mb-1">Focus Interval Completed</h3>
-      <p class="text-xs text-[var(--text-muted)] mb-4">Dedicated <span id="postSessionDurationDisplay" class="font-bold text-[var(--primary)]"></span> to deep presence.</p>
+      <h3 class="text-lg font-bold text-[var(--color-text-primary)] mb-1">Focus Interval Completed</h3>
+      <p class="text-xs text-[var(--color-text-muted)] mb-4">Dedicated <span id="postSessionDurationDisplay" class="font-bold text-[var(--color-info)]"></span> to deep presence.</p>
 
       <div class="mb-4">
-        <label class="text-xs font-bold text-[var(--text-secondary)] mb-2 block">Rate Depth of Focus:</label>
+        <label class="text-xs font-bold text-[var(--color-text-secondary)] mb-2 block">Rate Depth of Focus:</label>
         <div class="flex items-center gap-3">
-          <label class="cursor-pointer text-sm font-bold text-[var(--text)]"><input type="radio" name="focusRating" value="1"> 1★</label>
-          <label class="cursor-pointer text-sm font-bold text-[var(--text)]"><input type="radio" name="focusRating" value="2"> 2★</label>
-          <label class="cursor-pointer text-sm font-bold text-[var(--text)]"><input type="radio" name="focusRating" value="3"> 3★</label>
-          <label class="cursor-pointer text-sm font-bold text-[var(--text)]"><input type="radio" name="focusRating" value="4"> 4★</label>
-          <label class="cursor-pointer text-sm font-bold text-[var(--text)]"><input type="radio" name="focusRating" value="5" checked> 5★</label>
+          <label class="cursor-pointer text-sm font-bold text-[var(--color-text-primary)]"><input type="radio" name="focusRating" value="1"> 1★</label>
+          <label class="cursor-pointer text-sm font-bold text-[var(--color-text-primary)]"><input type="radio" name="focusRating" value="2"> 2★</label>
+          <label class="cursor-pointer text-sm font-bold text-[var(--color-text-primary)]"><input type="radio" name="focusRating" value="3"> 3★</label>
+          <label class="cursor-pointer text-sm font-bold text-[var(--color-text-primary)]"><input type="radio" name="focusRating" value="4"> 4★</label>
+          <label class="cursor-pointer text-sm font-bold text-[var(--color-text-primary)]"><input type="radio" name="focusRating" value="5" checked> 5★</label>
         </div>
       </div>
 
       <div class="mb-6">
-        <label class="text-xs font-bold text-[var(--text-secondary)] mb-2 block">Reflection & Accomplishments:</label>
+        <label class="text-xs font-bold text-[var(--color-text-secondary)] mb-2 block">Reflection & Accomplishments:</label>
         <textarea id="postSessionNotes" rows="3" placeholder="What progress was unlocked? Any observations?" 
-                  class="w-full bg-[var(--surface-alt)] border border-[var(--border)] rounded-xl p-3 text-xs text-[var(--text)] focus:outline-none focus:border-[var(--primary)]"></textarea>
+                  class="input-field"></textarea>
       </div>
 
       <div class="flex justify-end gap-2">
-        <button id="savePostSessionBtn" class="touch-target px-6 py-2 bg-[var(--primary)] text-white rounded-xl text-xs font-bold btn-press">Save & Reflect</button>
+        <button id="savePostSessionBtn" class="btn btn-primary">Save & Reflect</button>
       </div>
     </div>
   </div>
@@ -637,12 +783,12 @@
   <!-- 2. Cancel Focus Confirmation Modal -->
   <div id="cancelChronoModal" class="modal-overlay">
     <div class="modal-box text-center">
-      <span class="material-symbols-outlined text-4xl text-[var(--warning)] mb-2">warning</span>
-      <h3 class="text-base font-bold text-[var(--text)] mb-2">Release this focus interval?</h3>
-      <p class="text-xs text-[var(--text-secondary)] mb-6">Unsaved elapsed progress will be discarded without committing to your ledger.</p>
+      <span class="material-symbols-outlined text-4xl text-[var(--color-warning)] mb-2">warning</span>
+      <h3 class="text-base font-bold text-[var(--color-text-primary)] mb-2">Release this focus interval?</h3>
+      <p class="text-xs text-[var(--color-text-secondary)] mb-6">Unsaved elapsed progress will be discarded without committing to your ledger.</p>
       <div class="flex justify-center gap-3">
-        <button data-close-modal class="px-4 py-2 bg-[var(--surface-alt)] text-[var(--text)] rounded-xl text-xs font-semibold btn-press">Keep Timing</button>
-        <button id="confirmCancelChronoBtn" class="px-5 py-2 bg-[var(--danger)] text-white rounded-xl text-xs font-bold btn-press">Release Interval</button>
+        <button data-close-modal class="btn btn-ghost">Keep Timing</button>
+        <button id="confirmCancelChronoBtn" class="btn btn-danger">Release Interval</button>
       </div>
     </div>
   </div>
@@ -650,31 +796,31 @@
   <!-- 3. Task Editor Modal -->
   <div id="taskEditorModal" class="modal-overlay">
     <div class="modal-box">
-      <h3 class="text-base font-bold text-[var(--text)] mb-3">Edit Obligation</h3>
+      <h3 class="text-base font-bold text-[var(--color-text-primary)] mb-3">Edit Obligation</h3>
       <input type="hidden" id="editTaskId" />
       <div class="space-y-3 mb-4">
         <div>
-          <label class="text-[11px] font-bold text-[var(--text-muted)] block mb-1">Title</label>
-          <input id="editTaskTitle" type="text" class="w-full bg-[var(--surface-alt)] border border-[var(--border)] rounded-lg p-2.5 text-xs text-[var(--text)] focus:outline-none" />
+          <label class="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Title</label>
+          <input id="editTaskTitle" type="text" class="input-field" />
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div>
-            <label class="text-[11px] font-bold text-[var(--text-muted)] block mb-1">Priority</label>
-            <select id="editTaskPriority" class="w-full bg-[var(--surface-alt)] border border-[var(--border)] rounded-lg p-2 text-xs text-[var(--text)]">
+            <label class="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Priority</label>
+            <select id="editTaskPriority" class="input-field">
               <option value="low">Low</option>
               <option value="medium">Medium</option>
               <option value="high">High</option>
             </select>
           </div>
           <div>
-            <label class="text-[11px] font-bold text-[var(--text-muted)] block mb-1">Deadline</label>
-            <input id="editTaskDeadline" type="date" class="w-full bg-[var(--surface-alt)] border border-[var(--border)] rounded-lg p-2 text-xs text-[var(--text)]" />
+            <label class="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Deadline</label>
+            <input id="editTaskDeadline" type="date" class="input-field" />
           </div>
         </div>
       </div>
       <div class="flex justify-end gap-2">
-        <button data-close-modal class="px-4 py-2 bg-[var(--surface-alt)] text-[var(--text)] rounded-lg text-xs font-semibold btn-press">Cancel</button>
-        <button id="saveTaskEditBtn" class="px-5 py-2 bg-[var(--primary)] text-white rounded-lg text-xs font-bold btn-press">Save Changes</button>
+        <button data-close-modal class="btn btn-ghost">Cancel</button>
+        <button id="saveTaskEditBtn" class="btn btn-primary">Save Changes</button>
       </div>
     </div>
   </div>
@@ -682,17 +828,17 @@
   <!-- 4. Habit Editor Modal -->
   <div id="habitEditorModal" class="modal-overlay">
     <div class="modal-box">
-      <h3 class="text-base font-bold text-[var(--text)] mb-3">Habit Cadence Settings</h3>
+      <h3 class="text-base font-bold text-[var(--color-text-primary)] mb-3">Habit Cadence Settings</h3>
       <input type="hidden" id="editHabitId" />
       <div class="space-y-3 mb-4">
         <div>
-          <label class="text-[11px] font-bold text-[var(--text-muted)] block mb-1">Title</label>
-          <input id="editHabitTitle" type="text" class="w-full bg-[var(--surface-alt)] border border-[var(--border)] rounded-lg p-2.5 text-xs text-[var(--text)] focus:outline-none" />
+          <label class="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Title</label>
+          <input id="editHabitTitle" type="text" class="input-field" />
         </div>
       </div>
       <div class="flex justify-end gap-2">
-        <button data-close-modal class="px-4 py-2 bg-[var(--surface-alt)] text-[var(--text)] rounded-lg text-xs font-semibold btn-press">Cancel</button>
-        <button onclick="window.SanctuaryApp.closeAllModals(); window.SanctuaryViews.showToast('Habit settings saved');" class="px-5 py-2 bg-[var(--primary)] text-white rounded-lg text-xs font-bold btn-press">Save Settings</button>
+        <button data-close-modal class="btn btn-ghost">Cancel</button>
+        <button onclick="window.SanctuaryApp.closeAllModals(); window.SanctuaryViews.showToast('Habit settings saved');" class="btn btn-primary">Save Settings</button>
       </div>
     </div>
   </div>
@@ -700,19 +846,19 @@
   <!-- 5. Plugin Capability Consent Modal -->
   <div id="pluginConsentModal" class="modal-overlay">
     <div class="modal-box">
-      <span class="material-symbols-outlined text-3xl text-[var(--warning)] mb-2">shield_lock</span>
-      <h3 class="text-base font-bold text-[var(--text)] mb-1">Review Plugin Capabilities</h3>
-      <p class="text-xs text-[var(--text-secondary)] mb-4">Plugin "<span id="consentPluginTitle" class="font-bold text-[var(--text)]"></span>" requests the following sandbox capabilities:</p>
+      <span class="material-symbols-outlined text-3xl text-[var(--color-warning)] mb-2">shield_lock</span>
+      <h3 class="text-base font-bold text-[var(--color-text-primary)] mb-1">Review Plugin Capabilities</h3>
+      <p class="text-xs text-[var(--color-text-secondary)] mb-4">Plugin "<span id="consentPluginTitle" class="font-bold text-[var(--color-text-primary)]"></span>" requests the following sandbox capabilities:</p>
       
-      <ul class="text-xs text-[var(--text-secondary)] space-y-2 mb-6">
-        <li class="flex items-center gap-2"><span class="material-symbols-outlined text-sm text-[var(--success)]">check_circle</span> Isolated Storage Access (Local Partition)</li>
-        <li class="flex items-center gap-2"><span class="material-symbols-outlined text-sm text-[var(--success)]">check_circle</span> Read & Write Domain Events</li>
-        <li class="flex items-center gap-2"><span class="material-symbols-outlined text-sm text-[var(--success)]">check_circle</span> Sanctuary Theme Tokens</li>
+      <ul class="text-xs text-[var(--color-text-secondary)] space-y-2 mb-6">
+        <li class="flex items-center gap-2"><span class="material-symbols-outlined text-sm text-[var(--color-success)]">check_circle</span> Isolated Storage Access (Local Partition)</li>
+        <li class="flex items-center gap-2"><span class="material-symbols-outlined text-sm text-[var(--color-success)]">check_circle</span> Read & Write Domain Events</li>
+        <li class="flex items-center gap-2"><span class="material-symbols-outlined text-sm text-[var(--color-success)]">check_circle</span> Precision Monolith Theme Tokens</li>
       </ul>
 
       <div class="flex justify-end gap-2">
-        <button data-close-modal class="px-4 py-2 bg-[var(--surface-alt)] text-[var(--text)] rounded-lg text-xs font-semibold btn-press">Deny</button>
-        <button id="consentAllowBtn" class="px-5 py-2 bg-[var(--primary)] text-white rounded-lg text-xs font-bold btn-press">Allow & Launch</button>
+        <button data-close-modal class="btn btn-ghost">Deny</button>
+        <button id="consentAllowBtn" class="btn btn-primary">Allow & Launch</button>
       </div>
     </div>
   </div>
@@ -720,13 +866,13 @@
   <!-- 6. Plugin Sandbox Fullscreen Runner Modal -->
   <div id="pluginRunnerModal" class="modal-overlay">
     <div class="modal-box w-full max-w-5xl h-[88vh] flex flex-col p-4">
-      <div class="flex items-center justify-between pb-3 border-b border-[var(--border)] mb-3">
+      <div class="flex items-center justify-between pb-3 border-b border-[var(--color-border)] mb-3">
         <div class="flex items-center gap-2">
-          <span class="material-symbols-outlined text-[var(--primary)] text-lg">extension</span>
-          <h3 id="pluginRunnerTitle" class="text-sm font-bold text-[var(--text)]">Plugin Sandbox</h3>
-          <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-[var(--success-dim)] text-[var(--success)]">WATCHDOG ACTIVE</span>
+          <span class="material-symbols-outlined text-[var(--color-info)] text-lg">extension</span>
+          <h3 id="pluginRunnerTitle" class="text-sm font-bold text-[var(--color-text-primary)]">Plugin Sandbox</h3>
+          <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-[var(--color-success-subtle)] text-[var(--color-success)]">WATCHDOG ACTIVE</span>
         </div>
-        <button onclick="window.V07PluginHost.closeRunner()" class="text-[var(--text-muted)] hover:text-[var(--text)] p-1 rounded-md btn-press" title="Close (Esc)">
+        <button onclick="window.V07PluginHost.closeRunner()" class="btn btn-ghost !p-1 !min-h-0" title="Close (Esc)">
           <span class="material-symbols-outlined text-lg">close</span>
         </button>
       </div>
@@ -736,91 +882,91 @@
     </div>
   </div>
 
-  <!-- 8. Profile & Cloud Sync Partitioning Modal -->
+  <!-- 7. Profile & Cloud Sync Partitioning Modal -->
   <div id="profileModal" class="modal-overlay">
     <div class="modal-box max-w-md">
       <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-2">
-          <span class="material-symbols-outlined text-[var(--primary)]">manage_accounts</span>
-          <h3 class="text-base font-bold text-[var(--text)]">Profile & Cloud Sync</h3>
+          <span class="material-symbols-outlined text-[var(--color-info)]">manage_accounts</span>
+          <h3 class="text-base font-bold text-[var(--color-text-primary)]">Profile & Cloud Sync</h3>
         </div>
-        <button data-close-modal class="text-[var(--text-muted)] hover:text-[var(--text)] p-1">
+        <button data-close-modal class="btn btn-ghost !p-1 !min-h-0">
           <span class="material-symbols-outlined text-lg">close</span>
         </button>
       </div>
 
       <!-- Current Profile HUD -->
-      <div class="p-3 mb-4 rounded-lg bg-[var(--surface-alt)] border border-[var(--border)]">
-        <div class="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-1">Active Isolated Partition</div>
+      <div class="p-3 mb-4 rounded-md bg-[var(--color-surface-subtle)] border border-[var(--color-border)]">
+        <div class="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1">Active Isolated Partition</div>
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-[var(--primary)]"></span>
-            <span id="activeProfileLabel" class="text-sm font-bold text-[var(--text)] font-mono">guest</span>
+            <span class="w-2.5 h-2.5 rounded-full bg-[var(--color-info)]"></span>
+            <span id="activeProfileLabel" class="text-sm font-bold text-[var(--color-text-primary)] font-mono">guest</span>
           </div>
-          <span id="profileSyncStatusBadge" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[var(--warning-dim)] text-[var(--warning)]">Offline Mode</span>
+          <span id="profileSyncStatusBadge" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[var(--color-warning-subtle)] text-[var(--color-warning)]">Offline Mode</span>
         </div>
       </div>
 
       <!-- Profile Switcher Section -->
       <div class="mb-4">
-        <label class="block text-xs font-semibold text-[var(--text-secondary)] mb-1">Switch Local Profile</label>
+        <label class="block text-xs font-semibold text-[var(--color-text-secondary)] mb-1">Switch Local Profile</label>
         <div class="flex gap-2 mb-2">
-          <select id="profileSelectDropdown" class="flex-1 px-3 py-1.5 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-xs text-[var(--text)]">
+          <select id="profileSelectDropdown" class="flex-1 input-field">
             <option value="guest">guest</option>
           </select>
-          <button id="switchProfileBtn" class="px-3 py-1.5 rounded-lg bg-[var(--surface-hover)] border border-[var(--border)] text-xs font-semibold text-[var(--text)] hover:bg-[var(--primary)] hover:text-white transition-colors">
+          <button id="switchProfileBtn" class="btn btn-secondary">
             Switch
           </button>
         </div>
         <div class="flex gap-2">
-          <input type="text" id="newProfileInput" placeholder="New profile name (e.g. Work, Study)..." class="flex-1 px-3 py-1.5 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-xs text-[var(--text)]" />
-          <button id="createProfileBtn" class="px-3 py-1.5 rounded-lg bg-[var(--primary)] text-white text-xs font-semibold hover:opacity-90">
+          <input type="text" id="newProfileInput" placeholder="New profile name (e.g. Work, Study)..." class="flex-1 input-field" />
+          <button id="createProfileBtn" class="btn btn-primary">
             Create
           </button>
         </div>
       </div>
 
       <!-- 1. Cloud Authentication (Identity) -->
-      <div class="pt-3 border-t border-[var(--border)] mb-4">
-        <div class="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">User Identity & Authentication</div>
+      <div class="pt-3 border-t border-[var(--color-border)] mb-4">
+        <div class="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">User Identity & Authentication</div>
         <div id="cloudAuthSection">
           <div id="authLoggedOutView">
             <div class="space-y-2 mb-3">
-              <input type="email" id="cloudAuthEmail" placeholder="Email address" class="w-full px-3 py-1.5 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-xs text-[var(--text)]" />
-              <input type="password" id="cloudAuthPassword" placeholder="Password" class="w-full px-3 py-1.5 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-xs text-[var(--text)]" />
+              <input type="email" id="cloudAuthEmail" placeholder="Email address" class="input-field" />
+              <input type="password" id="cloudAuthPassword" placeholder="Password" class="input-field" />
             </div>
             <div class="flex gap-2">
-              <button id="cloudSignInBtn" class="flex-1 py-1.5 rounded-lg bg-[var(--primary)] text-white text-xs font-semibold hover:opacity-90">Sign In</button>
-              <button id="cloudSignUpBtn" class="flex-1 py-1.5 rounded-lg bg-[var(--surface-hover)] border border-[var(--border)] text-xs font-semibold text-[var(--text)] hover:bg-[var(--surface)]">Create Account</button>
+              <button id="cloudSignInBtn" class="flex-1 btn btn-primary">Sign In</button>
+              <button id="cloudSignUpBtn" class="flex-1 btn btn-secondary">Create Account</button>
             </div>
           </div>
           <div id="authLoggedInView" class="hidden">
-            <div class="flex items-center justify-between p-2.5 rounded bg-[var(--surface)] border border-[var(--border)]">
+            <div class="flex items-center justify-between p-2.5 rounded bg-[var(--color-surface)] border border-[var(--color-border)]">
               <div>
-                <div id="loggedInUserEmail" class="text-xs font-bold text-[var(--text)]">user@example.com</div>
-                <div id="loggedInUserUid" class="text-[10px] font-mono text-[var(--text-muted)]">uid: ...</div>
+                <div id="loggedInUserEmail" class="text-xs font-bold text-[var(--color-text-primary)]">user@example.com</div>
+                <div id="loggedInUserUid" class="text-[10px] font-mono text-[var(--color-text-muted)]">uid: ...</div>
               </div>
-              <button id="cloudSignOutBtn" class="px-2.5 py-1 text-xs font-semibold text-[var(--danger)] hover:bg-[var(--danger-dim)] rounded">Sign Out</button>
+              <button id="cloudSignOutBtn" class="btn btn-ghost !p-1.5 text-xs text-[var(--color-danger)]">Sign Out</button>
             </div>
           </div>
         </div>
       </div>
 
       <!-- 2. Cloud Synchronization Engine (Independent Toggle) -->
-      <div class="pt-3 border-t border-[var(--border)]">
-        <div class="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">Cloud Synchronization Engine</div>
-        <div class="p-3 rounded-lg bg-[var(--surface-alt)] border border-[var(--border)] space-y-3">
+      <div class="pt-3 border-t border-[var(--color-border)]">
+        <div class="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">Cloud Synchronization Engine</div>
+        <div class="p-3 rounded-md bg-[var(--color-surface-subtle)] border border-[var(--color-border)] space-y-3">
           <div class="flex items-center justify-between">
             <div>
-              <span class="text-xs font-bold text-[var(--text)] block">Enable Cloud Sync</span>
-              <span class="text-[11px] text-[var(--text-muted)]">Realtime sync with Firestore web companion</span>
+              <span class="text-xs font-bold text-[var(--color-text-primary)] block">Enable Cloud Sync</span>
+              <span class="text-[11px] text-[var(--color-text-muted)]">Realtime sync with Firestore web companion</span>
             </div>
             <label class="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" id="cloudSyncToggleSwitch" class="sr-only peer" checked>
-              <div class="w-9 h-5 bg-[var(--border)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--primary)]"></div>
+              <div class="w-9 h-5 bg-[var(--color-border)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--color-info)]"></div>
             </label>
           </div>
-          <button id="cloudSyncNowBtn" class="w-full py-1.5 rounded-lg bg-[var(--surface-hover)] border border-[var(--border)] text-[var(--text)] text-xs font-semibold hover:bg-[var(--surface)] flex items-center justify-center gap-1.5 transition-colors">
+          <button id="cloudSyncNowBtn" class="w-full btn btn-secondary flex items-center justify-center gap-1.5">
             <span class="material-symbols-outlined text-sm">sync</span>
             <span>Sync Now</span>
           </button>
@@ -829,31 +975,31 @@
     </div>
   </div>
 
-  <!-- 7. Keyboard Shortcuts Modal (Desktop-Only) -->
+  <!-- 8. Keyboard Shortcuts Modal (Desktop-Only) -->
   <div id="shortcutsModal" class="modal-overlay desktop-only">
     <div class="modal-box">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-base font-bold text-[var(--text)]">Keyboard Shortcuts</h3>
-        <button data-close-modal class="text-[var(--text-muted)] hover:text-[var(--text)] p-1">
+        <h3 class="text-base font-bold text-[var(--color-text-primary)]">Keyboard Shortcuts</h3>
+        <button data-close-modal class="btn btn-ghost !p-1 !min-h-0">
           <span class="material-symbols-outlined text-lg">close</span>
         </button>
       </div>
       <div class="grid grid-cols-2 gap-3 text-xs">
-        <div class="flex items-center justify-between p-2 rounded bg-[var(--surface-alt)]">
-          <span class="text-[var(--text-secondary)]">Start / Pause Chrono</span>
-          <span class="font-mono font-bold px-1.5 py-0.5 rounded bg-[var(--surface)] text-[var(--primary)]">Space</span>
+        <div class="flex items-center justify-between p-2 rounded bg-[var(--color-surface-subtle)]">
+          <span class="text-[var(--color-text-secondary)]">Start / Pause Chrono</span>
+          <span class="font-mono font-bold px-1.5 py-0.5 rounded bg-[var(--color-surface)] text-[var(--color-info)]">Space</span>
         </div>
-        <div class="flex items-center justify-between p-2 rounded bg-[var(--surface-alt)]">
-          <span class="text-[var(--text-secondary)]">Toggle Theme</span>
-          <span class="font-mono font-bold px-1.5 py-0.5 rounded bg-[var(--surface)] text-[var(--primary)]">Alt + T</span>
+        <div class="flex items-center justify-between p-2 rounded bg-[var(--color-surface-subtle)]">
+          <span class="text-[var(--color-text-secondary)]">Toggle Theme</span>
+          <span class="font-mono font-bold px-1.5 py-0.5 rounded bg-[var(--color-surface)] text-[var(--color-info)]">Alt + T</span>
         </div>
-        <div class="flex items-center justify-between p-2 rounded bg-[var(--surface-alt)]">
-          <span class="text-[var(--text-secondary)]">Close Modal / Runner</span>
-          <span class="font-mono font-bold px-1.5 py-0.5 rounded bg-[var(--surface)] text-[var(--primary)]">Esc</span>
+        <div class="flex items-center justify-between p-2 rounded bg-[var(--color-surface-subtle)]">
+          <span class="text-[var(--color-text-secondary)]">Close Modal / Runner</span>
+          <span class="font-mono font-bold px-1.5 py-0.5 rounded bg-[var(--color-surface)] text-[var(--color-info)]">Esc</span>
         </div>
-        <div class="flex items-center justify-between p-2 rounded bg-[var(--surface-alt)]">
-          <span class="text-[var(--text-secondary)]">Shortcuts Guide</span>
-          <span class="font-mono font-bold px-1.5 py-0.5 rounded bg-[var(--surface)] text-[var(--primary)]">?</span>
+        <div class="flex items-center justify-between p-2 rounded bg-[var(--color-surface-subtle)]">
+          <span class="text-[var(--color-text-secondary)]">Shortcuts Guide</span>
+          <span class="font-mono font-bold px-1.5 py-0.5 rounded bg-[var(--color-surface)] text-[var(--color-info)]">?</span>
         </div>
       </div>
     </div>

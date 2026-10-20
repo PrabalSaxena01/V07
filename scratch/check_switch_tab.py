@@ -1,5 +1,8 @@
-with open('app/src/main/assets/index.html', 'r', encoding='utf-8') as f:
-    html = f.read()
+with open('D:/software/V07-Android/app/src/main/assets/v3/index.html', 'r', encoding='utf-8') as f:
+    lines = f.readlines()
 
-pos_sw = html.find('function switchTab')
-print(html[pos_sw+600:pos_sw + 1600])
+for i, l in enumerate(lines):
+    if 'function switchTab' in l:
+        for j in range(i, min(i + 50, len(lines))):
+            print(f'{j+1}: {lines[j].rstrip()}')
+        break

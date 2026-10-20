@@ -78,12 +78,17 @@
       });
 
       // Update Mobile Bottom Dock active styling
-      document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+      document.querySelectorAll('.mobile-nav-btn, .nav-tab').forEach(btn => {
         const isCurrent = btn.getAttribute('data-tab') === tabId;
         btn.classList.toggle('active', isCurrent);
       });
 
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      const workspace = document.querySelector('.main-workspace') || window;
+      if (typeof workspace.scrollTo === 'function') {
+        workspace.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        workspace.scrollTop = 0;
+      }
     }
 
     initNavigation() {

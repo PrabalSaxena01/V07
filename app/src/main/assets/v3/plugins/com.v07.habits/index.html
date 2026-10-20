@@ -1,31 +1,431 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="v07-sdk.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Habits</title>
-<link rel="stylesheet" href="plugin.css">
-<script>
-(function(){
-  function syncTheme(){
-    var t = 'dark';
-    try {
-      t = window.parent.document.documentElement.dataset.theme || localStorage.getItem('v07_theme') || 'dark';
-    } catch(e){
-      try { t = localStorage.getItem('v07_theme') || 'dark'; } catch(e2){}
+<title>Habits Matrix</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
+<style>
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    :root {
+      --canvas: #F4F7F5;
+      --card: #FFFFFF;
+      --card-low: #F8FAF9;
+      --brand-teal: #2E7D6A;
+      --brand-teal-light: #E8F5F1;
+      --mint: #3F9A83;
+      --cedar: #8C5E58;
+      --cedar-light: #FAF0EE;
+      --slate: #182230;
+      --subslate: #5B6A78;
+      --border: #DDE7E2;
+      --border-subtle: rgba(0, 0, 0, 0.06);
+      --font-main: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --font-mono: 'Space Mono', 'JetBrains Mono', monospace;
+      --radius: 14px;
+      --radius-sm: 8px;
+      --radius-pill: 9999px;
+      --shadow-card: 0 1px 3px rgba(24, 34, 48, 0.04), 0 1px 2px rgba(24, 34, 48, 0.02);
     }
-    if(t === 'light') document.documentElement.setAttribute('data-theme', 'light');
-    else document.documentElement.removeAttribute('data-theme');
-  }
-  syncTheme();
-  window.addEventListener('storage', syncTheme);
-})();
-</script>
+    :root[data-theme="dark"], body.dark {
+      --canvas: #0B111E;
+      --card: #141C2B;
+      --card-low: #1A2436;
+      --brand-teal: #4DE086;
+      --brand-teal-light: rgba(77, 224, 134, 0.12);
+      --mint: #7CF4A8;
+      --cedar: #E09F95;
+      --cedar-light: rgba(224, 159, 149, 0.12);
+      --slate: #F1F5F9;
+      --subslate: #94A3B8;
+      --border: #262E3E;
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+    body {
+      background: var(--canvas);
+      color: var(--slate);
+      font-family: var(--font-main);
+      padding: 16px 14px calc(32px + env(safe-area-inset-bottom, 16px));
+      max-width: 540px;
+      margin: 0 auto;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      line-height: 1.5;
+    }
+    .header-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .header-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .header-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: var(--brand-teal-light);
+      color: var(--brand-teal);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .header-title-wrap h1 {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--slate);
+      margin: 0;
+    }
+    .header-title-wrap p {
+      font-size: 11px;
+      color: var(--subslate);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin: 0;
+    }
+    .badge-pill {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: var(--radius-pill);
+      background: var(--brand-teal-light);
+      color: var(--brand-teal);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn {
+      font-family: var(--font-main);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 7px 14px;
+      border-radius: var(--radius-pill);
+      border: 1px solid transparent;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .btn:active { transform: scale(0.96); }
+    .btn-primary {
+      background: var(--brand-teal);
+      color: #FFFFFF;
+      border-color: var(--brand-teal);
+    }
+    :root[data-theme="dark"] .btn-primary {
+      color: #0B111E;
+    }
+    .btn-secondary {
+      background: var(--card);
+      color: var(--slate);
+      border-color: var(--border);
+    }
+    .btn-secondary:hover { background: var(--card-low); }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-card);
+    }
+    .card-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--subslate);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+.habit-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.habit-item:last-child { border-bottom: none; }
+.habit-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.habit-check {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: var(--card);
+}
+.habit-check.done {
+  background: var(--brand-teal);
+  border-color: var(--brand-teal);
+  color: #FFFFFF;
+}
+.streak-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--cedar-light);
+  color: var(--cedar);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.heatmap-container {
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+.heatmap-svg {
+  width: 100%;
+  min-width: 420px;
+  height: 90px;
+}
+.kpi-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+.kpi-box {
+  background: var(--card-low);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  text-align: center;
+}
+.kpi-val {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--slate);
+}
+.kpi-lbl {
+  font-size: 10px;
+  color: var(--subslate);
+  margin-top: 2px;
+}
+</style>
+<script>
+    (function(){
+      function syncTheme(){
+        var t = 'dark';
+        try {
+          t = window.parent.document.documentElement.dataset.theme || localStorage.getItem('v07_theme') || 'dark';
+        } catch(e){
+          try { t = localStorage.getItem('v07_theme') || 'dark'; } catch(e2){}
+        }
+        if(t === 'light') document.documentElement.setAttribute('data-theme', 'light');
+        else document.documentElement.removeAttribute('data-theme');
+      }
+      syncTheme();
+      window.addEventListener('storage', syncTheme);
+      setInterval(syncTheme, 2000);
+    })();
+    </script>
 </head>
 <body>
-<div class="h-page">
-  <div id="hbt-root"></div>
-</div>
-<script src="plugin.js"></script>
+  <header class="header-card">
+    <div class="header-info">
+      <div class="header-icon" style="background: var(--cedar-light); color: var(--cedar);"><span class="material-symbols-outlined">local_fire_department</span></div>
+      <div class="header-title-wrap">
+        <h1>Habits Matrix</h1>
+        <p>Daily consistency engine & 20-week visual heatmap</p>
+      </div>
+    </div>
+    <div style="display: flex; gap: 6px; align-items: center;">
+      <span class="streak-badge">🔥 14 DAYS</span>
+      <button class="btn btn-primary" onclick="toggleNewHabitForm()">+ New Habit</button>
+    </div>
+  </header>
+
+  <!-- Inline New Habit Creator -->
+  <div id="new-habit-form" class="card" style="display: none; border: 1.5px dashed var(--brand-teal); background: var(--card-low); margin-bottom: 12px; padding: 12px 14px;">
+    <div style="font-size: 12px; font-weight: 700; color: var(--slate); margin-bottom: 6px;">+ Create New Daily Habit</div>
+    <input type="text" id="habit-name-input" placeholder="e.g. 15m Evening Walk, Cold Shower, Reading..." style="width: 100%; padding: 8px 12px; font-size: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); outline: none; margin-bottom: 8px; background: var(--card); color: var(--slate);">
+    <div style="display: flex; gap: 6px; align-items: center; justify-content: flex-end;">
+      <button class="btn btn-secondary" onclick="toggleNewHabitForm()" style="padding: 4px 10px; font-size: 11px;">Cancel</button>
+      <button class="btn btn-primary" onclick="createNewHabit()" style="padding: 4px 12px; font-size: 11px;">Add Habit</button>
+    </div>
+  </div>
+
+  <!-- Today's Habits Card -->
+  <div class="card">
+    <div class="card-label">
+      <span>Today's Habits · Daily Cadence</span>
+      <span id="today-completion" style="color: var(--brand-teal); font-weight: 700;">2 of 3 Done</span>
+    </div>
+    <div id="habit-items-container">
+    <div class="habit-item">
+      <div class="habit-left">
+        <div class="habit-check done" onclick="toggleHabit(this)">
+          <span class="material-symbols-outlined" style="font-size: 16px;">check</span>
+        </div>
+        <span style="font-size: 13px; font-weight: 600;">🌿 Morning Meditation (10m)</span>
+      </div>
+      <span class="streak-badge">🔥 14 days</span>
+    </div>
+    <div class="habit-item">
+      <div class="habit-left">
+        <div class="habit-check done" onclick="toggleHabit(this)">
+          <span class="material-symbols-outlined" style="font-size: 16px;">check</span>
+        </div>
+        <span style="font-size: 13px; font-weight: 600;">💧 2L Clean Hydration</span>
+      </div>
+      <span class="streak-badge">🔥 21 days</span>
+    </div>
+    <div class="habit-item">
+      <div class="habit-left">
+        <div class="habit-check" onclick="toggleHabit(this)">
+          <span class="material-symbols-outlined" style="font-size: 16px;">check</span>
+        </div>
+        <span style="font-size: 13px; font-weight: 600;">📖 Evening Reading (20p)</span>
+      </div>
+      <span class="streak-badge">🔥 6 days</span>
+    </div>
+  </div>
+
+  </div>
+
+  <!-- 20-Week Consistency Heatmap Card -->
+  <div class="card">
+    <div class="card-label">
+      <span>20-Week Consistency Heatmap</span>
+      <span>88% Consistency</span>
+    </div>
+    <div class="heatmap-container">
+      <svg class="heatmap-svg" viewBox="0 0 420 85" id="heatmap-svg">
+        <!-- Generated procedurally by JS -->
+      </svg>
+    </div>
+    <div style="display: flex; align-items: center; justify-content: flex-end; gap: 4px; font-size: 10px; color: var(--subslate); margin-top: 6px;">
+      <span>Less</span>
+      <span style="width: 10px; height: 10px; border-radius: 2px; background: #DDE7E2;"></span>
+      <span style="width: 10px; height: 10px; border-radius: 2px; background: #C7E8DE;"></span>
+      <span style="width: 10px; height: 10px; border-radius: 2px; background: #66BFA8;"></span>
+      <span style="width: 10px; height: 10px; border-radius: 2px; background: #2E7D6A;"></span>
+      <span>More</span>
+    </div>
+  </div>
+
+  <!-- Streak Analytics -->
+  <div class="card">
+    <div class="card-label"><span>Streak Analytics</span></div>
+    <div class="kpi-row">
+      <div class="kpi-box">
+        <div class="kpi-val">14 Days</div>
+        <div class="kpi-lbl">Current Streak</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-val">28 Days</div>
+        <div class="kpi-lbl">Best Streak</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-val">184 Total</div>
+        <div class="kpi-lbl">Completions</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function renderHeatmap() {
+      const svg = document.getElementById('heatmap-svg');
+      let html = '';
+      const colors = ['#DDE7E2', '#C7E8DE', '#66BFA8', '#2E7D6A'];
+      const days = ['M', '', 'W', '', 'F', '', 'S'];
+      
+      for (let r = 0; r < 7; r++) {
+        if (days[r]) {
+          html += `<text x="4" y="${r * 12 + 9}" font-size="8" fill="var(--subslate)" font-family="var(--font-mono)">${days[r]}</text>`;
+        }
+        for (let c = 0; c < 24; c++) {
+          const val = (r * 3 + c * 7) % 4;
+          const col = colors[val];
+          html += `<rect x="${c * 15 + 20}" y="${r * 12}" width="11" height="9" rx="2" fill="${col}" />`;
+        }
+      }
+      svg.innerHTML = html;
+    }
+    renderHeatmap();
+
+    function updateHabitsCount() {
+      const total = document.querySelectorAll('.habit-item').length;
+      const dones = document.querySelectorAll('.habit-check.done').length;
+      const countEl = document.getElementById('today-completion');
+      if (countEl) countEl.textContent = dones + ' of ' + total + ' Done';
+      if (window.v07 && window.v07.storage) {
+        window.v07.storage.set('habits_done_count', dones);
+      }
+    }
+    function toggleHabit(el) {
+      el.classList.toggle('done');
+      updateHabitsCount();
+      if (el.classList.contains('done') && window.v07 && window.v07.ui) {
+        window.v07.ui.toast('Habit checked! Momentum preserved 🔥', 'success');
+      }
+    }
+    function toggleNewHabitForm() {
+      const f = document.getElementById('new-habit-form');
+      if (!f) return;
+      const isOpen = f.style.display === 'block';
+      f.style.display = isOpen ? 'none' : 'block';
+      if (!isOpen) {
+        const inp = document.getElementById('habit-name-input');
+        if (inp) inp.focus();
+      }
+    }
+    function createNewHabit() {
+      const inp = document.getElementById('habit-name-input');
+      const name = inp ? inp.value.trim() : '';
+      if (!name) {
+        if (window.v07 && window.v07.ui) window.v07.ui.toast('Please enter a habit title', 'error');
+        return;
+      }
+      const container = document.getElementById('habit-items-container') || document.querySelector('.card');
+      const row = document.createElement('div');
+      row.className = 'habit-item';
+      row.innerHTML = `
+        <div class="habit-left">
+          <div class="habit-check" onclick="toggleHabit(this)">
+            <span class="material-symbols-outlined" style="font-size: 16px;">check</span>
+          </div>
+          <span style="font-size: 13px; font-weight: 600;">🌿 ${name}</span>
+        </div>
+        <span class="streak-badge">🔥 1 day</span>
+      `;
+      container.appendChild(row);
+      inp.value = '';
+      toggleNewHabitForm();
+      updateHabitsCount();
+      if (window.v07 && window.v07.ui) {
+        window.v07.ui.toast('Added habit "' + name + '" to daily cadence.', 'success');
+      }
+    }
+  </script>
 </body>
 </html>

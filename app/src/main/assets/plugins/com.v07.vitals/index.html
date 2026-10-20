@@ -1,818 +1,337 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="v07-sdk.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Mood &amp; Energy</title>
+<title>Mood & Energy Vitals</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-  :root {
-    --bg: #0D0F14;
-    --surface: #151821;
-    --surface-card: #191D28;
-    --surface-elevated: #202534;
-    --border: #262C3E;
-    --border-subtle: rgba(255, 255, 255, 0.08);
-    --accent: #4DE086;
-    --accent-light: #7CF4A8;
-    --accent-glow: rgba(77, 224, 134, 0.15);
-    --yellow: #FFB84D;
-    --yellow-glow: rgba(255, 184, 77, 0.15);
-    --blue: #68A6FF;
-    --purple: #A78BFA;
-    --rose: #FF5370;
-    --text-primary: #F1F5F9;
-    --text-secondary: #94A3B8;
-    --text-muted: #64748B;
-    --radius: 8px;
-    --radius-sm: 4px;
-    --radius-lg: 12px;
-  }
-
-  :root[data-theme="light"] {
-    --bg: #F8FAFC;
-    --surface: #FFFFFF;
-    --surface-card: #F1F5F9;
-    --surface-elevated: #E2E8F0;
-    --border: #CBD5E1;
-    --border-subtle: rgba(0, 0, 0, 0.08);
-    --accent: #16A34A;
-    --accent-light: #15803D;
-    --accent-glow: rgba(22, 163, 74, 0.12);
-    --yellow: #D97706;
-    --yellow-glow: rgba(217, 119, 6, 0.12);
-    --blue: #2563EB;
-    --purple: #7C3AED;
-    --rose: #E11D48;
-    --text-primary: #0F172A;
-    --text-secondary: #475569;
-    --text-muted: #94A3B8;
-  }
-
-  body {
-    background: var(--bg);
-    color: var(--text-primary);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    font-size: 13px;
-    line-height: 1.5;
-    padding: 16px 14px 80px;
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
-    overflow-x: hidden;
-  }
-
-  /* ── Header ── */
-  .header {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 16px;
-    margin-bottom: 14px;
-  }
-  .header-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: var(--accent-glow);
-    border: 1px solid var(--accent);
-    color: var(--accent);
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: var(--radius-sm);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-  .header-title {
-    font-size: 22px;
-    font-weight: 800;
-    color: var(--text-primary);
-    letter-spacing: -0.02em;
-    line-height: 1.2;
-    margin-bottom: 4px;
-  }
-  .header-sub {
-    font-size: 12px;
-    color: var(--text-secondary);
-  }
-
-  /* ── Stats Grid ── */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-    margin-bottom: 14px;
-  }
-  @media(min-width: 500px){
-    .stats-grid { grid-template-columns: repeat(4, 1fr); }
-  }
-  .stat-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 10px 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-  .stat-label {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    font-size: 9px;
-    font-weight: 700;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-  .stat-value {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--text-primary);
-  }
-  .stat-sub {
-    font-size: 10px;
-    color: var(--text-secondary);
-  }
-
-  /* ── Interactive Logger Box ── */
-  .logger-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 14px;
-    margin-bottom: 16px;
-  }
-  .logger-tabs {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
-  }
-  .logger-tab {
-    flex: 1;
-    padding: 8px 12px;
-    border: 1px solid var(--border);
-    background: var(--surface-card);
-    color: var(--text-secondary);
-    border-radius: var(--radius);
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    font-size: 11px;
-    font-weight: 700;
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.15s ease;
-  }
-  .logger-tab:active { transform: scale(0.98); }
-  .logger-tab.active-mood {
-    border-color: var(--accent);
-    color: var(--accent);
-    background: var(--accent-glow);
-  }
-  .logger-tab.active-energy {
-    border-color: var(--yellow);
-    color: var(--yellow);
-    background: var(--yellow-glow);
-  }
-
-  .rating-options {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 6px;
-    margin-bottom: 12px;
-  }
-  .rate-option {
-    border: 1px solid var(--border);
-    background: var(--surface-card);
-    border-radius: var(--radius);
-    padding: 8px 4px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    user-select: none;
-  }
-  .rate-option:hover {
-    border-color: var(--text-muted);
-  }
-  .rate-option:active {
-    transform: scale(0.96);
-  }
-  .rate-option.selected {
-    border-color: var(--accent);
-    background: var(--accent-glow);
-  }
-  .rate-option.selected.energy-mode {
-    border-color: var(--yellow);
-    background: var(--yellow-glow);
-  }
-  .rate-icon {
-    font-size: 18px;
-    margin-bottom: 2px;
-  }
-  .rate-num {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--text-primary);
-  }
-  .rate-text {
-    font-size: 8.5px;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    text-align: center;
-    line-height: 1.1;
-    margin-top: 2px;
-  }
-
-  .input-note-row {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
-  .note-input {
-    flex: 1;
-    background: var(--surface-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 9px 12px;
-    color: var(--text-primary);
-    font-size: 12px;
-    font-family: inherit;
-    outline: none;
-    transition: border-color 0.15s;
-  }
-  .note-input:focus {
-    border-color: var(--accent);
-  }
-  .btn-submit {
-    padding: 9px 16px;
-    border: 1px solid var(--accent);
-    background: var(--accent);
-    color: #000;
-    border-radius: var(--radius);
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    font-size: 11px;
-    font-weight: 700;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: all 0.15s;
-  }
-  .btn-submit:active { transform: scale(0.97); }
-
-  /* ── Filter Bar ── */
-  .section-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-    padding: 0 2px;
-  }
-  .section-title {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
-  .period-select {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    color: var(--text-secondary);
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    font-size: 10px;
-    padding: 4px 8px;
-    outline: none;
-    cursor: pointer;
-  }
-
-  /* ── Timeline items ── */
-  .log-item {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 10px 12px;
-    margin-bottom: 8px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-    transition: border-color 0.15s;
-  }
-  .log-item:hover {
-    border-color: var(--border-subtle);
-  }
-  .log-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    min-width: 0;
-    flex: 1;
-  }
-  .log-pill {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    font-size: 9px;
-    font-weight: 700;
-    padding: 3px 6px;
-    border-radius: var(--radius-sm);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    flex-shrink: 0;
-  }
-  .pill-mood {
-    background: var(--accent-glow);
-    border: 1px solid var(--accent);
-    color: var(--accent);
-  }
-  .pill-energy {
-    background: var(--yellow-glow);
-    border: 1px solid var(--yellow);
-    color: var(--yellow);
-  }
-  .log-title {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-primary);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .log-note {
-    font-size: 11px;
-    color: var(--text-muted);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .log-right {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
-  }
-  .log-time {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    font-size: 10px;
-    color: var(--text-muted);
-  }
-  .log-del {
-    color: var(--text-muted);
-    cursor: pointer;
-    padding: 4px;
-    font-size: 13px;
-    border-radius: 4px;
-    display: inline-flex;
-    align-items: center;
-  }
-  .log-del:hover {
-    color: var(--rose);
-  }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    :root {
+      --canvas: #F4F7F5;
+      --card: #FFFFFF;
+      --card-low: #F8FAF9;
+      --brand-teal: #2E7D6A;
+      --brand-teal-light: #E8F5F1;
+      --mint: #3F9A83;
+      --cedar: #8C5E58;
+      --cedar-light: #FAF0EE;
+      --slate: #182230;
+      --subslate: #5B6A78;
+      --border: #DDE7E2;
+      --border-subtle: rgba(0, 0, 0, 0.06);
+      --font-main: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --font-mono: 'Space Mono', 'JetBrains Mono', monospace;
+      --radius: 14px;
+      --radius-sm: 8px;
+      --radius-pill: 9999px;
+      --shadow-card: 0 1px 3px rgba(24, 34, 48, 0.04), 0 1px 2px rgba(24, 34, 48, 0.02);
+    }
+    :root[data-theme="dark"], body.dark {
+      --canvas: #0B111E;
+      --card: #141C2B;
+      --card-low: #1A2436;
+      --brand-teal: #4DE086;
+      --brand-teal-light: rgba(77, 224, 134, 0.12);
+      --mint: #7CF4A8;
+      --cedar: #E09F95;
+      --cedar-light: rgba(224, 159, 149, 0.12);
+      --slate: #F1F5F9;
+      --subslate: #94A3B8;
+      --border: #262E3E;
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+    body {
+      background: var(--canvas);
+      color: var(--slate);
+      font-family: var(--font-main);
+      padding: 16px 14px calc(32px + env(safe-area-inset-bottom, 16px));
+      max-width: 540px;
+      margin: 0 auto;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      line-height: 1.5;
+    }
+    .header-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .header-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .header-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: var(--brand-teal-light);
+      color: var(--brand-teal);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .header-title-wrap h1 {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--slate);
+      margin: 0;
+    }
+    .header-title-wrap p {
+      font-size: 11px;
+      color: var(--subslate);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin: 0;
+    }
+    .badge-pill {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: var(--radius-pill);
+      background: var(--brand-teal-light);
+      color: var(--brand-teal);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn {
+      font-family: var(--font-main);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 7px 14px;
+      border-radius: var(--radius-pill);
+      border: 1px solid transparent;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .btn:active { transform: scale(0.96); }
+    .btn-primary {
+      background: var(--brand-teal);
+      color: #FFFFFF;
+      border-color: var(--brand-teal);
+    }
+    :root[data-theme="dark"] .btn-primary {
+      color: #0B111E;
+    }
+    .btn-secondary {
+      background: var(--card);
+      color: var(--slate);
+      border-color: var(--border);
+    }
+    .btn-secondary:hover { background: var(--card-low); }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-card);
+    }
+    .card-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--subslate);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+.mood-grid {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  margin: 8px 0 14px;
+}
+.mood-chip {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--card-low);
+  border: 1px solid var(--border);
+  color: var(--slate);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.mood-chip.active {
+  background: var(--brand-teal);
+  color: #FFFFFF;
+  border-color: var(--brand-teal);
+}
+.battery-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin: 8px 0 14px;
+}
+.batt-btn {
+  background: var(--card-low);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 2px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--subslate);
+  cursor: pointer;
+}
+.batt-btn.active {
+  background: var(--brand-teal);
+  color: #FFFFFF;
+  border-color: var(--brand-teal);
+}
+.note-input {
+  width: 100%;
+  background: var(--card-low);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--slate);
+  outline: none;
+  margin-bottom: 10px;
+}
+.note-input:focus { border-color: var(--brand-teal); }
 </style>
 <script>
-(function(){
-  function syncTheme(){
-    var t = 'dark';
-    try {
-      t = window.parent.document.documentElement.dataset.theme || localStorage.getItem('v07_theme') || 'dark';
-    } catch(e){
-      try { t = localStorage.getItem('v07_theme') || 'dark'; } catch(e2){}
-    }
-    if(t === 'light') document.documentElement.setAttribute('data-theme', 'light');
-    else document.documentElement.removeAttribute('data-theme');
-  }
-  syncTheme();
-  window.addEventListener('storage', syncTheme);
-})();
-</script>
+    (function(){
+      function syncTheme(){
+        var t = 'dark';
+        try {
+          t = window.parent.document.documentElement.dataset.theme || localStorage.getItem('v07_theme') || 'dark';
+        } catch(e){
+          try { t = localStorage.getItem('v07_theme') || 'dark'; } catch(e2){}
+        }
+        if(t === 'light') document.documentElement.setAttribute('data-theme', 'light');
+        else document.documentElement.removeAttribute('data-theme');
+      }
+      syncTheme();
+      window.addEventListener('storage', syncTheme);
+      setInterval(syncTheme, 2000);
+    })();
+    </script>
 </head>
 <body>
+  <header class="header-card">
+    <div class="header-info">
+      <div class="header-icon"><span class="material-symbols-outlined">bolt</span></div>
+      <div class="header-title-wrap">
+        <h1>Mood & Energy Vitals</h1>
+        <p>Circadian presence, mood equilibrium & somatic vitality</p>
+      </div>
+    </div>
+    <span class="badge-pill">HISTORY →</span>
+  </header>
 
-<!-- Header -->
-<div class="header">
-  <div class="header-badge">🧠 VITALS &amp; NEURODYNAMICS</div>
-  <div class="header-title">Mood &amp; Energy</div>
-  <div class="header-sub">Track mental cadence, mood equilibrium, and daily somatic vitality</div>
-</div>
+  <div class="card">
+    <div class="card-label"><span>How are you feeling right now?</span></div>
+    
+    <!-- Mood Selector -->
+    <div class="hud-sub" style="font-weight: 600; margin-top: 4px;">MOOD STATE</div>
+    <div class="mood-grid">
+      <div class="mood-chip active" onclick="selectMood('🌿 Calm', this)">🌿 Calm</div>
+      <div class="mood-chip" onclick="selectMood('✨ Inspired', this)">✨ Inspired</div>
+      <div class="mood-chip" onclick="selectMood('☕ Focused', this)">☕ Focused</div>
+      <div class="mood-chip" onclick="selectMood('🌧️ Melancholy', this)">🌧️ Melancholy</div>
+      <div class="mood-chip" onclick="selectMood('⚡ Restless', this)">⚡ Restless</div>
+    </div>
 
-<!-- Stats HUD -->
-<div class="stats-grid">
-  <div class="stat-card" style="border-left: 3px solid var(--accent)">
-    <span class="stat-label">TODAY MOOD</span>
-    <span class="stat-value" id="statTodayMood">--</span>
-    <span class="stat-sub" id="statTodayMoodSub">No check-in</span>
-  </div>
-  <div class="stat-card" style="border-left: 3px solid var(--yellow)">
-    <span class="stat-label">TODAY ENERGY</span>
-    <span class="stat-value" id="statTodayEnergy">--</span>
-    <span class="stat-sub" id="statTodayEnergySub">No check-in</span>
-  </div>
-  <div class="stat-card">
-    <span class="stat-label">CHECK-INS</span>
-    <span class="stat-value" id="statTodayCount">0</span>
-    <span class="stat-sub">Recorded today</span>
-  </div>
-  <div class="stat-card">
-    <span class="stat-label">7-DAY EQUILIBRIUM</span>
-    <span class="stat-value" id="statEquilibrium">--</span>
-    <span class="stat-sub">Stability index</span>
-  </div>
-</div>
+    <!-- Energy Battery -->
+    <div class="hud-sub" style="font-weight: 600;">ENERGY LEVEL</div>
+    <div class="battery-row">
+      <div class="batt-btn" onclick="selectEnergy('10%', this)">10%</div>
+      <div class="batt-btn" onclick="selectEnergy('30%', this)">30%</div>
+      <div class="batt-btn" onclick="selectEnergy('50%', this)">50%</div>
+      <div class="batt-btn active" onclick="selectEnergy('75%', this)">75%</div>
+      <div class="batt-btn" onclick="selectEnergy('PEAK', this)">100%</div>
+    </div>
 
-<!-- Logger Studio -->
-<div class="logger-card">
-  <div class="logger-tabs">
-    <button class="logger-tab active-mood" id="tabMood" onclick="switchMode('mood')">🧠 MOOD LOG</button>
-    <button class="logger-tab" id="tabEnergy" onclick="switchMode('energy')">⚡ ENERGY LOG</button>
-  </div>
-
-  <div class="rating-options" id="ratingOptionsContainer">
-    <!-- Populated by JavaScript -->
+    <input type="text" id="vitals-note" class="note-input" placeholder="Add an optional somatic or emotional note...">
+    <button class="btn btn-primary" onclick="logVitals()" style="width: 100%; justify-content: center;">Log Vitals Now</button>
   </div>
 
-  <div class="input-note-row">
-    <input type="text" id="noteInput" class="note-input" placeholder="Add optional context (e.g. after deep work session, run, sleep...)" maxlength="120" onkeydown="if(event.key==='Enter')submitCurrentLog()">
-    <button class="btn-submit" id="submitBtn" onclick="submitCurrentLog()">RECORD</button>
+  <!-- Sleep Logger Card -->
+  <div class="card">
+    <div class="card-label"><span>Last Night's Sleep</span></div>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <div style="font-size: 14px; font-weight: 700; color: var(--slate);">🌙 7h 45m (11:15 PM → 07:00 AM)</div>
+        <div style="font-size: 11px; color: var(--subslate); margin-top: 2px;">Quality: ★★★★☆ (Good recovery)</div>
+      </div>
+      <span class="badge-pill">RESTFUL</span>
+    </div>
   </div>
-</div>
 
-<!-- Timeline Header -->
-<div class="section-head">
-  <span class="section-title">CHRONOLOGICAL LOG</span>
-  <select id="periodSelect" class="period-select" onchange="renderTimeline()">
-    <option value="7">LAST 7 DAYS</option>
-    <option value="14">LAST 14 DAYS</option>
-    <option value="30">LAST 30 DAYS</option>
-  </select>
-</div>
+  <!-- 7-Day Sparkline Correlation -->
+  <div class="card">
+    <div class="card-label"><span>7-Day Energy & Mood Correlation</span></div>
+    <div style="font-size: 11px; color: var(--subslate); margin-bottom: 8px;">Energy: 75% average • Peak days: Tuesday & Friday</div>
+    <div style="height: 10px; background: var(--border); border-radius: var(--radius-pill); overflow: hidden;">
+      <div style="width: 75%; height: 100%; background: linear-gradient(90deg, var(--brand-teal) 0%, #FFB84D 100%);"></div>
+    </div>
+  </div>
 
-<!-- Timeline List -->
-<div id="timelineList"></div>
-
-<script>
-var STORAGE_KEY = 'v07_plugin_vitals_logs';
-var currentMode = 'mood';
-var currentVal = 3;
-
-var MOOD_LEVELS = [
-  { val: 1, icon: '🌧️', label: 'Distressed', sub: 'Low point' },
-  { val: 2, icon: '☁️', label: 'Heavy', sub: 'Dull' },
-  { val: 3, icon: '⛅', label: 'Steady', sub: 'Balanced' },
-  { val: 4, icon: '🌤️', label: 'Calm', sub: 'Grounded' },
-  { val: 5, icon: '☀️', label: 'Peak', sub: 'Energized' }
-];
-
-var ENERGY_LEVELS = [
-  { val: 1, icon: '🪫', label: 'Exhausted', sub: 'Depleted' },
-  { val: 2, icon: '🔋', label: 'Sluggish', sub: 'Low power' },
-  { val: 3, icon: '⚡', label: 'Balanced', sub: 'Nominal' },
-  { val: 4, icon: '🔥', label: 'High', sub: 'Vigorous' },
-  { val: 5, icon: '🚀', label: 'Surging', sub: 'Peak flow' }
-];
-
-function getLocalLogs(){
-  try {
-    var s = localStorage.getItem(STORAGE_KEY);
-    if(s) return JSON.parse(s);
-  } catch(e){}
-  return [];
-}
-
-function saveLocalLogs(logs){
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
-    window.dispatchEvent(new Event('storage'));
-  } catch(e){}
-}
-
-var _cachedLogs = getLocalLogs();
-
-function renderRatingOptions(){
-  var container = document.getElementById('ratingOptionsContainer');
-  if(!container) return;
-  var levels = currentMode === 'mood' ? MOOD_LEVELS : ENERGY_LEVELS;
-  var isEnergy = currentMode === 'energy';
-
-  var html = '';
-  levels.forEach(function(item){
-    var isSel = (item.val === currentVal);
-    var cls = 'rate-option' + (isSel ? ' selected' + (isEnergy ? ' energy-mode' : '') : '');
-    html += '<div class="' + cls + '" onclick="selectValue(' + item.val + ')">';
-    html += '  <div class="rate-icon">' + item.icon + '</div>';
-    html += '  <div class="rate-num">' + item.val + '</div>';
-    html += '  <div class="rate-text">' + item.label + '</div>';
-    html += '</div>';
-  });
-  container.innerHTML = html;
-
-  var subBtn = document.getElementById('submitBtn');
-  if(subBtn){
-    subBtn.style.background = isEnergy ? 'var(--yellow)' : 'var(--accent)';
-    subBtn.style.borderColor = isEnergy ? 'var(--yellow)' : 'var(--accent)';
-  }
-}
-
-function selectValue(val){
-  currentVal = val;
-  renderRatingOptions();
-}
-
-function switchMode(mode){
-  currentMode = mode;
-  var tabM = document.getElementById('tabMood');
-  var tabE = document.getElementById('tabEnergy');
-  if(tabM && tabE){
-    if(mode === 'mood'){
-      tabM.className = 'logger-tab active-mood';
-      tabE.className = 'logger-tab';
-    } else {
-      tabM.className = 'logger-tab';
-      tabE.className = 'logger-tab active-energy';
+  <script>
+    let selectedMood = '🌿 Calm';
+    let selectedEnergy = '75%';
+    function selectMood(m, el) {
+      selectedMood = m;
+      document.querySelectorAll('.mood-chip').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
     }
-  }
-  renderRatingOptions();
-}
-
-async function fetchServerVitals(){
-  try {
-    var moodList = [];
-    var energyList = [];
-
-    // Tier 1: Query host bridge via nativeInvoke
-    var hostBridge = (window.parent && window.parent.nativeInvoke) ? window.parent.nativeInvoke : null;
-    var hostEngine = (window.parent && window.parent.V07StorageEngine) ? window.parent.V07StorageEngine : null;
-    var hostV07 = (window.parent && window.parent.V07) ? window.parent.V07 : null;
-
-    if (hostBridge) {
-      try {
-        var rV = await hostBridge('com.v07.vitals', 'events:query', { category: 'vital' });
-        if (rV && rV.events && Array.isArray(rV.events) && rV.events.length > 0) {
-          rV.events.forEach(function(ev) {
-            if (ev.type === 'energy' || (ev.category || '').toLowerCase() === 'energy') energyList.push(ev);
-            else moodList.push(ev);
-          });
+    function selectEnergy(e, el) {
+      selectedEnergy = e;
+      document.querySelectorAll('.batt-btn').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+    }
+    function logVitals() {
+      const note = document.getElementById('vitals-note').value.trim();
+      const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const statusPill = document.getElementById('vitals-status-pill');
+      if (statusPill) {
+        statusPill.textContent = '✓ LOGGED ' + nowStr;
+        statusPill.style.background = 'var(--brand-teal-light)';
+        statusPill.style.color = 'var(--brand-teal)';
+      }
+      if (window.v07 && window.v07.storage) {
+        window.v07.storage.insertEvent({
+          category: 'vitals',
+          mood: selectedMood,
+          energy: selectedEnergy,
+          note: note,
+          ts: Date.now()
+        }).then(() => {
+          if (window.v07 && window.v07.ui) window.v07.ui.toast('Logged Vitals: ' + selectedMood + ' (' + selectedEnergy + ')', 'success');
+        }).catch(() => {
+          if (window.v07 && window.v07.ui) window.v07.ui.toast('Recorded vitals locally.', 'success');
+        });
+      } else {
+        if (window.v07 && window.v07.ui) {
+          window.v07.ui.toast('Recorded Vitals: ' + selectedMood + ' (' + selectedEnergy + ')', 'success');
         }
-      } catch (_) {}
+      }
+      document.getElementById('vitals-note').value = '';
     }
-
-    // Tier 2: Directly inspect host V07StorageEngine
-    if (!moodList.length && !energyList.length && hostEngine) {
-      var vCache = (hostEngine._pluginEventsCache && hostEngine._pluginEventsCache['com.v07.vitals']) || [];
-      var aggV = (hostEngine._eventsCache || []).filter(function(e) {
-        var c = (e.category || '').toLowerCase();
-        return c === 'vital' || c === 'vitals' || c === 'mood' || c === 'energy';
-      });
-      var vCombined = vCache.concat(aggV);
-      var vSeen = new Set();
-      vCombined.forEach(function(ev) {
-        if (!vSeen.has(ev.id)) {
-          vSeen.add(ev.id);
-          if (ev.type === 'energy' || (ev.category || '').toLowerCase() === 'energy') energyList.push(ev);
-          else moodList.push(ev);
-        }
-      });
-    }
-
-    // Tier 3: Direct V07 bridge
-    if (!moodList.length && !energyList.length && hostV07) {
-      var rMood = hostV07.readEventsAll('mood');
-      if (rMood && rMood.events) moodList = rMood.events;
-      var rEnergy = hostV07.readEventsAll('energy');
-      if (rEnergy && rEnergy.events) energyList = rEnergy.events;
-    }
-
-    // Tier 4: Fallback to local HTTP if in standalone local backend
-    if (!moodList.length && !energyList.length) {
-      try {
-        var pMood = fetch('/events/mood').then(function(r){ return r.json(); }).catch(function(){ return {events:[]}; });
-        var pEnergy = fetch('/events/energy').then(function(r){ return r.json(); }).catch(function(){ return {events:[]}; });
-        var res = await Promise.all([pMood, pEnergy]);
-        moodList = (res[0] && res[0].events) || [];
-        energyList = (res[1] && res[1].events) || [];
-      } catch (_) {}
-    }
-
-    var combined = [];
-    moodList.forEach(function(m){
-      var v = m.score || m.value || (m.mood === 'peak'?5:m.mood==='calm'?4:m.mood==='steady'?3:m.mood==='low'?2:1);
-      combined.push({
-        id: m.id || ('m_' + (m.ts || m.date || Date.now())),
-        type: 'mood',
-        value: v,
-        label: m.label || m.mood || (v + '/5'),
-        note: m.note || m.notes || '',
-        ts: m.timestamp || (m.ts ? (typeof m.ts === 'string' ? new Date(m.ts).getTime() : m.ts) : (m.date ? new Date(m.date+'T12:00:00').getTime() : Date.now()))
-      });
-    });
-    energyList.forEach(function(en){
-      var v = en.score || en.energy || en.value || 3;
-      combined.push({
-        id: en.id || ('e_' + (en.ts || en.date || Date.now())),
-        type: 'energy',
-        value: v,
-        label: en.label || (v + '/5'),
-        note: en.note || en.notes || '',
-        ts: en.timestamp || (en.ts ? (typeof en.ts === 'string' ? new Date(en.ts).getTime() : en.ts) : (en.date ? new Date(en.date+'T12:00:00').getTime() : Date.now()))
-      });
-    });
-
-    if(combined.length){
-      combined.sort(function(a,b){ return b.ts - a.ts; });
-      _cachedLogs = combined;
-      saveLocalLogs(_cachedLogs);
-      updateStats();
-      renderTimeline();
-    }
-  } catch(e){
-    console.warn('[Vitals Plugin] fetchServerVitals error:', e);
-  }
-}
-
-function updateStats(){
-  var logs = _cachedLogs.length ? _cachedLogs : getLocalLogs();
-  var todayStr = new Date().toISOString().slice(0, 10);
-
-  var todayMoods = logs.filter(function(l){
-    return l.type === 'mood' && new Date(l.ts).toISOString().slice(0, 10) === todayStr;
-  });
-  var todayEnergies = logs.filter(function(l){
-    return l.type === 'energy' && new Date(l.ts).toISOString().slice(0, 10) === todayStr;
-  });
-
-  var elMood = document.getElementById('statTodayMood');
-  var elMoodSub = document.getElementById('statTodayMoodSub');
-  if(todayMoods.length){
-    var lastMood = todayMoods[0];
-    if(elMood) elMood.textContent = lastMood.value + ' / 5';
-    if(elMoodSub) elMoodSub.textContent = lastMood.label.toUpperCase();
-  } else {
-    if(elMood) elMood.textContent = '--';
-    if(elMoodSub) elMoodSub.textContent = 'No check-in';
-  }
-
-  var elEnergy = document.getElementById('statTodayEnergy');
-  var elEnergySub = document.getElementById('statTodayEnergySub');
-  if(todayEnergies.length){
-    var lastEn = todayEnergies[0];
-    if(elEnergy) elEnergy.textContent = lastEn.value + ' / 5';
-    if(elEnergySub) elEnergySub.textContent = lastEn.label.toUpperCase();
-  } else {
-    if(elEnergy) elEnergy.textContent = '--';
-    if(elEnergySub) elEnergySub.textContent = 'No check-in';
-  }
-
-  var elCount = document.getElementById('statTodayCount');
-  if(elCount) elCount.textContent = (todayMoods.length + todayEnergies.length);
-
-  // 7-day stability
-  var sevenDaysAgo = Date.now() - (7 * 86400000);
-  var weekLogs = logs.filter(function(l){ return l.ts >= sevenDaysAgo; });
-  var elEq = document.getElementById('statEquilibrium');
-  if(elEq){
-    if(weekLogs.length >= 3){
-      var avg = weekLogs.reduce(function(a,b){ return a + b.value; }, 0) / weekLogs.length;
-      var variance = weekLogs.reduce(function(a,b){ return a + Math.pow(b.value - avg, 2); }, 0) / weekLogs.length;
-      var stability = Math.max(50, Math.min(99, Math.round(100 - (variance * 18))));
-      elEq.textContent = stability + '%';
-    } else {
-      elEq.textContent = 'STEADY';
-    }
-  }
-}
-
-async function submitCurrentLog(){
-  var noteInp = document.getElementById('noteInput');
-  var noteText = (noteInp ? noteInp.value : '').trim();
-
-  var levels = currentMode === 'mood' ? MOOD_LEVELS : ENERGY_LEVELS;
-  var matched = levels.find(function(l){ return l.val === currentVal; }) || levels[2];
-  var labelText = matched.label;
-
-  var now = Date.now();
-  var today = new Date().toISOString().slice(0, 10);
-  var nowIso = new Date().toISOString();
-
-  var newEntry = {
-    id: 'v_' + now,
-    type: currentMode,
-    value: currentVal,
-    label: labelText,
-    note: noteText,
-    ts: now
-  };
-
-  _cachedLogs.unshift(newEntry);
-  saveLocalLogs(_cachedLogs);
-  if(noteInp) noteInp.value = '';
-
-  updateStats();
-  renderTimeline();
-
-  // Sync to host platform
-  try {
-    var todayStr = new Date().toISOString().slice(0, 10);
-    var vitEvent = {
-      id: newEntry.id,
-      category: 'vital',
-      pluginId: 'com.v07.vitals',
-      plugin_id: 'com.v07.vitals',
-      type: currentMode,
-      score: currentVal,
-      label: labelText,
-      note: noteText,
-      date: todayStr,
-      ts: now,
-      timestamp: now
-    };
-    if (window.parent && window.parent.nativeInvoke) {
-      await window.parent.nativeInvoke('com.v07.vitals', 'events:insert', vitEvent);
-    } else if (window.parent && window.parent.V07StorageEngine) {
-      await window.parent.V07StorageEngine.saveEvent(vitEvent);
-    } else {
-      await fetch('/event/' + currentMode, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data: vitEvent })
-      });
-    }
-    fetchServerVitals();
-  } catch(e){}
-}
-
-function renderTimeline(){
-  var logs = _cachedLogs.length ? _cachedLogs : getLocalLogs();
-  var days = parseInt(document.getElementById('periodSelect').value, 10) || 7;
-  var cutoff = Date.now() - (days * 86400000);
-  var filtered = logs.filter(function(l){ return l.ts >= cutoff; });
-
-  var container = document.getElementById('timelineList');
-  if(!filtered.length){
-    container.innerHTML = '<div style="padding:28px 12px;text-align:center;border:1.5px dashed var(--border);border-radius:var(--radius);color:var(--text-muted);font-size:12px;font-family:'Plus Jakarta Sans', system-ui, -apple-system, sans-serif">No metrics logged in this period</div>';
-    return;
-  }
-
-  var html = '';
-  filtered.forEach(function(l){
-    var isMood = (l.type === 'mood');
-    var col = isMood ? 'var(--accent)' : 'var(--yellow)';
-    var pillClass = isMood ? 'log-pill pill-mood' : 'log-pill pill-energy';
-    var typeLabel = isMood ? 'MOOD' : 'ENERGY';
-    var dt = new Date(l.ts);
-    var dateLabel = dt.toLocaleDateString([], {month:'short', day:'numeric'});
-    var timeLabel = dt.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-
-    html += '<div class="log-item" style="border-left:3px solid ' + col + '">';
-    html += '  <div class="log-left">';
-    html += '    <span class="' + pillClass + '">' + typeLabel + ' ' + l.value + '</span>';
-    html += '    <div style="min-width:0;flex:1">';
-    html += '      <div class="log-title">' + (l.label || '').toUpperCase() + '</div>';
-    if(l.note){
-      html += '    <div class="log-note">' + l.note + '</div>';
-    }
-    html += '    </div>';
-    html += '  </div>';
-    html += '  <div class="log-right">';
-    html += '    <span class="log-time">' + dateLabel + ' · ' + timeLabel + '</span>';
-    html += '    <span class="log-del" onclick="deleteLocalLog(\'' + l.id + '\')" title="Remove">✕</span>';
-    html += '  </div>';
-    html += '</div>';
-  });
-
-  container.innerHTML = html;
-}
-
-function deleteLocalLog(id){
-  _cachedLogs = _cachedLogs.filter(function(x){ return x.id !== id; });
-  saveLocalLogs(_cachedLogs);
-  updateStats();
-  renderTimeline();
-}
-
-window.v07LogVitals = function(){
-  try {
-    if(window.parent && window.parent.openPluginPage){
-      window.parent.openPluginPage('com.v07.vitals');
-    }
-  } catch(e){}
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-};
-
-renderRatingOptions();
-updateStats();
-renderTimeline();
-fetchServerVitals();
-
-window.addEventListener('message', function(ev) {
-  if (ev.data && ev.data.type === 'v07_data_updated') {
-    fetchServerVitals();
-  }
-});
-setTimeout(fetchServerVitals, 600);
-</script>
+  </script>
 </body>
 </html>

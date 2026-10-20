@@ -514,7 +514,7 @@ if (VaultConfig.isVaultConfigured()) {
 
     private fun copyBundleToInternal(filename: String) {
         try {
-            val inputStream = assets.open(filename)
+            val inputStream = try { assets.open("v3/$filename") } catch (_: Exception) { assets.open(filename) }
             val outFile = File(filesDir, filename)
             inputStream.use { input ->
                 FileOutputStream(outFile).use { output ->

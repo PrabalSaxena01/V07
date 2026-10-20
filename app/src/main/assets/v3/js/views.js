@@ -195,6 +195,12 @@
       if (kpiHabits) kpiHabits.textContent = habitStats.percentage + '%';
       if (kpiHabitSub) kpiHabitSub.textContent = `${habitStats.checked}/${habitStats.total} rituals completed`;
 
+      // Telemetry & Glance IDs
+      const dashFocusGlance = document.getElementById('dash-glance-focus');
+      const dashTasksGlance = document.getElementById('dash-glance-tasks');
+      if (dashFocusGlance) dashFocusGlance.textContent = totalFocusMin + 'm';
+      if (dashTasksGlance) dashTasksGlance.textContent = `${se.tasks.filter(t => t.status === 'completed' && !se.isTombstoned(t.id)).length} / ${se.tasks.filter(t => !se.isTombstoned(t.id)).length}`;
+
       // 3. Render Circular SVG Focus Gauge
       this.updateChronoGaugeDisplay();
 
@@ -205,29 +211,66 @@
     updateChronoGaugeDisplay() {
       const chrono = window.FocusChronometer;
       const digitsEl = document.getElementById('chronoDigits');
+      const dashDigitsEl = document.getElementById('dash-focus-digits');
+      const hudTimerEl = document.getElementById('hud-timer-label');
       const progressCircle = document.getElementById('chronoProgressCircle');
       const modeLabel = document.getElementById('chronoModeLabel');
+      const categoryBadge = document.getElementById('dash-focus-category');
+      const timerStatus = document.getElementById('dash-timer-status');
       const toggleBtn = document.getElementById('chronoToggleBtn');
       const toggleIcon = document.getElementById('chronoToggleIcon');
 
-      if (digitsEl) digitsEl.textContent = chrono.getFormattedTime();
+      const timeStr = chrono.getFormattedTime();
+      if (digitsEl) digitsEl.textContent = timeStr;
+      if (dashDigitsEl) dashDigitsEl.textContent = timeStr;
+      if (hudTimerEl) hudTimerEl.textContent = timeStr;
       if (modeLabel) modeLabel.textContent = `${chrono.activity} · ${chrono.mode.toUpperCase()}`;
+      if (categoryBadge) categoryBadge.textContent = chrono.activity || 'Deep Work';
+
+      if (timerStatus) {
+        if (chrono.state === 'RUNNING') {
+          timerStatus.textContent = 'Running';
+          timerStatus.style.color = 'var(--color-info)';
+          timerStatus.style.borderColor = 'var(--color-info)';
+        } else if (chrono.state === 'PAUSED') {
+          timerStatus.textContent = 'Paused';
+          timerStatus.style.color = 'var(--color-warning)';
+          timerStatus.style.borderColor = 'var(--color-warning)';
+        } else {
+          timerStatus.textContent = 'Ready';
+          timerStatus.style.color = 'var(--color-text-muted)';
+          timerStatus.style.borderColor = 'var(--color-border)';
+        }
+      }
 
       if (progressCircle) {
-        const radius = 100;
+        let radius = 70;
+        try {
+          if (progressCircle.r && progressCircle.r.baseVal) {
+            radius = progressCircle.r.baseVal.value;
+          }
+        } catch (_) {}
         const circumference = 2 * Math.PI * radius;
         const ratio = chrono.getProgressRatio();
         const offset = circumference - (ratio * circumference);
         progressCircle.style.strokeDashoffset = offset;
       }
 
-      if (toggleBtn && toggleIcon) {
+      if (toggleBtn) {
         if (chrono.state === 'RUNNING') {
-          toggleIcon.textContent = 'pause';
-          toggleBtn.className = 'touch-target px-6 py-2.5 rounded-xl font-bold bg-[var(--warning)] text-[var(--text-inverse)] flex items-center gap-2 btn-press';
+          if (toggleIcon) toggleIcon.textContent = 'pause';
+          toggleBtn.className = 'btn btn-warn';
+          toggleBtn.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            <span>Pause</span>
+          `;
         } else {
-          toggleIcon.textContent = 'play_arrow';
-          toggleBtn.className = 'touch-target px-6 py-2.5 rounded-xl font-bold bg-[var(--primary)] text-white flex items-center gap-2 btn-press';
+          if (toggleIcon) toggleIcon.textContent = 'play_arrow';
+          toggleBtn.className = 'btn btn-primary';
+          toggleBtn.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <span>Begin Flow</span>
+          `;
         }
       }
     }
@@ -242,36 +285,35 @@
 
       // Merge and sort all daily events chronologically
       const events = [
-        ...sessions.map(s => ({ type: 'session', ts: s.startTime || s.ts || 0, title: s.title || s.activity, detail: `${Math.round((s.durationSec || 0) / 60)}m focus · ${s.notes || 'In the zone'}`, icon: 'timer', color: 'var(--accent-chrono)' })),
-        ...thoughts.map(t => ({ type: 'thought', ts: t.ts || 0, title: t.title || 'Reflection', detail: t.content || '', icon: 'edit_note', color: 'var(--accent-reader)' })),
-        ...habitLogs.map(h => ({ type: 'habit', ts: h.ts || 0, title: h.habit_name || 'Ritual', detail: 'Completed daily cadence', icon: 'check_circle', color: 'var(--accent-habits)' }))
+        ...sessions.map(s => ({ type: 'Focus Session', ts: s.startTime || s.ts || 0, title: s.title || s.activity, detail: `${Math.round((s.durationSec || 0) / 60)}m focus · ${s.notes || 'In the zone'}`, color: 'var(--color-info)' })),
+        ...thoughts.map(t => ({ type: 'Insight Captured', ts: t.ts || 0, title: t.title || 'Reflection', detail: t.content || '', color: 'var(--color-warning)' })),
+        ...habitLogs.map(h => ({ type: 'Ritual Completed', ts: h.ts || 0, title: h.habit_name || 'Daily Protocol', detail: 'Consistent cadence achieved', color: 'var(--color-success)' }))
       ].sort((a, b) => b.ts - a.ts);
 
       if (events.length === 0) {
         container.innerHTML = `
-          <div class="p-8 text-center border border-dashed border-[var(--border)] rounded-xl">
-            <span class="material-symbols-outlined text-3xl text-[var(--text-muted)] mb-2">bedtime</span>
-            <p class="text-xs font-semibold text-[var(--text-secondary)]">Stillness on this date</p>
-            <p class="text-[11px] text-[var(--text-muted)] mt-1">Start a deep focus interval or record a thought to illuminate this day.</p>
+          <div class="empty-state">
+            <div class="empty-state-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
+            </div>
+            <div class="empty-state-heading">Stillness on this date</div>
+            <div class="empty-state-description">Start a deep focus interval or record a thought to illuminate this day.</div>
           </div>
         `;
         return;
       }
 
-      container.innerHTML = events.map(ev => `
-        <div class="timeline-item">
-          <div class="timeline-dot" style="background:${ev.color};">
-            <span class="material-symbols-outlined text-[11px] text-white">${ev.icon}</span>
-          </div>
-          <div class="bg-[var(--surface-alt)] p-3 rounded-xl border border-[var(--border)]">
-            <div class="flex items-center justify-between mb-1">
-              <span class="text-xs font-bold text-[var(--text)] truncate-single">${esc(ev.title)}</span>
-              <span class="text-[10px] text-[var(--text-muted)] tabular-nums">${ev.ts ? new Date(ev.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+      container.innerHTML = `
+        <div class="timeline-stream-container">
+          ${events.map(ev => `
+            <div class="timeline-item" style="--item-color: ${ev.color};">
+              <div class="timeline-item-meta">${ev.ts ? new Date(ev.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''} • ${esc(ev.type)}</div>
+              <div class="timeline-item-title">${esc(ev.title)}</div>
+              <div class="timeline-item-sub line-clamp-2">${esc(ev.detail)}</div>
             </div>
-            <p class="text-xs text-[var(--text-secondary)] line-clamp-2">${esc(ev.detail)}</p>
-          </div>
+          `).join('')}
         </div>
-      `).join('');
+      `;
     }
 
     // --- View 2: Habit Cadence Matrix & 140-Day Heatmap ---
@@ -372,44 +414,41 @@
 
       if (filtered.length === 0) {
         container.innerHTML = `
-          <div class="p-8 text-center border border-dashed border-[var(--border)] rounded-xl my-4">
-            <span class="material-symbols-outlined text-3xl text-[var(--text-muted)] mb-2">checklist</span>
-            <p class="text-xs font-semibold text-[var(--text-secondary)]">No obligations in this view</p>
-            <p class="text-[11px] text-[var(--text-muted)] mt-1">Enjoy unburdened clarity, or add an obligation above.</p>
+          <div class="empty-state">
+            <div class="empty-state-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            </div>
+            <div class="empty-state-heading">No obligations in this view</div>
+            <div class="empty-state-description">Enjoy unburdened clarity, or add an obligation above.</div>
           </div>
         `;
         return;
       }
 
-      container.innerHTML = filtered.map(t => {
-        const isDone = t.status === 'completed';
-        const priorityColor = t.priority === 'high' ? 'var(--danger)' : t.priority === 'low' ? 'var(--info)' : 'var(--warning)';
+      container.innerHTML = `
+        <div class="task-list">
+          ${filtered.map(t => {
+            const isDone = t.status === 'completed';
+            const priorityClass = t.priority === 'high' ? 'high' : t.priority === 'low' ? 'low' : 'medium';
 
-        return `
-          <div class="flex items-center justify-between p-3.5 bg-[var(--surface-alt)] border border-[var(--border)] rounded-xl mb-2 gap-3 group transition-all">
-            <div class="flex items-center gap-3 min-w-0 flex-1">
-              <button onclick="window.SanctuaryViews.toggleTaskStatus('${esc(t.id)}')" class="touch-target text-[var(--text-muted)] hover:text-[var(--primary)] flex-shrink-0">
-                <span class="material-symbols-outlined text-xl ${isDone ? 'text-[var(--success)]' : ''}">
-                  ${isDone ? 'check_circle' : 'radio_button_unchecked'}
-                </span>
-              </button>
-              <div class="min-w-0 flex-1">
-                <p class="text-sm font-semibold ${isDone ? 'line-through opacity-60 text-[var(--text-muted)]' : 'text-[var(--text)]'} truncate-single">${esc(t.title)}</p>
-                ${t.deadline ? `<span class="text-[10px] text-[var(--text-muted)] flex items-center gap-1 mt-0.5"><span class="material-symbols-outlined text-[11px]">schedule</span>${esc(t.deadline)}</span>` : ''}
+            return `
+              <div class="task-item ${isDone ? 'completed' : ''}">
+                <div class="task-checkbox" onclick="window.SanctuaryViews.toggleTaskStatus('${esc(t.id)}')">
+                  ${isDone ? '✓' : ''}
+                </div>
+                <span class="task-title" onclick="window.SanctuaryViews.toggleTaskStatus('${esc(t.id)}')">${esc(t.title)}</span>
+                <span class="task-priority-badge ${priorityClass}">${esc(t.priority || 'MED').toUpperCase()}</span>
+                <button onclick="window.SanctuaryViews.openTaskEditor('${esc(t.id)}')" class="btn btn-ghost !p-1.5 !min-h-0" title="Edit obligation">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                </button>
+                <button onclick="window.SanctuaryViews.deleteTaskWithUndo('${esc(t.id)}')" class="btn btn-ghost !p-1.5 !min-h-0 hover:!text-[var(--color-danger)]" title="Delete obligation">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
               </div>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold" style="background:${priorityColor}22; color:${priorityColor};">${esc(t.priority || 'MED').toUpperCase()}</span>
-              <button onclick="window.SanctuaryViews.openTaskEditor('${esc(t.id)}')" class="text-[var(--text-muted)] hover:text-[var(--text)] p-1.5 rounded-lg transition-colors">
-                <span class="material-symbols-outlined text-base">edit</span>
-              </button>
-              <button onclick="window.SanctuaryViews.deleteTaskWithUndo('${esc(t.id)}')" class="text-[var(--text-muted)] hover:text-[var(--danger)] p-1.5 rounded-lg transition-colors" title="Delete obligation">
-                <span class="material-symbols-outlined text-base">delete</span>
-              </button>
-            </div>
-          </div>
-        `;
-      }).join('');
+            `;
+          }).join('')}
+        </div>
+      `;
     }
 
     async toggleTaskStatus(taskId) {
@@ -447,26 +486,30 @@
       const thoughts = se.getThoughtsForDate(this.selectedDate);
       if (thoughts.length === 0) {
         container.innerHTML = `
-          <div class="p-8 text-center border border-dashed border-[var(--border)] rounded-xl my-4">
-            <span class="material-symbols-outlined text-3xl text-[var(--text-muted)] mb-2">history_edu</span>
-            <p class="text-xs font-semibold text-[var(--text-secondary)]">No reflections recorded for this day</p>
-            <p class="text-[11px] text-[var(--text-muted)] mt-1">Capture a fleeting insight or contemplative realization above.</p>
+          <div class="empty-state">
+            <div class="empty-state-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div class="empty-state-heading">No reflections recorded for this day</div>
+            <div class="empty-state-description">Capture a fleeting insight or contemplative realization above.</div>
           </div>
         `;
         return;
       }
 
-      container.innerHTML = thoughts.map(th => `
-        <div class="p-4 bg-[var(--surface-alt)] border border-[var(--border)] rounded-xl mb-3">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-bold text-[var(--primary)]">${esc(th.title || 'Contemplation')}</span>
-            <span class="text-[10px] text-[var(--text-muted)] tabular-nums">${th.ts ? new Date(th.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
-          </div>
-          <div class="prose-sanctuary text-xs leading-relaxed text-[var(--text)]">
-            ${renderSimpleMarkdown(th.content)}
-          </div>
+      container.innerHTML = `
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          ${thoughts.map(th => `
+            <div class="thought-card ${th.pinned ? 'pinned' : ''}">
+              <div class="thought-content">${renderSimpleMarkdown(th.content)}</div>
+              <div class="thought-meta-row">
+                <span style="font-weight:700; color:${th.pinned ? 'var(--color-info)' : 'var(--color-warning)'};">${esc(th.title || 'CONTEMPLATION').toUpperCase()}${th.pinned ? ' • PINNED' : ''}</span>
+                <span>${th.ts ? new Date(th.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+              </div>
+            </div>
+          `).join('')}
         </div>
-      `).join('');
+      `;
     }
 
     // --- View 5: Timeless Wisdom (Bhagavad Gita) ---

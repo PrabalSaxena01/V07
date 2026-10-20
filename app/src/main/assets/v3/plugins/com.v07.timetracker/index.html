@@ -1,515 +1,349 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="v07-sdk.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Time Tracker</title>
+<title>Time Tracker & Milestones</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  :root {
-    --bg: #090909;
-    --surface: #111319;
-    --surface-low: #1D2025;
-    --border: #2C2C2C;
-    --text: #E1E2EA;
-    --muted: #8A8F98;
-    --primary: #8D6CFF;
-    --secondary: #4DE086;
-    --yellow: #FFB84D;
-    --red: #FF5370;
-  }
-  :root[data-theme="light"] {
-    --bg: #f0f0f2;
-    --surface: #ffffff;
-    --surface-low: #f5f5f7;
-    --border: #d0d0d5;
-    --text: #1a1a2e;
-    --muted: #666666;
-    --primary: #7c4dff;
-    --secondary: #1a8a5a;
-    --yellow: #b45309;
-    --red: #d32f2f;
-  }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    padding: 14px;
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
-    overflow-x: hidden;
-  }
-  .kb-section-label {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    font-size: 10px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    margin: 10px 0 6px;
-  }
-  .chip-list {
-    display: flex;
-    gap: 6px;
-    overflow-x: auto;
-    padding-bottom: 6px;
-    margin-bottom: 12px;
-    scrollbar-width: none;
-  }
-  .chip-list::-webkit-scrollbar { display: none; }
-  .chip {
-    padding: 4px 10px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--muted);
-    font-size: 10px;
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    letter-spacing: 0.05em;
-    cursor: pointer;
-    white-space: nowrap;
-    border-radius: 4px;
-    flex-shrink: 0;
-  }
-  .chip.active {
-    border-color: var(--primary);
-    color: var(--primary);
-    background: var(--surface-low);
-    font-weight: 700;
-  }
-  .add-box {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-bottom: 2px solid var(--primary);
-    padding: 12px;
-    margin-bottom: 14px;
-    box-sizing: border-box;
-    width: 100%;
-  }
-  .input-row {
-    display: flex;
-    gap: 8px;
-    width: 100%;
-    box-sizing: border-box;
-  }
-  input[type="text"], input[type="date"] {
-    background: var(--surface-low);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    font-size: 12px;
-    padding: 8px 10px;
-    outline: none;
-    box-sizing: border-box;
-  }
-  input[type="text"] { flex: 1; min-width: 0; }
-  input[type="date"] { width: 135px; flex-shrink: 0; }
-  input:focus { border-color: var(--primary); }
-  .btn {
-    background: var(--primary);
-    color: #fff;
-    border: none;
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    font-size: 11px;
-    font-weight: 700;
-    padding: 8px 14px;
-    cursor: pointer;
-    letter-spacing: 0.05em;
-  }
-  :root[data-theme="light"] .btn { color: #fff; }
-  .event-card {
-    border: 1px solid var(--border);
-    border-bottom: 2px solid var(--primary);
-    background: var(--surface);
-    margin-bottom: 10px;
-    box-sizing: border-box;
-    width: 100%;
-    overflow: hidden;
-  }
-  .event-card-header {
-    padding: 6px 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid var(--border);
-    font-size: 9px;
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  }
-  .event-card-body {
-    padding: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-sizing: border-box;
-    gap: 12px;
-  }
-  .event-name {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--text);
-    word-break: break-word;
-    overflow-wrap: break-word;
-    line-height: 1.3;
-  }
-  .event-date {
-    font-size: 10px;
-    color: var(--muted);
-    margin-top: 3px;
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  }
-  .event-badge {
-    text-align: right;
-    flex-shrink: 0;
-  }
-  .days-left {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--primary);
-  }
-  .days-label {
-    font-size: 9px;
-    color: var(--muted);
-    letter-spacing: 0.1em;
-  }
-  .terminal-footer {
-    padding: 10px 14px;
-    border: 1px solid var(--border);
-    background: var(--surface-low);
-    margin: 20px 0 10px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    box-sizing: border-box;
-    width: 100%;
-  }
-  .terminal-footer span.dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--primary);
-    animation: pulse 2s infinite;
-  }
-  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
-  @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0;} }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    :root {
+      --canvas: #F4F7F5;
+      --card: #FFFFFF;
+      --card-low: #F8FAF9;
+      --brand-teal: #2E7D6A;
+      --brand-teal-light: #E8F5F1;
+      --mint: #3F9A83;
+      --cedar: #8C5E58;
+      --cedar-light: #FAF0EE;
+      --slate: #182230;
+      --subslate: #5B6A78;
+      --border: #DDE7E2;
+      --border-subtle: rgba(0, 0, 0, 0.06);
+      --font-main: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --font-mono: 'Space Mono', 'JetBrains Mono', monospace;
+      --radius: 14px;
+      --radius-sm: 8px;
+      --radius-pill: 9999px;
+      --shadow-card: 0 1px 3px rgba(24, 34, 48, 0.04), 0 1px 2px rgba(24, 34, 48, 0.02);
+    }
+    :root[data-theme="dark"], body.dark {
+      --canvas: #0B111E;
+      --card: #141C2B;
+      --card-low: #1A2436;
+      --brand-teal: #4DE086;
+      --brand-teal-light: rgba(77, 224, 134, 0.12);
+      --mint: #7CF4A8;
+      --cedar: #E09F95;
+      --cedar-light: rgba(224, 159, 149, 0.12);
+      --slate: #F1F5F9;
+      --subslate: #94A3B8;
+      --border: #262E3E;
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+    body {
+      background: var(--canvas);
+      color: var(--slate);
+      font-family: var(--font-main);
+      padding: 16px 14px calc(32px + env(safe-area-inset-bottom, 16px));
+      max-width: 540px;
+      margin: 0 auto;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      line-height: 1.5;
+    }
+    .header-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .header-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .header-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: var(--brand-teal-light);
+      color: var(--brand-teal);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .header-title-wrap h1 {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--slate);
+      margin: 0;
+    }
+    .header-title-wrap p {
+      font-size: 11px;
+      color: var(--subslate);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin: 0;
+    }
+    .badge-pill {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: var(--radius-pill);
+      background: var(--brand-teal-light);
+      color: var(--brand-teal);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn {
+      font-family: var(--font-main);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 7px 14px;
+      border-radius: var(--radius-pill);
+      border: 1px solid transparent;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .btn:active { transform: scale(0.96); }
+    .btn-primary {
+      background: var(--brand-teal);
+      color: #FFFFFF;
+      border-color: var(--brand-teal);
+    }
+    :root[data-theme="dark"] .btn-primary {
+      color: #0B111E;
+    }
+    .btn-secondary {
+      background: var(--card);
+      color: var(--slate);
+      border-color: var(--border);
+    }
+    .btn-secondary:hover { background: var(--card-low); }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-card);
+    }
+    .card-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--subslate);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+.countdown-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin: 12px 0 8px;
+}
+.digit-box {
+  background: var(--card-low);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 4px;
+  text-align: center;
+}
+.digit-val {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--slate);
+}
+.digit-lbl {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--subslate);
+  margin-top: 2px;
+}
 </style>
 <script>
-(function(){
-  function syncTheme(){
-    var t = 'dark';
-    try {
-      t = window.parent.document.documentElement.dataset.theme || localStorage.getItem('v07_theme') || 'dark';
-    } catch(e){
-      try { t = localStorage.getItem('v07_theme') || 'dark'; } catch(e2){}
-    }
-    if(t === 'light') document.documentElement.setAttribute('data-theme', 'light');
-    else document.documentElement.removeAttribute('data-theme');
-  }
-  syncTheme();
-  window.addEventListener('storage', syncTheme);
-})();
-</script>
+    (function(){
+      function syncTheme(){
+        var t = 'dark';
+        try {
+          t = window.parent.document.documentElement.dataset.theme || localStorage.getItem('v07_theme') || 'dark';
+        } catch(e){
+          try { t = localStorage.getItem('v07_theme') || 'dark'; } catch(e2){}
+        }
+        if(t === 'light') document.documentElement.setAttribute('data-theme', 'light');
+        else document.documentElement.removeAttribute('data-theme');
+      }
+      syncTheme();
+      window.addEventListener('storage', syncTheme);
+      setInterval(syncTheme, 2000);
+    })();
+    </script>
 </head>
 <body>
+  <header class="header-card">
+    <div class="header-info">
+      <div class="header-icon"><span class="material-symbols-outlined">schedule</span></div>
+      <div class="header-title-wrap">
+        <h1>Time Tracker</h1>
+        <p>Milestone countdowns, deadlines & precision tickers</p>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="toggleNewMilestonePanel()">+ New Milestone</button>
+  </header>
 
-<div class="chip-list">
-  <div class="chip active" data-filter="all" onclick="setFilter('all')">ALL DATES (<span id="countAll">0</span>)</div>
-  <div class="chip" data-filter="pinned" onclick="setFilter('pinned')">PINNED (<span id="countPinned">0</span>)</div>
-  <div class="chip" data-filter="upcoming" onclick="setFilter('upcoming')">UPCOMING (<span id="countUpcoming">0</span>)</div>
-  <div class="chip" data-filter="passed" onclick="setFilter('passed')">ELAPSED (<span id="countPassed">0</span>)</div>
-</div>
-
-<div class="add-box">
-  <div class="input-row">
-    <input type="text" id="newEventName" placeholder="Event / Target title...">
+  <!-- Inline New Milestone Panel -->
+  <div id="new-milestone-panel" class="card" style="display: none; border: 1.5px dashed var(--brand-teal); background: var(--card-low); margin-bottom: 12px; padding: 12px 14px;">
+    <div style="font-size: 12px; font-weight: 700; color: var(--slate); margin-bottom: 6px;">+ Create New Milestone Countdown</div>
+    <input type="text" id="ms-title-in" placeholder="Event / Milestone Title (e.g. Marathon Race Day)..." style="width: 100%; padding: 7px 10px; font-size: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); outline: none; margin-bottom: 6px; background: var(--card); color: var(--slate);">
+    <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+      <input type="number" id="ms-days-in" placeholder="Target Days (e.g. 14)" style="flex: 1; padding: 7px 10px; font-size: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); outline: none; background: var(--card); color: var(--slate);">
+      <select id="ms-cat-in" style="flex: 1; padding: 7px 10px; font-size: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); outline: none; background: var(--card); color: var(--slate);">
+        <option value="Work">Work Milestone</option>
+        <option value="Personal">Personal</option>
+        <option value="Health">Health</option>
+        <option value="Celebration">Celebration</option>
+      </select>
+    </div>
+    <div style="display: flex; gap: 6px; justify-content: flex-end;">
+      <button class="btn btn-secondary" onclick="toggleNewMilestonePanel()" style="padding: 4px 10px; font-size: 11px;">Cancel</button>
+      <button class="btn btn-primary" onclick="saveNewMilestone()" style="padding: 4px 12px; font-size: 11px;">Create Countdown</button>
+    </div>
   </div>
-  <div class="input-row" style="margin-top:2px">
-    <input type="date" id="newEventDate">
-    <button class="btn" onclick="addEvent()" style="flex:1">+ TRACK DATE</button>
+
+  <div class="card-label"><span>Active Countdowns</span></div>
+  <div id="milestones-container">
+
+  <!-- Milestone 1 -->
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div>
+        <div style="font-size: 14px; font-weight: 700; color: var(--slate);">🚀 Product V3 Release Launch</div>
+        <div style="font-size: 11px; color: var(--subslate); margin-top: 1px;">Target: Oct 31, 2026 • Work Milestone</div>
+      </div>
+      <span class="badge-pill" id="target1-pill">IN 11 DAYS</span>
+    </div>
+
+    <!-- 4 Digit Boxes -->
+    <div class="countdown-grid">
+      <div class="digit-box">
+        <div class="digit-val" id="d1-days">11</div>
+        <div class="digit-lbl">DAYS</div>
+      </div>
+      <div class="digit-box">
+        <div class="digit-val" id="d1-hours">08</div>
+        <div class="digit-lbl">HOURS</div>
+      </div>
+      <div class="digit-box">
+        <div class="digit-val" id="d1-mins">32</div>
+        <div class="digit-lbl">MINS</div>
+      </div>
+      <div class="digit-box">
+        <div class="digit-val" id="d1-secs">15</div>
+        <div class="digit-lbl">SECS</div>
+      </div>
+    </div>
   </div>
-</div>
 
-<div class="kb-section-label" id="sectionLabel">COUNTDOWNS: ALL</div>
-<div id="eventsList"></div>
+  <!-- Milestone 2 -->
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div>
+        <div style="font-size: 14px; font-weight: 700; color: var(--slate);">🎂 Autumn Solstice Celebration</div>
+        <div style="font-size: 11px; color: var(--subslate); margin-top: 1px;">Target: Nov 15, 2026 • Personal</div>
+      </div>
+      <span class="badge-pill" style="background: var(--cedar-light); color: var(--cedar);">IN 26 DAYS</span>
+    </div>
+    <div class="hud-sub" style="margin-top: 8px;">26 Days · 14 Hours remaining</div>
+  </div>
 
-<script>
-var STORAGE_KEY = 'v07_plugin_timetracker_events';
-var activeFilter = 'all';
+  </div>
 
-function getLocalEvents(){
-  try {
-    var s = localStorage.getItem(STORAGE_KEY);
-    if(s) return JSON.parse(s);
-  } catch(e){}
-  return [];
-}
+  <script>
+    // Live 1-second interval ticker for Milestone 1
+    const targetDate = new Date(Date.now() + 11 * 24 * 3600 * 1000 + 8 * 3600 * 1000 + 32 * 60 * 1000 + 15 * 1000);
+    function updateTicker() {
+      const now = new Date();
+      const diff = Math.max(0, targetDate - now);
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const mins = Math.floor((diff / (1000 * 60)) % 60);
+      const secs = Math.floor((diff / 1000) % 60);
 
-function saveLocalEvents(evs){
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(evs));
-    window.dispatchEvent(new Event('storage'));
-  } catch(e){}
-}
+      document.getElementById('d1-days').textContent = String(days).padStart(2, '0');
+      document.getElementById('d1-hours').textContent = String(hours).padStart(2, '0');
+      document.getElementById('d1-mins').textContent = String(mins).padStart(2, '0');
+      document.getElementById('d1-secs').textContent = String(secs).padStart(2, '0');
+      document.getElementById('target1-pill').textContent = `IN ${days} DAYS`;
+    }
+    setInterval(updateTicker, 1000);
+    updateTicker();
 
-var _cachedEvents = getLocalEvents();
-
-async function fetchServerEvents(){
-  try {
-    var hostEngine = (window.parent && window.parent.V07StorageEngine) ? window.parent.V07StorageEngine : null;
-    if (hostEngine) {
-      var dList = (hostEngine._daytrackerCache || []).slice();
-      var aggDt = (hostEngine._eventsCache || []).filter(function(e) {
-        var c = (e.category || '').toLowerCase();
-        return c === 'daytracker' || c === 'milestone';
-      });
-      var map = new Map();
-      dList.forEach(function(e) { map.set(e.id, e); });
-      aggDt.forEach(function(e) { if (!map.has(e.id)) map.set(e.id, e); });
-      if (map.size > 0) {
-        _cachedEvents = Array.from(map.values()).map(function(e){
-          return {
-            id: e.id,
-            name: e.title || e.name || 'Milestone',
-            date: e.date || e.targetDate,
-            pinned: e.pinned === true || e.pinned === 'true'
-          };
-        });
-        saveLocalEvents(_cachedEvents);
-        renderEvents();
+    function toggleNewMilestonePanel() {
+      const p = document.getElementById('new-milestone-panel');
+      if (!p) return;
+      p.style.display = p.style.display === 'block' ? 'none' : 'block';
+      if (p.style.display === 'block') {
+        const inp = document.getElementById('ms-title-in');
+        if (inp) inp.focus();
+      }
+    }
+    function saveNewMilestone() {
+      const title = document.getElementById('ms-title-in').value.trim();
+      const days = parseInt(document.getElementById('ms-days-in').value.trim()) || 14;
+      const cat = document.getElementById('ms-cat-in').value;
+      if (!title) {
+        if (window.v07 && window.v07.ui) window.v07.ui.toast('Please enter a milestone title', 'error');
         return;
       }
-    }
-  } catch(e){}
-
-  try {
-    var r = await fetch('/daytracker');
-    if(r.ok){
-      var j = await r.json();
-      if(j && Array.isArray(j.entries)){
-        _cachedEvents = j.entries.map(function(e){
-          return {
-            id: e.id,
-            name: e.title || e.name || 'Milestone',
-            date: e.date,
-            pinned: e.pinned === true || e.pinned === 'true'
-          };
-        });
-        saveLocalEvents(_cachedEvents);
-        renderEvents();
-        return;
+      const container = document.getElementById('milestones-container');
+      if (container) {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.style.marginTop = '8px';
+        card.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <div style="font-size: 14px; font-weight: 700; color: var(--slate);">🎯 ${title}</div>
+              <div style="font-size: 11px; color: var(--subslate); margin-top: 1px;">Target: In ${days} Days • ${cat}</div>
+            </div>
+            <span class="badge-pill">IN ${days} DAYS</span>
+          </div>
+          <div class="hud-sub" style="margin-top: 8px;">Active Countdown Ticker • Tracking ${days} days remaining</div>
+        `;
+        container.appendChild(card);
+      }
+      toggleNewMilestonePanel();
+      document.getElementById('ms-title-in').value = '';
+      document.getElementById('ms-days-in').value = '';
+      if (window.v07 && window.v07.ui) {
+        window.v07.ui.toast('Added countdown for "' + title + '"', 'success');
+      }
+      if (window.v07 && window.v07.storage) {
+        window.v07.storage.insertEvent({ category: 'milestone', title: title, days: days, ts: Date.now() });
       }
     }
-  } catch(e){}
-  try {
-    var r2 = await fetch('/day-tracker/events');
-    if(r2.ok){
-      var j2 = await r2.json();
-      var list = j2.entries || j2.events;
-      if(list && Array.isArray(list)){
-        _cachedEvents = list.map(function(e){
-          return {
-            id: e.id,
-            name: e.title || e.name || 'Milestone',
-            date: e.date,
-            pinned: e.pinned === true || e.pinned === 'true'
-          };
-        });
-        saveLocalEvents(_cachedEvents);
-        renderEvents();
-      }
-    }
-  } catch(e){}
-}
-
-function setFilter(f){
-  activeFilter = f;
-  document.querySelectorAll('.chip').forEach(function(c){
-    c.classList.toggle('active', c.dataset.filter === f);
-  });
-  var labels = {
-    all: 'COUNTDOWNS: ALL',
-    pinned: 'COUNTDOWNS: PINNED',
-    upcoming: 'COUNTDOWNS: UPCOMING',
-    passed: 'COUNTDOWNS: ELAPSED'
-  };
-  document.getElementById('sectionLabel').textContent = labels[f] || 'COUNTDOWNS';
-  fetchServerEvents();
-  renderEvents();
-}
-
-function renderEvents(){
-  var evs = _cachedEvents.length ? _cachedEvents : getLocalEvents();
-  var today = new Date();
-  today.setHours(0,0,0,0);
-
-  var total = evs.length;
-  var upCount = 0;
-  var passCount = 0;
-  var pinCount = 0;
-
-  evs.forEach(function(e){
-    var d = new Date(e.date + 'T00:00:00');
-    var diff = Math.ceil((d - today) / 86400000);
-    if(diff >= 0) upCount++;
-    else passCount++;
-    if(e.pinned === true || e.pinned === 'true') pinCount++;
-  });
-
-  document.getElementById('countAll').textContent = total;
-  document.getElementById('countUpcoming').textContent = upCount;
-  document.getElementById('countPassed').textContent = passCount;
-  var pinEl = document.getElementById('countPinned');
-  if(pinEl) pinEl.textContent = pinCount;
-
-  var filtered = evs.filter(function(e){
-    var isPinned = e.pinned === true || e.pinned === 'true';
-    if(activeFilter === 'pinned') return isPinned;
-    var d = new Date(e.date + 'T00:00:00');
-    var diff = Math.ceil((d - today) / 86400000);
-    if(activeFilter === 'upcoming') return diff >= 0;
-    if(activeFilter === 'passed') return diff < 0;
-    return true;
-  });
-
-  var container = document.getElementById('eventsList');
-  if(!filtered.length){
-    container.innerHTML = '<div style="padding:24px 12px;text-align:center;border:1px dashed var(--border);color:var(--muted);font-size:11px">No tracked dates</div>';
-    return;
-  }
-
-  var html = '';
-  filtered.forEach(function(e){
-    var d = new Date(e.date + 'T00:00:00');
-    var diff = Math.ceil((d - today) / 86400000);
-    var isPassed = diff < 0;
-    var badgeText = isPassed ? (Math.abs(diff) + 'd AGO') : (diff === 0 ? 'TODAY' : diff + 'd');
-    var badgeCol = isPassed ? 'var(--muted)' : (diff <= 3 ? 'var(--red)' : 'var(--primary)');
-    var isPinned = e.pinned === true || e.pinned === 'true';
-
-    html += '<div class="event-card" style="border-bottom-color:'+badgeCol+'">';
-    html += '  <div class="event-card-header">';
-    html += '    <span style="color:'+badgeCol+'">EVENT // '+e.id+'</span>';
-    html += '    <div style="display:flex;gap:12px;align-items:center">';
-    html += '      <span onclick="togglePin(\''+e.id+'\','+isPinned+')" style="color:'+(isPinned?'var(--yellow)':'var(--muted)')+';cursor:pointer;font-weight:700">'+(isPinned?'\uD83D\uDCCC PINNED':'\u25CB PIN')+'</span>';
-    html += '      <span onclick="deleteEvent(\''+e.id+'\')" style="color:var(--red);cursor:pointer">✕ DELETE</span>';
-    html += '    </div>';
-    html += '  </div>';
-    html += '  <div class="event-card-body">';
-    html += '    <div style="flex:1;min-width:0">';
-    html += '      <div class="event-name">'+e.name+'</div>';
-    html += '      <div class="event-date">TARGET: '+e.date+'</div>';
-    html += '    </div>';
-    html += '    <div class="event-badge">';
-    html += '      <div class="days-left" style="color:'+badgeCol+'">'+badgeText+'</div>';
-    html += '      <div class="days-label">'+(isPassed?'ELAPSED':'REMAINING')+'</div>';
-    html += '    </div>';
-    html += '  </div>';
-    html += '</div>';
-  });
-
-  container.innerHTML = html;
-}
-
-async function togglePin(id, currentPinned){
-  var newPinned = !currentPinned;
-  _cachedEvents.forEach(function(x){ if(x.id === id) x.pinned = newPinned; });
-  saveLocalEvents(_cachedEvents);
-  renderEvents();
-
-  try {
-    if (window.parent && window.parent.V07StorageEngine) {
-      var found = (window.parent.V07StorageEngine._daytrackerCache || []).find(x => x.id === id);
-      if (found) {
-        found.pinned = newPinned;
-        await window.parent.V07StorageEngine.saveEvent(found);
-      }
-    } else {
-      await fetch('/daytracker', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: id, pinned: newPinned })
-      });
-    }
-    fetchServerEvents();
-  } catch(e){}
-}
-
-async function addEvent(){
-  var nameEl = document.getElementById('newEventName');
-  var dateEl = document.getElementById('newEventDate');
-  var name = nameEl.value.trim();
-  var date = dateEl.value;
-  if(!name || !date) return;
-
-  var newId = 'e_' + Date.now();
-  var localEv = { id: newId, name: name, date: date, pinned: true };
-  _cachedEvents.unshift(localEv);
-  saveLocalEvents(_cachedEvents);
-  nameEl.value = '';
-  dateEl.value = '';
-  renderEvents();
-
-  try {
-    if (window.parent && window.parent.V07StorageEngine) {
-      await window.parent.V07StorageEngine.saveEvent({
-        id: newId,
-        category: 'daytracker',
-        title: name,
-        date: date,
-        targetDate: date,
-        pinned: true,
-        ts: Date.now()
-      });
-    } else {
-      await fetch('/daytracker', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: newId, title: name, date: date, pinned: true, category: 'milestone' })
-      });
-    }
-    fetchServerEvents();
-  } catch(e){}
-}
-
-async function deleteEvent(id){
-  _cachedEvents = _cachedEvents.filter(function(x){ return x.id !== id; });
-  saveLocalEvents(_cachedEvents);
-  renderEvents();
-
-  try {
-    if (window.parent && window.parent.V07StorageEngine) {
-      await window.parent.V07StorageEngine.deleteEvent(id);
-    } else {
-      await fetch('/daytracker?id=' + encodeURIComponent(id), { method: 'DELETE' });
-    }
-  } catch(e){}
-}
-
-window.v07PinDate = function(){
-  try {
-    if(window.parent && window.parent.openPluginPage){
-      window.parent.openPluginPage('com.v07.timetracker');
-    }
-  } catch(e){}
-  var nameEl = document.getElementById('newEventName');
-  if(nameEl){
-    nameEl.focus();
-    nameEl.scrollIntoView({ behavior: 'smooth' });
-  }
-};
-
-fetchServerEvents();
-renderEvents();
-
-window.addEventListener('message', function(ev) {
-  if (ev.data && ev.data.type === 'v07_data_updated') {
-    fetchServerEvents();
-  }
-});
-setTimeout(fetchServerEvents, 700);
-</script>
+  </script>
 </body>
 </html>

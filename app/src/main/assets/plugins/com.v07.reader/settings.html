@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="v07-sdk.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Reader Settings</title>
@@ -358,20 +359,35 @@ function exportData(){
 }
 
 function importData(){
-  var json = prompt('Paste Book Collection JSON array:');
-  if(json){
-    try {
-      var arr = JSON.parse(json);
-      if(Array.isArray(arr)){
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
-        toast('Library imported successfully');
-      } else {
-        alert('Invalid JSON: Must be an array of book objects');
-      }
-    } catch(e){
-      alert('Error parsing JSON');
-    }
+  var inp = document.getElementById('import-file-input');
+  if(!inp){
+    inp = document.createElement('input');
+    inp.type = 'file';
+    inp.id = 'import-file-input';
+    inp.accept = '.json,application/json';
+    inp.style.display = 'none';
+    inp.onchange = function(e){
+      var file = e.target.files && e.target.files[0];
+      if(!file) return;
+      var reader = new FileReader();
+      reader.onload = function(evt){
+        try {
+          var arr = JSON.parse(evt.target.result);
+          if(Array.isArray(arr)){
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+            toast('Library imported successfully');
+          } else {
+            toast('Invalid JSON: Must be an array of book objects');
+          }
+        } catch(err){
+          toast('Error parsing JSON file');
+        }
+      };
+      reader.readAsText(file);
+    };
+    document.body.appendChild(inp);
   }
+  inp.click();
 }
 
 function toast(msg){

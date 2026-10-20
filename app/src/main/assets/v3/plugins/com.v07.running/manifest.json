@@ -1,14 +1,58 @@
 {
+  "$schema": "https://v07.app/schemas/v3/plugin-manifest.json",
   "id": "com.v07.running",
-  "name": "Runtime Tracker",
+  "name": "Athletics & Running",
   "version": "3.0.0",
-  "author": "V07 Sanctuary",
+  "apiVersion": "3.0",
   "description": "Log running sessions, track pace, cadence, notes, and visual progression across weekly and monthly horizons.",
-  "permissions": ["events:read", "events:write", "storage:isolated"],
+  "publisher": {
+    "name": "V07 Core Team",
+    "url": "https://v07.app"
+  },
+  "permissions": [
+    "storage:isolated",
+    "events:listen",
+    "events:emit"
+  ],
+  "capabilities": [
+    "ui:widget",
+    "ui:kitTile",
+    "ui:page"
+  ],
+  "dependencies": {
+    "v07-platform": ">=3.0.0"
+  },
+  "extensionPoints": {
+    "widgets": [
+      {
+        "id": "running_weekly_stats",
+        "title": "RUNNING DISTANCE",
+        "entry": "widget.html",
+        "icon": "directions_run",
+        "color": "#10B981",
+        "supportedSizes": [
+          "small",
+          "medium"
+        ],
+        "defaultSize": "medium"
+      }
+    ],
+    "kitTile": {
+      "label": "RUNNING",
+      "icon": "directions_run",
+      "color": "#10B981"
+    },
+    "page": {
+      "entry": "index.html",
+      "title": "Athletics & Running"
+    },
+    "settings": {
+      "entry": "settings.html"
+    }
+  },
   "entry": "index.html",
   "settings": "settings.html",
   "nav": {
-    "placement": "kit",
     "icon": "directions_run",
     "label": "RUNNING",
     "color": "#10B981"
@@ -16,11 +60,15 @@
   "widgets": [
     {
       "id": "running_weekly_stats",
-      "title": "WEEKLY RUNNING DISTANCE",
-      "icon": "directions_run",
+      "title": "RUNNING DISTANCE",
       "path": "widget.html",
+      "entry": "widget.html",
+      "icon": "directions_run",
       "color": "#10B981",
-      "supportedSizes": ["small", "medium"],
+      "supportedSizes": [
+        "small",
+        "medium"
+      ],
       "defaultSize": "medium"
     }
   ]
