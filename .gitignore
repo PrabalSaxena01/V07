@@ -44,7 +44,10 @@ keystore/*.keystore
 .externalNativeBuild
 .cxx/
 
-# Python cache
+# Outputs
+output/
+*.hprof
+
 __pycache__/
 *.py[cod]
 *$py.class

@@ -15,6 +15,12 @@ import android.widget.EditText
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.compose.setContent
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import com.v07.v3.ui.compose.SanctuaryShell
+import com.v07.v3.ui.compose.SanctuaryTheme
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import com.v07.v3.core.plugin.PlatformJsBridge
@@ -38,6 +44,9 @@ class V3Activity : AppCompatActivity() {
     private lateinit var webView: WebView
     private var zipCallback: ((JSONObject) -> Unit)? = null
     private var fileChooserCallback: ValueCallback<Array<Uri>>? = null
+
+    val isLightModeState = mutableStateOf(false)
+    val isModalOpenState = mutableStateOf(false)
 
     private val notificationPermLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         if (!granted && Build.VERSION.SDK_INT >= 33) {
@@ -125,13 +134,7 @@ class V3Activity : AppCompatActivity() {
         V3PlatformHost.platformJsBridge.activity = this
         val baseUrl = V3PlatformHost.startServices()
 
-        val rootLayout = FrameLayout(this).apply {
-            setBackgroundColor(parsedColor)
-            layoutParams = FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT
-            )
-        }
+        isLightModeState.value = isLight
 
         webView = WebView(this).apply {
             layoutParams = FrameLayout.LayoutParams(
@@ -147,8 +150,25 @@ class V3Activity : AppCompatActivity() {
             overScrollMode = View.OVER_SCROLL_NEVER
             isLongClickable = true
         }
-        rootLayout.addView(webView)
-        setContentView(rootLayout)
+
+        setContent {
+            val isLightMode by isLightModeState
+            val isModalOpen by isModalOpenState
+            SanctuaryTheme(darkTheme = !isLightMode) {
+                SanctuaryShell(
+                    webView = webView,
+                    isLight = isLightMode,
+                    onToggleTheme = {
+                        toggleSystemTheme()
+                    },
+                    isPluginFullscreen = isModalOpen,
+                    onSetFullscreen = { isModalOpenState.value = it },
+                    onProfileClick = {
+                        isModalOpenState.value = true
+                    }
+                )
+            }
+        }
 
         webView.addJavascriptInterface(object {
             @JavascriptInterface
@@ -159,42 +179,59 @@ class V3Activity : AppCompatActivity() {
 
             @JavascriptInterface
             fun setSystemThemeColor(colorHex: String, isLight: Boolean) {
-                themePrefs.edit()
-                    .putBoolean("is_light", isLight)
-                    .putString("theme_bg_color", colorHex)
-                    .apply()
+                this@V3Activity.setSystemThemeColor(colorHex, isLight)
+            }
+
+            @JavascriptInterface
+            fun onModalState(isOpen: Boolean) {
                 runOnUiThread {
-                    try {
-                        val color = Color.parseColor(colorHex)
-                        window.statusBarColor = color
-                        window.navigationBarColor = color
-                        rootLayout.setBackgroundColor(color)
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            var f = window.decorView.systemUiVisibility
-                            f = if (isLight) {
-                                f or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-                            } else {
-                                f and View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv() and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
-                            }
-                            window.decorView.systemUiVisibility = f
-                        }
-                    } catch (e: Exception) {
-                        Log.e("V3Activity", "setSystemThemeColor failed: ${e.message}")
-                    }
+                    isModalOpenState.value = isOpen
                 }
             }
         }, "AndroidTheme")
-
-        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(rootLayout) { _, insets ->
-            val bars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())
-            rootLayout.setPadding(bars.left, bars.top, bars.right, bars.bottom)
-            insets
-        }
 
         setupWebView(baseUrl)
     }
 
     @SuppressLint("SetJavaScriptEnabled")
+
+    fun toggleSystemTheme() {
+        val nextIsLight = !isLightModeState.value
+        val colorHex = if (nextIsLight) "#FAF6F9" else "#0B111E"
+        setSystemThemeColor(colorHex, nextIsLight)
+        webView.evaluateJavascript(
+            "if (window.SanctuaryApp && typeof window.SanctuaryApp.applyTheme === 'function') window.SanctuaryApp.applyTheme('${if (nextIsLight) "light" else "dark"}');",
+            null
+        )
+    }
+
+    fun setSystemThemeColor(colorHex: String, isLight: Boolean) {
+        val themePrefs = getSharedPreferences("v07_theme_prefs", Context.MODE_PRIVATE)
+        themePrefs.edit()
+            .putBoolean("is_light", isLight)
+            .putString("theme_bg_color", colorHex)
+            .apply()
+        runOnUiThread {
+            try {
+                isLightModeState.value = isLight
+                val color = Color.parseColor(colorHex)
+                window.statusBarColor = color
+                window.navigationBarColor = color
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    var f = window.decorView.systemUiVisibility
+                    f = if (isLight) {
+                        f or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                    } else {
+                        f and View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv() and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+                    }
+                    window.decorView.systemUiVisibility = f
+                }
+            } catch (e: Exception) {
+                Log.e("V3Activity", "setSystemThemeColor failed: ${e.message}")
+            }
+        }
+    }
+
     private fun setupWebView(baseUrl: String) {
         WebView.setWebContentsDebuggingEnabled(true)
         val settings = webView.settings
@@ -312,6 +349,19 @@ class V3Activity : AppCompatActivity() {
                 }
                 val script = PlatformJsBridge.generatePluginCompatibilityScript(pluginId, baseUrl, token)
                 view?.evaluateJavascript(script, null)
+
+                val hideNavCss = """
+                    (function() {
+                        var style = document.getElementById('compose-native-shell-style');
+                        if (!style) {
+                            style = document.createElement('style');
+                            style.id = 'compose-native-shell-style';
+                            style.innerHTML = 'header.top-bar { display: none !important; } nav.mobile-nav-bar { display: none !important; } body { padding-top: 0 !important; padding-bottom: 76px !important; } #app-container { padding-top: 0 !important; }';
+                            document.head.appendChild(style);
+                        }
+                    })();
+                """.trimIndent()
+                view?.evaluateJavascript(hideNavCss, null)
 
                 val openPlugin = intent?.getStringExtra("openPlugin")
                 if (!openPlugin.isNullOrBlank()) {
@@ -494,6 +544,11 @@ class V3Activity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
+        if (isModalOpenState.value) {
+            isModalOpenState.value = false
+            webView.evaluateJavascript("if (window.SanctuaryApp) window.SanctuaryApp.closeAllModals();", null)
+            return
+        }
         webView.evaluateJavascript(
             "(function() { if (typeof window.handleBackPress === 'function') { return window.handleBackPress() ? 'handled' : 'none'; } return 'none'; })()"
         ) { result ->
