@@ -271,9 +271,16 @@ fun LedgerScreen(
                         placeholder = {
                             Text(
                                 text = "What's on your mind? Capture a thought, note or idea...",
-                                style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.outline)
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontSize = 13.5.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.65f)
+                                )
                             )
                         },
+                        textStyle = MaterialTheme.typography.bodyMedium.copy(
+                            fontSize = 13.5.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        ),
                         modifier = Modifier
                             .fillMaxWidth()
                             .defaultMinSize(minHeight = 64.dp),
@@ -381,9 +388,13 @@ fun LedgerScreen(
                     placeholder = {
                         Text(
                             text = "Search entries by keyword, note, or tag...",
-                            style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.outline)
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontSize = 13.5.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.65f)
+                            )
                         )
                     },
+                    textStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.5.sp),
                     leadingIcon = {
                         Icon(imageVector = Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(18.dp))
                     },

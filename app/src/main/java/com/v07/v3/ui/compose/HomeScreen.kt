@@ -296,6 +296,21 @@ fun HomeScreen(
         }
     }
 
+    val timeOfDayFlowTitle = remember {
+        val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+        when (hour) {
+            in 5..11 -> "The morning flow"
+            in 12..16 -> "Afternoon cadence & focus"
+            in 17..21 -> "Evening reflection & wind-down"
+            else -> "Night stillness & recovery"
+        }
+    }
+
+    val syncStatusSubtitle = remember {
+        val syncMgr = com.v07.v3.core.sync.V3CompanionSyncManager.getInstance(context, repository, screenTimeTracker)
+        if (syncMgr.isCloudSyncEnabled()) "Cloud sync active" else "100% Local SQLite Vault"
+    }
+
     val todayDateFormatted = remember {
         val sdf = SimpleDateFormat("EEEE, MMM d", Locale.getDefault())
         sdf.format(Date())
@@ -431,7 +446,7 @@ fun HomeScreen(
                                     .background(MaterialTheme.colorScheme.primary)
                             )
                             Text(
-                                text = "The morning flow",
+                                text = timeOfDayFlowTitle,
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontWeight = FontWeight.Medium,
                                     fontSize = 11.5.sp,
@@ -440,7 +455,7 @@ fun HomeScreen(
                             )
                         }
                         Text(
-                            text = "Live sync active",
+                            text = syncStatusSubtitle,
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontSize = 10.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
@@ -566,12 +581,17 @@ fun HomeScreen(
                     ) {
                         Column {
                             Text(
-                                text = "Take a little time for yourself",
+                                text = if (!isIdle) timerState.topic.ifBlank { "Deep Focus Sanctuary" } else "Take a little time for yourself",
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontSize = 15.sp),
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                text = "Quiet intervals for calm presence",
+                                text = if (!isIdle) {
+                                    val cat = if (timerState.category.isNotBlank()) timerState.category.replaceFirstChar { it.uppercase() } else "Work"
+                                    if (isRunning) "Active flow · $cat" else "Flow paused · $cat"
+                                } else {
+                                    if (todayFocusMinutes > 0) "${todayFocusMinutes}m focused today · Quiet intervals" else "Quiet intervals for calm presence"
+                                },
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontSize = 11.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1017,8 +1037,10 @@ fun HomeScreen(
                                 )
                                 Icon(Icons.Outlined.OpenInNew, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(14.dp))
                             }
+                            val pendingCount = tasksList.count { !it.status.equals("completed", true) && !it.status.equals("done", true) }
+                            val highCount = tasksList.count { it.priority.equals("HIGH", true) && !it.status.equals("completed", true) }
                             Text(
-                                text = "Daily directives & priorities · Tap for full view",
+                                text = if (pendingCount > 0) "$pendingCount pending directives · $highCount high priority" else "All directives completed for today 🌿",
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontSize = 11.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1065,15 +1087,24 @@ fun HomeScreen(
                         OutlinedTextField(
                             value = newTaskTitle,
                             onValueChange = { newTaskTitle = it },
-                            placeholder = { Text("Define a quiet priority...", fontSize = 12.sp) },
+                            placeholder = {
+                                Text(
+                                    text = "Define a quiet priority...",
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontSize = 13.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.65f)
+                                    )
+                                )
+                            },
+                            textStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp),
                             singleLine = true,
                             modifier = Modifier
                                 .weight(1f)
-                                .height(48.dp),
+                                .defaultMinSize(minHeight = 44.dp),
                             shape = RoundedCornerShape(10.dp),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
                             )
                         )
 
@@ -1083,7 +1114,7 @@ fun HomeScreen(
                                 .size(44.dp)
                                 .clip(RoundedCornerShape(10.dp))
                                 .background(MaterialTheme.colorScheme.surfaceVariant)
-                                .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(10.dp))
+                                .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
                         ) {
                             Icon(Icons.Outlined.Event, contentDescription = "Deadline", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
                         }
@@ -1113,7 +1144,8 @@ fun HomeScreen(
                                 containerColor = MaterialTheme.colorScheme.primary,
                                 contentColor = Color.White
                             ),
-                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 10.dp)
+                            modifier = Modifier.defaultMinSize(minHeight = 44.dp),
+                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 0.dp)
                         ) {
                             Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(2.dp))
@@ -1252,9 +1284,20 @@ fun HomeScreen(
                         value = nameInput,
                         onValueChange = { nameInput = it },
                         label = { Text("Habit Name") },
-                        placeholder = { Text("e.g. Cold Shower, Reading...") },
+                        placeholder = {
+                            Text(
+                                text = "e.g. Cold Shower, Reading...",
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontSize = 13.5.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.65f)
+                                )
+                            )
+                        },
+                        textStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.5.sp),
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .defaultMinSize(minHeight = 52.dp),
                         shape = RoundedCornerShape(10.dp)
                     )
                     Text("Select Ritual Glyph:", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))

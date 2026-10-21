@@ -976,10 +976,21 @@ fun HabitTrackerScreen(
                         value = habitNameInput,
                         onValueChange = { habitNameInput = it },
                         label = { Text("Habit Name") },
-                        placeholder = { Text("e.g. Sanskrit Chant, 30m Run") },
+                        placeholder = {
+                            Text(
+                                text = "e.g. Sanskrit Chant, 30m Run",
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontSize = 13.5.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.65f)
+                                )
+                            )
+                        },
+                        textStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.5.sp),
                         singleLine = true,
                         shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .defaultMinSize(minHeight = 52.dp)
                     )
 
                     SanctuaryFormDropdown(

@@ -1,5 +1,14 @@
 package com.v07.v3.ui.compose
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
+import org.json.JSONArray
+import com.v07.v3.core.data.EventRepository
+
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
@@ -64,6 +73,7 @@ fun ToolsScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val repository = remember { EventRepository.getInstance(context) }
     val toolPrefs = remember { context.getSharedPreferences("v07_tool_states", Context.MODE_PRIVATE) }
 
     var searchQuery by remember { mutableStateOf("") }
@@ -74,8 +84,68 @@ fun ToolsScreen(
     var selectedPluginForSheet by remember { mutableStateOf<PluginRecord?>(null) }
     var toolTypeFilter by remember { mutableStateOf("All") } // "All", "Core", "Plugins"
 
+    var tasksStatus by remember { mutableStateOf("Directives active") }
+    var habitsStatus by remember { mutableStateOf("Rituals active") }
+    var focusStatus by remember { mutableStateOf("Deep work ready") }
+    var screentimeStatus by remember { mutableStateOf("Telemetry active") }
+    var ledgerStatus by remember { mutableStateOf("Reflections log") }
+    var datacenterStatus by remember { mutableStateOf("100% Local SQLite") }
+    var gitaStatus by remember { mutableStateOf("Sacred verses · 700 verses") }
+
+    LaunchedEffect(Unit) {
+        withContext(Dispatchers.IO) {
+            try {
+                // 1. Tasks
+                val tasks = repository.getTasks(null)
+                val pending = tasks.count { !it.status.equals("completed", true) && !it.status.equals("done", true) }
+                tasksStatus = if (pending > 0) "$pending pending directives" else "All directives completed"
+
+                // 2. Focus
+                val cal = Calendar.getInstance()
+                cal.set(Calendar.HOUR_OF_DAY, 0)
+                cal.set(Calendar.MINUTE, 0)
+                cal.set(Calendar.SECOND, 0)
+                cal.set(Calendar.MILLISECOND, 0)
+                val sessions = repository.getTodaySessions(cal.timeInMillis)
+                val focusMins = sessions.sumOf { (it.endTime ?: it.startTime) - it.startTime } / 60000
+                focusStatus = if (focusMins > 0) "${focusMins}m focused today" else "Ready for deep work"
+
+                // 3. Habits
+                val defsJson = repository.getPluginValue("com.v07.habits", "definitions")
+                val defCount = if (!defsJson.isNullOrBlank()) {
+                    try { JSONArray(defsJson as String).length() } catch (e: Exception) { 7 }
+                } else 7
+                val todayStr = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+                val todayHabitEvents = repository.getEvents(category = "habit", limit = 100).filter { it.date == todayStr }
+                habitsStatus = "${todayHabitEvents.size} of $defCount rituals met"
+
+                // 4. Screentime
+                val tracker = com.v07.v3.app.telemetry.ScreenTimeTracker(context, repository)
+                if (tracker.hasUsageStatsPermission()) {
+                    val summary = tracker.collectForDate(todayStr)
+                    val hrs = summary.totalDurationMs / (1000 * 60 * 60)
+                    val mins = (summary.totalDurationMs % (1000 * 60 * 60)) / (1000 * 60)
+                    screentimeStatus = if (hrs > 0) "${hrs}h ${mins}m today" else "${mins}m today"
+                }
+
+                // 5. Ledger
+                val thoughts = repository.getRecentThoughts(50)
+                val todayThoughts = thoughts.count { it.date == todayStr }
+                ledgerStatus = if (todayThoughts > 0) "$todayThoughts reflections today" else "${thoughts.size} vault reflections"
+
+                // 6. Data Center
+                val dbStats = com.v07.v3.core.data.DatabaseManager.getInstance(context).getStats()
+                val totalRecords = dbStats.tableCounts.values.sum()
+                datacenterStatus = "$totalRecords records in vault"
+
+                // 7. Gita
+                gitaStatus = "Sacred verses · 700 verses"
+            } catch (e: Exception) {}
+        }
+    }
+
     // Master catalog cleanly separating CORE foundation tools from MODULAR plugins (Habits is explicitly CORE)
-    val defaultTools = remember {
+    val defaultTools = remember(tasksStatus, habitsStatus, focusStatus, screentimeStatus, ledgerStatus, datacenterStatus, gitaStatus) {
         listOf(
             // =================================================================
             // 1. CORE SANCTUARY TOOLS (Permanent Sovereign Substrate)
@@ -89,7 +159,7 @@ fun ToolsScreen(
                 icon = Icons.Outlined.Repeat,
                 accentColor = SanctuaryPalette.AccentHabits,
                 accentBg = SanctuaryPalette.AccentHabitsBg,
-                statusPreview = "7-Day Cadence Active",
+                statusPreview = habitsStatus,
                 subView = SanctuarySubView.HABITS,
                 type = SanctuaryToolType.CORE
             ),
@@ -102,7 +172,7 @@ fun ToolsScreen(
                 icon = Icons.Outlined.HourglassTop,
                 accentColor = SanctuaryPalette.AccentChrono,
                 accentBg = SanctuaryPalette.AccentChronoBg,
-                statusPreview = "∞ Open Flow • Ready",
+                statusPreview = focusStatus,
                 subView = SanctuarySubView.FOCUS,
                 type = SanctuaryToolType.CORE
             ),
@@ -115,7 +185,7 @@ fun ToolsScreen(
                 icon = Icons.Outlined.ScreenLockPortrait,
                 accentColor = Color(0xFFF59E0B),
                 accentBg = Color(0x1AF59E0B),
-                statusPreview = "24h & 7d Bargraphs Active",
+                statusPreview = screentimeStatus,
                 subView = SanctuarySubView.SCREENTIME,
                 type = SanctuaryToolType.CORE
             ),
@@ -128,7 +198,7 @@ fun ToolsScreen(
                 icon = Icons.Outlined.Checklist,
                 accentColor = SanctuaryPalette.AccentTasks,
                 accentBg = SanctuaryPalette.AccentTasksBg,
-                statusPreview = "Directives & focus list",
+                statusPreview = tasksStatus,
                 subView = SanctuarySubView.TASKS,
                 type = SanctuaryToolType.CORE
             ),
@@ -141,7 +211,7 @@ fun ToolsScreen(
                 icon = Icons.Outlined.HistoryEdu,
                 accentColor = Color(0xFF8B5CF6),
                 accentBg = Color(0x1A8B5CF6),
-                statusPreview = "Live reflections & notes",
+                statusPreview = ledgerStatus,
                 subView = SanctuarySubView.NONE,
                 type = SanctuaryToolType.CORE
             ),
@@ -154,7 +224,7 @@ fun ToolsScreen(
                 icon = Icons.Outlined.Storage,
                 accentColor = Color(0xFF0284C7),
                 accentBg = Color(0x1A0284C7),
-                statusPreview = "100% Local SQLite First",
+                statusPreview = datacenterStatus,
                 subView = SanctuarySubView.DATACENTER,
                 type = SanctuaryToolType.CORE
             ),
@@ -171,7 +241,7 @@ fun ToolsScreen(
                 icon = Icons.Outlined.MenuBook,
                 accentColor = Color(0xFFEAB308),
                 accentBg = Color(0x1AEAB308),
-                statusPreview = "Chapter 2, Verse 47",
+                statusPreview = gitaStatus,
                 subView = SanctuarySubView.GITA,
                 type = SanctuaryToolType.PLUGIN
             ),
@@ -511,7 +581,16 @@ fun ToolsScreen(
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
-                placeholder = { Text("Search tools, habits, or plugins...", fontSize = 12.sp) },
+                placeholder = {
+                    Text(
+                        text = "Search tools, habits, or plugins...",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.65f)
+                        )
+                    )
+                },
+                textStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp),
                 leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null, modifier = Modifier.size(18.dp)) },
                 trailingIcon = {
                     if (searchQuery.isNotEmpty()) {
@@ -523,11 +602,11 @@ fun ToolsScreen(
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp),
+                    .defaultMinSize(minHeight = 44.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
                 )
             )
         }

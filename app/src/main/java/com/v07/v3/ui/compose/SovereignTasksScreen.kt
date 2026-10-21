@@ -349,14 +349,19 @@ fun SovereignTasksScreen(
                                 onValueChange = { newTitle = it },
                                 placeholder = {
                                     Text(
-                                        "Define high-impact directive...",
-                                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp)
+                                        text = "Define high-impact directive...",
+                                        style = MaterialTheme.typography.bodyMedium.copy(
+                                            fontSize = 13.5.sp,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.65f)
+                                        )
                                     )
                                 },
+                                textStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.5.sp),
                                 singleLine = true,
                                 shape = RoundedCornerShape(10.dp),
-                                modifier = Modifier.weight(1f),
-                                textStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.5.sp),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .defaultMinSize(minHeight = 44.dp),
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                                     unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
@@ -367,7 +372,7 @@ fun SovereignTasksScreen(
                             IconButton(
                                 onClick = { isDeadlineBoxOpen = !isDeadlineBoxOpen },
                                 modifier = Modifier
-                                    .size(42.dp)
+                                    .size(44.dp)
                                     .clip(RoundedCornerShape(10.dp))
                                     .background(if (isDeadlineBoxOpen || deadlineDate != null) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
                                     .border(1.dp, if (isDeadlineBoxOpen || deadlineDate != null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.4f), RoundedCornerShape(10.dp))
@@ -386,7 +391,7 @@ fun SovereignTasksScreen(
                                 shape = RoundedCornerShape(10.dp),
                                 enabled = newTitle.isNotBlank(),
                                 contentPadding = PaddingValues(horizontal = 14.dp, vertical = 0.dp),
-                                modifier = Modifier.height(42.dp),
+                                modifier = Modifier.defaultMinSize(minHeight = 44.dp),
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = MaterialTheme.colorScheme.primary,
                                     contentColor = MaterialTheme.colorScheme.onPrimary

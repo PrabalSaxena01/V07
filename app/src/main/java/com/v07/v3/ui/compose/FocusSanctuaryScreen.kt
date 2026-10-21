@@ -478,12 +478,19 @@ fun FocusSanctuaryScreen(
                         placeholder = {
                             Text(
                                 text = "Key goals, notes, or reflections for this interval...",
-                                style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.outline)
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    fontSize = 12.5.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.65f)
+                                )
                             )
                         },
+                        textStyle = MaterialTheme.typography.bodySmall.copy(
+                            fontSize = 12.5.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        ),
                         singleLine = false,
                         maxLines = 3,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 56.dp),
                         shape = RoundedCornerShape(12.dp),
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f),
@@ -707,9 +714,20 @@ fun FocusSanctuaryScreen(
                     OutlinedTextField(
                         value = newTitleInput,
                         onValueChange = { newTitleInput = it },
-                        placeholder = { Text("e.g. System Design, Guitar Practice...") },
+                        placeholder = {
+                            Text(
+                                text = "e.g. System Design, Guitar Practice...",
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontSize = 13.5.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.65f)
+                                )
+                            )
+                        },
+                        textStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.5.sp),
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .defaultMinSize(minHeight = 48.dp),
                         shape = RoundedCornerShape(10.dp)
                     )
                 }

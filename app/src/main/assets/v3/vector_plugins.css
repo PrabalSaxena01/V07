@@ -79,11 +79,18 @@
   color-scheme: dark;
 }
 input, select, textarea {
+  box-sizing: border-box !important;
+  vertical-align: middle !important;
+  line-height: normal !important;
   background: var(--surface-alt) !important;
   color: var(--text-primary) !important;
   border: 1px solid var(--border) !important;
   border-radius: var(--radius) !important;
   outline: none !important;
+}
+input::placeholder, textarea::placeholder {
+  vertical-align: middle !important;
+  line-height: normal !important;
 }
 select option {
   background: #161C2C !important;

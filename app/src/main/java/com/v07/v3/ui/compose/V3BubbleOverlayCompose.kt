@@ -408,7 +408,19 @@ fun FloatingOverlayMenuModal(
                             OutlinedTextField(
                                 value = thoughtInput,
                                 onValueChange = { thoughtInput = it },
-                                placeholder = { Text("What is currently on your mind?") },
+                                placeholder = {
+                                    Text(
+                                        text = "What is currently on your mind?",
+                                        style = MaterialTheme.typography.bodyMedium.copy(
+                                            fontSize = 13.5.sp,
+                                            color = Color(0xFF94A3B8)
+                                        )
+                                    )
+                                },
+                                textStyle = MaterialTheme.typography.bodyMedium.copy(
+                                    fontSize = 13.5.sp,
+                                    color = Color.White
+                                ),
                                 minLines = 3,
                                 maxLines = 5,
                                 shape = RoundedCornerShape(12.dp),
@@ -419,7 +431,9 @@ fun FloatingOverlayMenuModal(
                                     unfocusedTextColor = Color.White,
                                     cursorColor = SanctuaryPalette.PrimaryTeal
                                 ),
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .defaultMinSize(minHeight = 80.dp)
                             )
 
                             Spacer(modifier = Modifier.height(16.dp))

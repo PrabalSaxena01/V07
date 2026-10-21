@@ -715,9 +715,23 @@ fun SettingsScreen(
                                     onValueChange = { companionUidInput = it.trim() },
                                     singleLine = true,
                                     shape = RoundedCornerShape(10.dp),
-                                    modifier = Modifier.weight(1f),
-                                    textStyle = MaterialTheme.typography.bodySmall.copy(fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace, fontSize = 11.5.sp),
-                                    placeholder = { Text("e.g. 5fwVgpra4pRzB1QqMWb9LSZSqrp2", fontSize = 11.sp) }
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .defaultMinSize(minHeight = 44.dp),
+                                    textStyle = MaterialTheme.typography.bodySmall.copy(
+                                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                                        fontSize = 11.5.sp
+                                    ),
+                                    placeholder = {
+                                        Text(
+                                            text = "e.g. 5fwVgpra4pRzB1QqMWb9LSZSqrp2",
+                                            style = MaterialTheme.typography.bodySmall.copy(
+                                                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                                                fontSize = 11.5.sp,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.65f)
+                                            )
+                                        )
+                                    }
                                 )
                                 Button(
                                     onClick = {
@@ -1117,9 +1131,20 @@ fun SettingsScreen(
                         value = nameInput,
                         onValueChange = { nameInput = it },
                         label = { Text("Display Name") },
-                        placeholder = { Text("e.g. Sovereign Thinker") },
+                        placeholder = {
+                            Text(
+                                text = "e.g. Sovereign Thinker",
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontSize = 13.5.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.65f)
+                                )
+                            )
+                        },
+                        textStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.5.sp),
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .defaultMinSize(minHeight = 52.dp),
                         shape = RoundedCornerShape(10.dp)
                     )
 
@@ -1127,9 +1152,20 @@ fun SettingsScreen(
                         value = bioInput,
                         onValueChange = { bioInput = it },
                         label = { Text("Bio & Focus Role") },
-                        placeholder = { Text("e.g. Local Sovereign Vault") },
+                        placeholder = {
+                            Text(
+                                text = "e.g. Local Sovereign Vault",
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontSize = 13.5.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.65f)
+                                )
+                            )
+                        },
+                        textStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.5.sp),
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .defaultMinSize(minHeight = 52.dp),
                         shape = RoundedCornerShape(10.dp)
                     )
 
