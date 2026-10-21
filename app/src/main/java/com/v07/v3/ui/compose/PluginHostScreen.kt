@@ -59,13 +59,36 @@ fun PluginHostScreen(
         val js = """
             (function() {
                 try {
-                    document.documentElement.setAttribute('data-theme', '$themeName');
-                    localStorage.setItem('v07_theme', '$themeName');
+                    var t = '$themeName';
+                    document.documentElement.setAttribute('data-theme', t);
+                    if (t === 'light') {
+                        document.documentElement.classList.add('light');
+                        document.documentElement.classList.remove('dark');
+                        if (document.body) {
+                            document.body.classList.add('light');
+                            document.body.classList.remove('dark');
+                        }
+                    } else {
+                        document.documentElement.classList.add('dark');
+                        document.documentElement.classList.remove('light');
+                        if (document.body) {
+                            document.body.classList.add('dark');
+                            document.body.classList.remove('light');
+                        }
+                    }
+                    localStorage.setItem('v07_theme', t);
+                    localStorage.setItem('v07_app_theme', t);
                     window.dispatchEvent(new Event('storage'));
                 } catch(e){}
             })();
         """.trimIndent()
         webViewRef?.evaluateJavascript(js, null)
+    }
+
+    LaunchedEffect(isLight) {
+        if (pluginIsLight != isLight) {
+            applyTheme(isLight)
+        }
     }
 
     // Intercept back key: allow web view to navigate back, or exit host screen
@@ -283,13 +306,10 @@ fun PluginHostScreen(
 
                             override fun onPageFinished(view: WebView?, url: String?) {
                                 isLoading = false
-                                // Enforce theme synchronization & clean responsive bottom padding
-                                val themeName = if (pluginIsLight) "light" else "dark"
-                                val js = """
+                                applyTheme(pluginIsLight)
+                                val insetsJs = """
                                     (function() {
                                         try {
-                                            document.documentElement.setAttribute('data-theme', '$themeName');
-                                            localStorage.setItem('v07_theme', '$themeName');
                                             var style = document.getElementById('v07-insets-override');
                                             if (!style) {
                                                 style = document.createElement('style');
@@ -300,7 +320,7 @@ fun PluginHostScreen(
                                         } catch(e){}
                                     })();
                                 """.trimIndent()
-                                view?.evaluateJavascript(js, null)
+                                view?.evaluateJavascript(insetsJs, null)
                             }
                         }
 

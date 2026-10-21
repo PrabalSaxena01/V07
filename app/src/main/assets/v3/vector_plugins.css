@@ -27,13 +27,31 @@
   --bg: #090A0F !important;
   --surface: #11141E !important;
   --surface-low: #0D0F17 !important;
+  --surface-alt: #141824 !important;
+  --surface-card: #151821 !important;
+  --surface-elevated: #191D28 !important;
   --surface-container: #171B28 !important;
   --border: #262D42 !important;
+  --border-subtle: rgba(255, 255, 255, 0.08) !important;
   --text: #F8FAFC !important;
+  --text-primary: #F8FAFC !important;
+  --text-secondary: #94A3B8 !important;
+  --text-muted: #64748B !important;
   --muted: #94A3B8 !important;
   --accent: #5CE1E6 !important;
+  --accent-light: #7CF4A8 !important;
   --accent-glow: rgba(92, 225, 230, 0.15) !important;
+  --primary: #5CE1E6 !important;
   --success: #4DE086 !important;
+  --gold: #F6C90E !important;
+  --emerald: #10B981 !important;
+  --emerald-dim: rgba(16, 185, 129, 0.15) !important;
+  --yellow: #FFB84D !important;
+  --yellow-glow: rgba(255, 184, 77, 0.15) !important;
+  --rose: #FF5370 !important;
+  --rose-glow: rgba(255, 83, 112, 0.15) !important;
+  --blue: #68A6FF !important;
+  --purple: #8D6CFF !important;
   --radius: 8px !important;
 
   /* Vector Palette */
@@ -41,7 +59,6 @@
   --green: #4DE086 !important;
   --amber: #FFB84D !important;
   --red: #FF5370 !important;
-  --blue: #68A6FF !important;
 
   --bar-bg: rgba(255, 255, 255, 0.08) !important;
   --chip-bg: #171B28 !important;
@@ -52,35 +69,76 @@
 }
 
 :root[data-theme="light"], .light {
-  --bg: #F8FAFC !important;
+  --bg: #FAF6F9 !important;
   --surface: #FFFFFF !important;
-  --surface-low: #F1F5F9 !important;
-  --surface-container: #E2E8F0 !important;
-  --border: #CBD5E1 !important;
-  --text: #0F172A !important;
-  --muted: #475569 !important;
-  --accent: #0284C7 !important;
-  --accent-glow: rgba(2, 132, 199, 0.15) !important;
+  --surface-low: #F1EDF0 !important;
+  --surface-alt: #F1EDF0 !important;
+  --surface-card: #FFFFFF !important;
+  --surface-elevated: #F8F4F7 !important;
+  --surface-container: #EBE5EA !important;
+  --border: #DDD6DD !important;
+  --border-subtle: rgba(0, 0, 0, 0.08) !important;
+  --text: #182230 !important;
+  --text-primary: #182230 !important;
+  --text-secondary: #475569 !important;
+  --text-muted: #64748B !important;
+  --muted: #64748B !important;
+  --accent: #2E7D6A !important;
+  --accent-light: #1D5A4C !important;
+  --accent-glow: rgba(46, 125, 106, 0.15) !important;
+  --primary: #2E7D6A !important;
   --success: #16A34A !important;
-  --radius: 8px !important;
-
-  /* Vector Palette (High Contrast Light Mode) */
+  --gold: #D97706 !important;
+  --emerald: #059669 !important;
+  --emerald-dim: rgba(5, 150, 105, 0.12) !important;
+  --yellow: #D97706 !important;
+  --yellow-glow: rgba(217, 119, 6, 0.12) !important;
+  --rose: #E11D48 !important;
+  --rose-glow: rgba(225, 29, 72, 0.12) !important;
+  --blue: #2563EB !important;
+  --purple: #7C3AED !important;
   --cyan: #0284C7 !important;
   --green: #16A34A !important;
   --amber: #D97706 !important;
   --red: #DC2626 !important;
-  --blue: #2563EB !important;
+  --radius: 8px !important;
 
   --bar-bg: rgba(0, 0, 0, 0.07) !important;
-  --chip-bg: #F1F5F9 !important;
-  --chip-border: #CBD5E1 !important;
+  --chip-bg: #F1EDF0 !important;
+  --chip-border: #DDD6DD !important;
+
+  --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  --font-mono: "JetBrains Mono", "Space Mono", monospace !important;
 }
 
-body {
+body, :root[data-theme="light"] body, .light body {
   font-family: var(--font-ui) !important;
   background: var(--bg) !important;
   color: var(--text) !important;
   -webkit-font-smoothing: antialiased;
+}
+
+:root[data-theme="light"] input,
+:root[data-theme="light"] select,
+:root[data-theme="light"] textarea,
+.light input, .light select, .light textarea {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+
+:root[data-theme="light"] select option,
+.light select option {
+  background: #FFFFFF !important;
+  color: #182230 !important;
+}
+
+:root[data-theme="light"] pre,
+:root[data-theme="light"] code,
+.light pre, .light code {
+  background: var(--surface-low) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
 }
 
 /* Vector Headings */

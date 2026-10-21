@@ -2046,6 +2046,47 @@ class PlatformJsBridge(
             return """
             $v3Script
             (function() {
+                function detectTheme() {
+                    try {
+                        var params = new URLSearchParams(window.location.search);
+                        if (params.has('theme')) return params.get('theme');
+                    } catch(e){}
+                    try {
+                        if (window.AndroidTheme && typeof window.AndroidTheme.isDark === 'function') {
+                            return window.AndroidTheme.isDark() ? 'dark' : 'light';
+                        }
+                    } catch(e){}
+                    try {
+                        var saved = localStorage.getItem('v07_theme') || localStorage.getItem('v07_app_theme');
+                        if (saved) return saved;
+                    } catch(e){}
+                    return 'dark';
+                }
+                function applyTheme(t) {
+                    var isLight = (t === 'light');
+                    var themeName = isLight ? 'light' : 'dark';
+                    document.documentElement.setAttribute('data-theme', themeName);
+                    if (isLight) {
+                        document.documentElement.classList.add('light');
+                        document.documentElement.classList.remove('dark');
+                        if (document.body) {
+                            document.body.classList.add('light');
+                            document.body.classList.remove('dark');
+                        }
+                    } else {
+                        document.documentElement.classList.add('dark');
+                        document.documentElement.classList.remove('light');
+                        if (document.body) {
+                            document.body.classList.add('dark');
+                            document.body.classList.remove('light');
+                        }
+                    }
+                }
+                applyTheme(detectTheme());
+                window.addEventListener('DOMContentLoaded', function() { applyTheme(detectTheme()); });
+                window.addEventListener('storage', function() { applyTheme(detectTheme()); });
+            })();
+            (function() {
                 if (window.V07) return;
                 var pid = '$pluginId';
                 var baseUrl = '$baseUrl';

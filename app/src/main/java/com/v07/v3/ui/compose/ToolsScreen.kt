@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.v07.v3.app.V3PlatformHost
@@ -84,11 +85,11 @@ fun ToolsScreen(
                 pluginId = null,
                 title = "Gentle Habits",
                 category = "Daily Rhythms",
-                description = "Rhythm, cadence, 7-day habit matrix & consistency tracking",
+                description = "Cadence, rhythm & 7-day habit matrix",
                 icon = Icons.Outlined.Repeat,
                 accentColor = SanctuaryPalette.AccentHabits,
                 accentBg = SanctuaryPalette.AccentHabitsBg,
-                statusPreview = "7-Day Cadence Active • Local SQLite",
+                statusPreview = "7-Day Cadence Active",
                 subView = SanctuarySubView.HABITS,
                 type = SanctuaryToolType.CORE
             ),
@@ -110,7 +111,7 @@ fun ToolsScreen(
                 pluginId = null,
                 title = "Digital Stillness",
                 category = "Telemetry & Limits",
-                description = "Daily app attention, 24h & 7d usage bar graphs & mindful limits",
+                description = "Daily app attention, 24h & 7d usage bar graphs",
                 icon = Icons.Outlined.ScreenLockPortrait,
                 accentColor = Color(0xFFF59E0B),
                 accentBg = Color(0x1AF59E0B),
@@ -127,7 +128,7 @@ fun ToolsScreen(
                 icon = Icons.Outlined.HistoryEdu,
                 accentColor = Color(0xFF8B5CF6),
                 accentBg = Color(0x1A8B5CF6),
-                statusPreview = "Live reflections & capture",
+                statusPreview = "Live reflections & notes",
                 subView = SanctuarySubView.NONE,
                 type = SanctuaryToolType.CORE
             ),
@@ -136,7 +137,7 @@ fun ToolsScreen(
                 pluginId = "com.v07.gita",
                 title = "Bhagavad Gita",
                 category = "Wisdom & Philosophy",
-                description = "Sacred verses, Sanskrit, Hindi commentary & English translations",
+                description = "Sacred verses, Sanskrit, Hindi commentary & translations",
                 icon = Icons.Outlined.MenuBook,
                 accentColor = Color(0xFFEAB308),
                 accentBg = Color(0x1AEAB308),
@@ -182,7 +183,7 @@ fun ToolsScreen(
                 icon = Icons.Outlined.AutoStories,
                 accentColor = Color(0xFFEC4899),
                 accentBg = Color(0x1AEC4899),
-                statusPreview = "Reading journey & book notes",
+                statusPreview = "Reading journey active",
                 type = SanctuaryToolType.PLUGIN
             ),
             SanctuaryTool(
@@ -415,7 +416,7 @@ fun ToolsScreen(
                             Icon(
                                 imageVector = if (isManageMode) Icons.Outlined.Check else Icons.Outlined.Tune,
                                 contentDescription = null,
-                                modifier = Modifier.size(15.dp)
+                                modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(if (isManageMode) "Done" else "Manage", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
@@ -430,7 +431,7 @@ fun ToolsScreen(
                             ),
                             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                         ) {
-                            Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(15.dp))
+                            Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(4.dp))
                             Text("Add", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
                         }
@@ -697,7 +698,11 @@ fun ToolsScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Row(
+                                modifier = Modifier.weight(1f, fill = false),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
                                 Box(
                                     modifier = Modifier
                                         .size(6.dp)
@@ -710,14 +715,20 @@ fun ToolsScreen(
                                         fontSize = 11.sp,
                                         fontFamily = FontFamily.Monospace,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
+                                    ),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                             }
 
-                            Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Row(
+                                modifier = Modifier.wrapContentWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
                                 IconButton(
                                     onClick = { selectedToolForSettings = tool },
-                                    modifier = Modifier.size(28.dp)
+                                    modifier = Modifier.size(32.dp)
                                 ) {
                                     Icon(
                                         imageVector = Icons.Outlined.Tune,
@@ -731,12 +742,12 @@ fun ToolsScreen(
                                     onClick = { openTool(tool) },
                                     shape = RoundedCornerShape(8.dp),
                                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
-                                    modifier = Modifier.height(28.dp)
+                                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
+                                    modifier = Modifier.height(30.dp)
                                 ) {
                                     Text("Open", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, fontSize = 11.sp))
-                                    Spacer(modifier = Modifier.width(3.dp))
-                                    Icon(Icons.Outlined.ArrowForward, contentDescription = null, modifier = Modifier.size(12.dp))
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Icon(Icons.Outlined.ArrowForward, contentDescription = null, modifier = Modifier.size(14.dp))
                                 }
                             }
                         }
@@ -885,7 +896,11 @@ fun ToolsScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Row(
+                                modifier = Modifier.weight(1f, fill = false),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
                                 Box(
                                     modifier = Modifier
                                         .size(6.dp)
@@ -898,20 +913,26 @@ fun ToolsScreen(
                                         fontSize = 11.sp,
                                         fontFamily = FontFamily.Monospace,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
+                                    ),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                             }
 
-                            Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Row(
+                                modifier = Modifier.wrapContentWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
                                 // Direct Plugin Settings Gear Button (fulfills "implement setting for all plugins")
                                 IconButton(
                                     onClick = { openPluginSettings(tool) },
-                                    modifier = Modifier.size(28.dp)
+                                    modifier = Modifier.size(32.dp)
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Outlined.Settings,
+                                        imageVector = Icons.Outlined.Tune,
                                         contentDescription = "Plugin Settings",
-                                        tint = MaterialTheme.colorScheme.primary,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                         modifier = Modifier.size(16.dp)
                                     )
                                 }
@@ -920,12 +941,12 @@ fun ToolsScreen(
                                     onClick = { openTool(tool) },
                                     shape = RoundedCornerShape(8.dp),
                                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
-                                    modifier = Modifier.height(28.dp)
+                                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
+                                    modifier = Modifier.height(30.dp)
                                 ) {
                                     Text("Launch", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface))
-                                    Spacer(modifier = Modifier.width(3.dp))
-                                    Icon(Icons.Outlined.OpenInNew, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(12.dp))
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Icon(Icons.Outlined.OpenInNew, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(14.dp))
                                 }
                             }
                         }

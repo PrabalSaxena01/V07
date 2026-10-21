@@ -474,7 +474,7 @@ fun HabitTrackerScreen(
                             overflow = TextOverflow.Ellipsis
                         )
                         Text(
-                            text = "Rhythm, cadence & consistency tracking",
+                            text = "Cadence, rhythm & daily rituals",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 1,
@@ -672,14 +672,14 @@ fun HabitTrackerScreen(
                             )
 
                             Row(
-                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 weekDays.forEach { day ->
                                     Column(
                                         horizontalAlignment = Alignment.CenterHorizontally,
                                         modifier = Modifier
-                                            .width(28.dp)
+                                            .width(24.dp)
                                             .clip(RoundedCornerShape(6.dp))
                                             .background(if (day.isToday) SanctuaryPalette.AccentHabits.copy(alpha = 0.15f) else Color.Transparent)
                                             .padding(vertical = 2.dp)
@@ -694,7 +694,7 @@ fun HabitTrackerScreen(
                                         Text(
                                             text = day.dayNumber,
                                             style = MaterialTheme.typography.labelSmall,
-                                            fontSize = 9.5.sp,
+                                            fontSize = 9.sp,
                                             color = if (day.isToday) SanctuaryPalette.AccentHabits else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                                         )
                                     }
@@ -716,34 +716,39 @@ fun HabitTrackerScreen(
                                 ) {
                                     // Habit Icon + Title
                                     Row(
-                                        modifier = Modifier.weight(1f),
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .padding(end = 6.dp),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Text(
                                             text = habit.icon,
                                             fontSize = 15.sp,
-                                            modifier = Modifier.padding(end = 8.dp)
+                                            modifier = Modifier.padding(end = 6.dp)
                                         )
                                         Text(
                                             text = habit.name,
-                                            style = MaterialTheme.typography.bodyMedium,
+                                            style = MaterialTheme.typography.bodySmall.copy(
+                                                fontSize = 11.sp,
+                                                lineHeight = 13.sp
+                                            ),
                                             color = MaterialTheme.colorScheme.onSurface,
                                             fontWeight = FontWeight.Medium,
-                                            maxLines = 1,
+                                            maxLines = 2,
                                             overflow = TextOverflow.Ellipsis
                                         )
                                     }
 
                                     // 7 Day Toggle Cells
                                     Row(
-                                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         weekDays.forEach { day ->
                                             val isDone = completions["${habit.id}:${day.dateStr}"] ?: false
                                             Box(
                                                 modifier = Modifier
-                                                    .size(28.dp)
+                                                    .size(24.dp)
                                                     .clip(RoundedCornerShape(6.dp))
                                                     .background(
                                                         if (isDone) SanctuaryPalette.AccentHabits.copy(alpha = 0.2f)

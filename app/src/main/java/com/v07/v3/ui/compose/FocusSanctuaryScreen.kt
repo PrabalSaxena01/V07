@@ -522,16 +522,20 @@ fun FocusSanctuaryScreen(
                                     containerColor = MaterialTheme.colorScheme.surfaceVariant,
                                     contentColor = MaterialTheme.colorScheme.onSurface
                                 ),
+                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
                                 modifier = Modifier.weight(1f).height(48.dp)
                             ) {
                                 Icon(
                                     imageVector = if (timerState.status == TimerStatus.RUNNING) Icons.Default.Pause else Icons.Default.PlayArrow,
-                                    contentDescription = null
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp)
                                 )
-                                Spacer(modifier = Modifier.width(6.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
                                 Text(
                                     text = if (timerState.status == TimerStatus.RUNNING) "Pause" else "Resume",
-                                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                                    maxLines = 1,
+                                    softWrap = false,
+                                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
                                 )
                             }
 
@@ -542,11 +546,17 @@ fun FocusSanctuaryScreen(
                                     containerColor = MaterialTheme.colorScheme.primary,
                                     contentColor = MaterialTheme.colorScheme.onPrimary
                                 ),
+                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
                                 modifier = Modifier.weight(1f).height(48.dp)
                             ) {
-                                Icon(imageVector = Icons.Default.Stop, contentDescription = "Stop")
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(text = "Stop & Log", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                                Icon(imageVector = Icons.Default.Stop, contentDescription = "Stop", modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "Stop & Log",
+                                    maxLines = 1,
+                                    softWrap = false,
+                                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
+                                )
                             }
                         }
                     }

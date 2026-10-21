@@ -4,6 +4,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -81,9 +82,9 @@ fun SanctuaryBottomDock(
         ) {
             Row(
                 modifier = Modifier
-                    .padding(horizontal = 8.dp, vertical = 6.dp)
+                    .padding(horizontal = 6.dp, vertical = 5.dp)
                     .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceAround,
+                horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 SanctuaryTab.values().forEach { tab ->
@@ -91,7 +92,8 @@ fun SanctuaryBottomDock(
                     SanctuaryDockItem(
                         tab = tab,
                         isActive = isActive,
-                        onClick = { onTabSelected(tab) }
+                        onClick = { onTabSelected(tab) },
+                        modifier = Modifier.weight(1f)
                     )
                 }
             }
@@ -103,19 +105,20 @@ fun SanctuaryBottomDock(
 private fun SanctuaryDockItem(
     tab: SanctuaryTab,
     isActive: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    val scale by animateFloatAsState(targetValue = if (isActive) 1.05f else 1.0f, label = "dockScale")
+    val scale by animateFloatAsState(targetValue = if (isActive) 1.04f else 1.0f, label = "dockScale")
     val contentColor by animateColorAsState(
         targetValue = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
         label = "dockColor"
     )
 
     Box(
-        modifier = Modifier
+        modifier = modifier
             .scale(scale)
-            .clip(PillShape)
+            .clip(RoundedCornerShape(12.dp))
             .background(
                 if (isActive) MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)
                 else Color.Transparent
@@ -125,7 +128,7 @@ private fun SanctuaryDockItem(
                 indication = null,
                 onClick = onClick
             )
-            .padding(horizontal = if (isActive) 12.dp else 8.dp, vertical = 6.dp),
+            .padding(vertical = 5.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(

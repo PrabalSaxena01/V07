@@ -458,7 +458,8 @@ fun HomeScreen(
                         Column(
                             modifier = Modifier
                                 .weight(1f)
-                                .clickable { onNavigateToSubView(SanctuarySubView.SCREENTIME) }
+                                .clickable { onNavigateToSubView(SanctuarySubView.SCREENTIME) },
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
                                 text = todayScreenTimeFormatted,
@@ -475,7 +476,8 @@ fun HomeScreen(
                         Column(
                             modifier = Modifier
                                 .weight(1f)
-                                .clickable { onNavigateToSubView(SanctuarySubView.FOCUS) }
+                                .clickable { onNavigateToSubView(SanctuarySubView.FOCUS) },
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
                                 text = "${todayFocusMinutes} min",
@@ -492,7 +494,8 @@ fun HomeScreen(
                         Column(
                             modifier = Modifier
                                 .weight(1f)
-                                .clickable { onNavigateToSubView(SanctuarySubView.HABITS) }
+                                .clickable { onNavigateToSubView(SanctuarySubView.HABITS) },
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             val met = habitsList.count { it.completed }
                             Text(
@@ -587,7 +590,7 @@ fun HomeScreen(
                                 imageVector = Icons.Outlined.HourglassTop,
                                 contentDescription = "Focus",
                                 tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(19.dp)
+                                modifier = Modifier.size(20.dp)
                             )
                         }
                     }
@@ -630,7 +633,7 @@ fun HomeScreen(
                                         imageVector = Icons.Outlined.Flag,
                                         contentDescription = "Target",
                                         tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(12.dp)
+                                        modifier = Modifier.size(16.dp)
                                     )
                                     Text(
                                         text = if (isOpenStopwatchMode) "Mode: Stopwatch (0→∞)" else "Target: ${selectedPresetMinutes} min",
@@ -800,7 +803,7 @@ fun HomeScreen(
                                 ),
                                 contentPadding = PaddingValues(horizontal = 14.dp, vertical = 12.dp)
                             ) {
-                                Icon(Icons.Outlined.StopCircle, contentDescription = "Stop", modifier = Modifier.size(17.dp))
+                                Icon(Icons.Outlined.StopCircle, contentDescription = "Stop", modifier = Modifier.size(18.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text("Stop & Log", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
                             }
@@ -853,22 +856,11 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
-                            Text(
-                                text = "Gentle habits",
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontSize = 15.sp),
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                text = habitSubtitle,
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontSize = 11.sp,
-                                    color = if (completedCount == totalHabits && totalHabits > 0) Color(0xFF10B981) else MaterialTheme.colorScheme.onSurfaceVariant
-                                ),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
+                        Text(
+                            text = "Gentle habits",
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontSize = 16.sp),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
 
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                             Box(
@@ -890,6 +882,19 @@ fun HomeScreen(
                             }
                         }
                     }
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Text(
+                        text = habitSubtitle,
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontSize = 11.5.sp,
+                            color = if (completedCount == totalHabits && totalHabits > 0) Color(0xFF10B981) else MaterialTheme.colorScheme.onSurfaceVariant
+                        ),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
                     Spacer(modifier = Modifier.height(12.dp))
 
