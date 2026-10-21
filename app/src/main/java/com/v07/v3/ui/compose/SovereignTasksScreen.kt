@@ -350,6 +350,9 @@ fun SovereignTasksScreen(
                                 placeholder = {
                                     Text(
                                         text = "Define high-impact directive...",
+                                        maxLines = 1,
+                                        softWrap = false,
+                                        overflow = TextOverflow.Ellipsis,
                                         style = MaterialTheme.typography.bodyMedium.copy(
                                             fontSize = 13.5.sp,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.65f)

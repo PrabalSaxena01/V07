@@ -438,7 +438,11 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Row(
+                            modifier = Modifier.weight(1f, fill = false),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
                             Box(
                                 modifier = Modifier
                                     .size(7.dp)
@@ -447,6 +451,8 @@ fun HomeScreen(
                             )
                             Text(
                                 text = timeOfDayFlowTitle,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontWeight = FontWeight.Medium,
                                     fontSize = 11.5.sp,
@@ -454,8 +460,10 @@ fun HomeScreen(
                                 )
                             )
                         }
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = syncStatusSubtitle,
+                            maxLines = 1,
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontSize = 10.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
@@ -1089,7 +1097,10 @@ fun HomeScreen(
                             onValueChange = { newTaskTitle = it },
                             placeholder = {
                                 Text(
-                                    text = "Define a quiet priority...",
+                                    text = "Add a quiet directive...",
+                                    maxLines = 1,
+                                    softWrap = false,
+                                    overflow = TextOverflow.Ellipsis,
                                     style = MaterialTheme.typography.bodyMedium.copy(
                                         fontSize = 13.sp,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.65f)
@@ -1098,6 +1109,7 @@ fun HomeScreen(
                             },
                             textStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp),
                             singleLine = true,
+                            maxLines = 1,
                             modifier = Modifier
                                 .weight(1f)
                                 .defaultMinSize(minHeight = 44.dp),
