@@ -130,8 +130,13 @@ class GitaProvider private constructor(private val context: Context) {
         candidates.add(File(context.filesDir, "gita.json"))
 
         for (candidate in candidates) {
-            if (candidate.exists() && candidate.isFile && candidate.length() > 1000) {
-                return Pair(candidate.inputStream(), "File: ${candidate.absolutePath} (${candidate.length()} bytes)")
+            try {
+                if (candidate.exists() && candidate.isFile && candidate.canRead() && candidate.length() > 1000) {
+                    val stream = candidate.inputStream()
+                    return Pair(stream, "File: ${candidate.absolutePath} (${candidate.length()} bytes)")
+                }
+            } catch (e: Throwable) {
+                Log.w(TAG, "Cannot access candidate file ${candidate.absolutePath}: ${e.message}")
             }
         }
 
@@ -153,7 +158,9 @@ class GitaProvider private constructor(private val context: Context) {
         candidates.add(File(context.filesDir, "gita_read.jsonl"))
 
         for (f in candidates) {
-            if (f.exists()) return f
+            try {
+                if (f.exists() && f.canRead()) return f
+            } catch (_: Throwable) {}
         }
         return File(context.filesDir, "gita_read.jsonl")
     }
@@ -172,7 +179,9 @@ class GitaProvider private constructor(private val context: Context) {
         candidates.add(File(context.filesDir, "gita_reviews.jsonl"))
 
         for (f in candidates) {
-            if (f.exists()) return f
+            try {
+                if (f.exists() && f.canRead()) return f
+            } catch (_: Throwable) {}
         }
         return File(context.filesDir, "gita_reviews.jsonl")
     }

@@ -14,8 +14,7 @@ import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Spa
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,6 +49,12 @@ fun SanctuaryTopBar(
             val custom = userPrefs.getString("display_name", "")?.trim() ?: ""
             if (custom.isNotBlank()) custom.first().uppercase() else null
         }
+    }
+
+    var profileDropdownExpanded by remember { mutableStateOf(false) }
+    var activeProfileName by remember {
+        val prefs = context.getSharedPreferences("v07_profiles", Context.MODE_PRIVATE)
+        mutableStateOf(prefs.getString("active_profile_id", "guest") ?: "guest")
     }
 
     Surface(
@@ -148,40 +153,55 @@ fun SanctuaryTopBar(
                     )
                 }
 
-                Box(
-                    modifier = Modifier
-                        .size(34.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                        .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), CircleShape)
-                        .clickable { onProfileClick() },
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (profileInitial != null) {
-                        Text(
-                            text = profileInitial,
-                            style = MaterialTheme.typography.labelLarge.copy(
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 14.sp
-                            ),
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    } else {
-                        Icon(
-                            imageVector = Icons.Outlined.Person,
-                            contentDescription = "Profile",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                    // Presence dot
+                Box {
                     Box(
                         modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(2.dp)
-                            .size(6.dp)
+                            .size(34.dp)
                             .clip(CircleShape)
-                            .background(SanctuaryPalette.AccentHabits)
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), CircleShape)
+                            .clickable { profileDropdownExpanded = true },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (profileInitial != null) {
+                            Text(
+                                text = profileInitial,
+                                style = MaterialTheme.typography.labelLarge.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp
+                                ),
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Outlined.Person,
+                                contentDescription = "Profile",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                        // Presence dot
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .padding(2.dp)
+                                .size(6.dp)
+                                .clip(CircleShape)
+                                .background(SanctuaryPalette.AccentHabits)
+                        )
+                    }
+
+                    SanctuaryProfileDropdownMenu(
+                        expanded = profileDropdownExpanded,
+                        onDismissRequest = { profileDropdownExpanded = false },
+                        onNavigateToSettings = {
+                            profileDropdownExpanded = false
+                            onProfileClick()
+                        },
+                        onProfileSwitched = { newProfile ->
+                            activeProfileName = newProfile
+                            android.widget.Toast.makeText(context, "Switched to profile: $newProfile", android.widget.Toast.LENGTH_SHORT).show()
+                        }
                     )
                 }
             }

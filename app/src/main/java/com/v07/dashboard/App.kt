@@ -41,9 +41,9 @@ class App : Application() {
             }
             if (NotificationPreferences.isOverlayEnabled() && Settings.canDrawOverlays(this)) {
                 try {
-                    OverlayService.start(this)
+                    com.v07.v3.app.overlay.V3BubbleOverlayService.start(this)
                 } catch (e: Exception) {
-                    android.util.Log.w("App", "OverlayService start deferred: ${e.message}")
+                    android.util.Log.w("App", "V3BubbleOverlayService start deferred: ${e.message}")
                 }
             }
         } catch (e: Exception) {

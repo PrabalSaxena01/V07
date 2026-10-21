@@ -131,21 +131,13 @@ fun SanctuaryShell(
                             )
                         }
                         SanctuarySubView.GITA -> {
-                            PluginHostScreen(
-                                pluginId = "com.v07.gita",
-                                pluginTitle = "Bhagavad Gita",
-                                pluginSubtitle = "Sacred verses, Sanskrit & commentaries",
-                                isLight = isLight,
+                            GitaWisdomScreen(
                                 onBack = { activeSubView = SanctuarySubView.NONE },
                                 modifier = Modifier.fillMaxSize()
                             )
                         }
                         SanctuarySubView.HABITS -> {
-                            PluginHostScreen(
-                                pluginId = "com.v07.habits",
-                                pluginTitle = "Gentle Habits",
-                                pluginSubtitle = "Rhythm, cadence & consistency tracking",
-                                isLight = isLight,
+                            HabitTrackerScreen(
                                 onBack = { activeSubView = SanctuarySubView.NONE },
                                 modifier = Modifier.fillMaxSize()
                             )
@@ -206,7 +198,7 @@ fun SanctuaryShell(
                             DayScreen(
                                 onNavigateToScreentime = { activeSubView = SanctuarySubView.SCREENTIME },
                                 onNavigateToFocus = { activeSubView = SanctuarySubView.FOCUS },
-                                onNavigateToHabits = { currentTab = SanctuaryTab.HOME },
+                                onNavigateToHabits = { activeSubView = SanctuarySubView.HABITS },
                                 onNavigateToJournal = { currentTab = SanctuaryTab.LEDGER },
                                 modifier = Modifier.fillMaxSize()
                             )

@@ -7,6 +7,7 @@ import android.os.Build
 import android.provider.Settings
 import android.widget.Toast
 import androidx.compose.animation.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -25,11 +26,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.v07.v3.app.V3PlatformHost
 import com.v07.v3.app.overlay.V3BubbleOverlayService
 import com.v07.v3.app.telemetry.ScreenTimeTracker
 import com.v07.v3.core.data.EventRepository
+import com.v07.v3.core.plugin.PluginRecord
+import com.v07.v3.core.plugin.PluginRegistry
+import com.v07.v3.core.plugin.PluginState
 import com.v07.v3.core.sync.V3CompanionSyncManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -55,6 +61,19 @@ fun SettingsScreen(
 
     var notificationsEnabled by remember { mutableStateOf(true) }
     var syncStatusText by remember { mutableStateOf("Ready to sync") }
+
+    var pluginsList by remember { mutableStateOf<List<PluginRecord>>(emptyList()) }
+    var selectedPluginForConfig by remember { mutableStateOf<PluginRecord?>(null) }
+
+    fun refreshPlugins() {
+        val reg = if (V3PlatformHost.isInitialized) V3PlatformHost.pluginRegistry else PluginRegistry.getInstance(context)
+        pluginsList = reg.getAllPlugins().ifEmpty { reg.discoverAll() }
+            .filter { !it.manifest.id.contains("template") }
+    }
+
+    LaunchedEffect(Unit) {
+        refreshPlugins()
+    }
 
     val cardShape = RoundedCornerShape(16.dp)
 
@@ -609,7 +628,180 @@ fun SettingsScreen(
             }
         }
 
-        // --- Section 6: Android Device & System Permissions ---
+        // --- Section 6: Modular Plugins & Extensions ---
+        item {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "MODULAR PLUGINS & EXTENSIONS",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            letterSpacing = 1.sp
+                        )
+                    )
+                    val activeCount = pluginsList.count { it.state == PluginState.ENABLED || it.state == PluginState.RUNNING }
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                    ) {
+                        Text(
+                            text = "$activeCount / ${pluginsList.size} active",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontSize = 10.sp
+                            ),
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                    }
+                }
+
+                Surface(
+                    shape = cardShape,
+                    color = MaterialTheme.colorScheme.surface,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
+                    shadowElevation = 2.dp,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(14.dp)
+                    ) {
+                        Text(
+                            text = "Configure isolated permissions, sandbox storage, and sync behaviors for modular companion plugins.",
+                            style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        )
+
+                        if (pluginsList.isEmpty()) {
+                            Text(
+                                text = "Discovering installed plugins...",
+                                style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            )
+                        } else {
+                            pluginsList.forEachIndexed { index, plugin ->
+                                val manifest = plugin.manifest
+                                val isEnabled = plugin.state == PluginState.ENABLED || plugin.state == PluginState.RUNNING
+
+                                if (index > 0) {
+                                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
+                                }
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(36.dp)
+                                                .clip(RoundedCornerShape(10.dp))
+                                                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Outlined.Extension,
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.primary,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                        }
+
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                                Text(
+                                                    text = manifest.name,
+                                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                                        fontWeight = FontWeight.SemiBold,
+                                                        color = MaterialTheme.colorScheme.onSurface
+                                                    )
+                                                )
+                                                Surface(
+                                                    shape = RoundedCornerShape(4.dp),
+                                                    color = MaterialTheme.colorScheme.surfaceVariant
+                                                ) {
+                                                    Text(
+                                                        text = "v${manifest.version}",
+                                                        style = MaterialTheme.typography.labelSmall.copy(
+                                                            fontSize = 9.sp,
+                                                            fontWeight = FontWeight.Bold,
+                                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                        ),
+                                                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
+                                                    )
+                                                }
+                                            }
+                                            Text(
+                                                text = manifest.id,
+                                                style = MaterialTheme.typography.labelSmall.copy(
+                                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                    fontSize = 10.sp
+                                                ),
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
+                                        }
+                                    }
+
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        IconButton(
+                                            onClick = { selectedPluginForConfig = plugin },
+                                            modifier = Modifier.size(36.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Outlined.Settings,
+                                                contentDescription = "Configure ${manifest.name}",
+                                                tint = MaterialTheme.colorScheme.primary,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                        }
+
+                                        Switch(
+                                            checked = isEnabled,
+                                            onCheckedChange = { checked ->
+                                                val reg = if (V3PlatformHost.isInitialized) V3PlatformHost.pluginRegistry else PluginRegistry.getInstance(context)
+                                                if (checked) {
+                                                    reg.enablePlugin(manifest.id)
+                                                } else {
+                                                    reg.disablePlugin(manifest.id)
+                                                }
+                                                refreshPlugins()
+                                                Toast.makeText(
+                                                    context,
+                                                    "${manifest.name} ${if (checked) "enabled" else "disabled"}",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            },
+                                            colors = SwitchDefaults.colors(
+                                                checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                                                checkedTrackColor = MaterialTheme.colorScheme.primary
+                                            )
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // --- Section 7: Android Device & System Permissions ---
         item {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
@@ -698,5 +890,13 @@ fun SettingsScreen(
                 }
             }
         }
+    }
+
+    selectedPluginForConfig?.let { plugin ->
+        PluginSettingsSheet(
+            pluginRecord = plugin,
+            onDismiss = { selectedPluginForConfig = null },
+            onStateChanged = { refreshPlugins() }
+        )
     }
 }

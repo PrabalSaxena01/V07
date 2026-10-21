@@ -1475,12 +1475,14 @@ class OverlayService : Service() {
         var savedProjectionData: Intent? = null
 
         fun start(context: Context) {
-            val intent = Intent(context, OverlayService::class.java)
-            context.startForegroundService(intent)
+            com.v07.v3.app.overlay.V3BubbleOverlayService.start(context)
         }
 
         fun stop(context: Context) {
-            context.stopService(Intent(context, OverlayService::class.java))
+            com.v07.v3.app.overlay.V3BubbleOverlayService.stop(context)
+            try {
+                context.stopService(Intent(context, OverlayService::class.java))
+            } catch (_: Exception) {}
         }
     }
 }

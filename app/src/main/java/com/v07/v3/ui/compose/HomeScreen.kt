@@ -74,6 +74,17 @@ fun HomeScreen(
     var newTaskTitle by remember { mutableStateOf("") }
     var showDeadlineFields by remember { mutableStateOf(false) }
     var selectedPriority by remember { mutableStateOf("MEDIUM") }
+    var taskFilter by remember { mutableStateOf("Pending") }
+    val taskFilterOptions = remember { listOf("Pending", "All", "Completed") }
+    val priorityOptions = remember { listOf("LOW", "MEDIUM", "HIGH", "URGENT") }
+
+    val displayedTasks = remember(tasksList, taskFilter) {
+        when (taskFilter) {
+            "Pending" -> tasksList.filter { !it.status.equals("completed", true) && !it.status.equals("done", true) }
+            "Completed" -> tasksList.filter { it.status.equals("completed", true) || it.status.equals("done", true) }
+            else -> tasksList
+        }
+    }
 
     // Habits state
     var habitsList by remember {
@@ -819,18 +830,30 @@ fun HomeScreen(
                             )
                         }
 
-                        Surface(
-                            shape = PillShape,
-                            color = MaterialTheme.colorScheme.surfaceVariant
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            Text(
-                                text = "$completedCount done",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
-                                ),
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                            Surface(
+                                shape = PillShape,
+                                color = MaterialTheme.colorScheme.surfaceVariant
+                            ) {
+                                Text(
+                                    text = "$completedCount done",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    ),
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                )
+                            }
+
+                            SanctuaryFilterDropdown(
+                                selectedItem = taskFilter,
+                                items = taskFilterOptions,
+                                onItemSelected = { taskFilter = it },
+                                leadingIcon = Icons.Outlined.FilterList
                             )
                         }
                     }
@@ -914,27 +937,13 @@ fun HomeScreen(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Priority:", style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
-                            listOf("LOW", "MEDIUM", "HIGH").forEach { p ->
-                                val isSel = selectedPriority == p
-                                Box(
-                                    modifier = Modifier
-                                        .clip(PillShape)
-                                        .background(if (isSel) MaterialTheme.colorScheme.primary else Color.Transparent)
-                                        .border(1.dp, if (isSel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline, PillShape)
-                                    .clickable { selectedPriority = p }
-                                    .padding(horizontal = 10.dp, vertical = 4.dp)
-                                ) {
-                                    Text(
-                                        text = p,
-                                        style = MaterialTheme.typography.labelSmall.copy(
-                                            fontSize = 9.5.sp,
-                                            fontWeight = if (isSel) FontWeight.Bold else FontWeight.Medium,
-                                            color = if (isSel) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    )
-                                }
-                            }
+                            SanctuaryFilterDropdown(
+                                label = "Priority:",
+                                selectedItem = selectedPriority,
+                                items = priorityOptions,
+                                onItemSelected = { selectedPriority = it },
+                                leadingIcon = Icons.Outlined.Flag
+                            )
                         }
                     }
 
@@ -942,7 +951,7 @@ fun HomeScreen(
 
                     // Task List
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        tasksList.take(5).forEach { task ->
+                        displayedTasks.take(5).forEach { task ->
                             val isDone = task.status.equals("completed", ignoreCase = true) || task.status.equals("done", ignoreCase = true)
                             Row(
                                 modifier = Modifier

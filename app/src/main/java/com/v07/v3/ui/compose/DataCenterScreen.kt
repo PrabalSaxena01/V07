@@ -43,6 +43,41 @@ fun DataCenterScreen(
     var syncMessage by remember { mutableStateOf<String?>(null) }
     var integrityStatus by remember { mutableStateOf("Checking...") }
 
+    // Table Explorer State (Faithful to admin.html in legacy APK)
+    var tableNames by remember { mutableStateOf<List<String>>(listOf("events", "tasks", "thoughts", "sessions", "day_tracker", "app_usage", "plugin_storage")) }
+    var selectedTable by remember { mutableStateOf("events") }
+    var selectedLimit by remember { mutableStateOf(25) }
+    val limitOptions = remember { listOf(25, 50, 100, 200) }
+    var tableRows by remember { mutableStateOf<List<Map<String, String>>>(emptyList()) }
+    var totalTableRows by remember { mutableStateOf(0) }
+    var isLoadingTable by remember { mutableStateOf(false) }
+
+    fun loadTableRecords(table: String, limit: Int) {
+        coroutineScope.launch(Dispatchers.IO) {
+            isLoadingTable = true
+            val mgr = DatabaseManager.getInstance(context)
+            val names = mgr.getAllTableNames()
+            val result = mgr.getTableData(tableName = table, limit = limit, offset = 0)
+            val total = result.optInt("total", 0)
+            val dataArray = result.optJSONArray("data") ?: JSONArray()
+            val list = mutableListOf<Map<String, String>>()
+            for (i in 0 until dataArray.length()) {
+                val obj = dataArray.optJSONObject(i) ?: continue
+                val map = mutableMapOf<String, String>()
+                obj.keys().forEach { k ->
+                    map[k] = obj.optString(k, "")
+                }
+                list.add(map)
+            }
+            withContext(Dispatchers.Main) {
+                if (names.isNotEmpty()) tableNames = names
+                totalTableRows = total
+                tableRows = list
+                isLoadingTable = false
+            }
+        }
+    }
+
     fun refreshStats() {
         coroutineScope.launch(Dispatchers.IO) {
             val mgr = DatabaseManager.getInstance(context)
@@ -57,6 +92,11 @@ fun DataCenterScreen(
 
     LaunchedEffect(Unit) {
         refreshStats()
+        loadTableRecords(selectedTable, selectedLimit)
+    }
+
+    LaunchedEffect(selectedTable, selectedLimit) {
+        loadTableRecords(selectedTable, selectedLimit)
     }
 
     BackHandler {
@@ -237,6 +277,129 @@ fun DataCenterScreen(
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                             Text("App Usage Telemetry Rows", style = MaterialTheme.typography.bodySmall)
                             Text("${counts["app_usage"] ?: 0}", style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary))
+                        }
+                    }
+                }
+            }
+
+            // Database Table Explorer Card (Faithful to admin.html in legacy APK)
+            item {
+                Surface(
+                    shape = CardShape,
+                    color = MaterialTheme.colorScheme.surface,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, MaterialTheme.colorScheme.outline, CardShape)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Storage,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = "Database Explorer",
+                                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                                )
+                            }
+
+                            Text(
+                                text = "$totalTableRows records",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            )
+                        }
+
+                        // Select Table & Select Limit Dropdowns
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            SanctuaryFilterDropdown(
+                                label = "Table:",
+                                selectedItem = selectedTable,
+                                items = tableNames,
+                                onItemSelected = { selectedTable = it },
+                                leadingIcon = Icons.Outlined.TableChart,
+                                modifier = Modifier.weight(1f)
+                            )
+
+                            SanctuaryFilterDropdown(
+                                label = "Limit:",
+                                selectedItem = "${selectedLimit} rows",
+                                items = limitOptions.map { "$it rows" },
+                                onItemSelected = { selectedLimit = it.removeSuffix(" rows").toInt() },
+                                leadingIcon = Icons.Outlined.FormatListNumbered
+                            )
+                        }
+
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+
+                        if (isLoadingTable) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 16.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+                            }
+                        } else if (tableRows.isEmpty()) {
+                            Text(
+                                text = "Table '$selectedTable' contains no rows.",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                ),
+                                modifier = Modifier.padding(vertical = 8.dp)
+                            )
+                        } else {
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                tableRows.take(10).forEachIndexed { idx, row ->
+                                    Surface(
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)),
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                                            val primaryKey = row["id"] ?: row["key"] ?: "#$idx"
+                                            Text(
+                                                text = "Row: $primaryKey",
+                                                style = MaterialTheme.typography.labelSmall.copy(
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = MaterialTheme.colorScheme.primary
+                                                )
+                                            )
+                                            row.entries.filter { it.key != "id" }.take(3).forEach { (k, v) ->
+                                                Text(
+                                                    text = "$k: ${v.take(60)}",
+                                                    style = MaterialTheme.typography.bodySmall.copy(
+                                                        fontSize = 11.sp,
+                                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                    ),
+                                                    maxLines = 1,
+                                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }

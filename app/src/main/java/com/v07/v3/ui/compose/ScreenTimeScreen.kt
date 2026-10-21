@@ -3,6 +3,9 @@ package com.v07.v3.ui.compose
 import android.content.Intent
 import android.widget.Toast
 import androidx.compose.animation.*
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -17,26 +20,45 @@ import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Sync
-import androidx.compose.material.icons.outlined.Apps
-import androidx.compose.material.icons.outlined.CalendarToday
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.v07.v3.app.telemetry.ScreenTimeTracker
-import com.v07.v3.core.data.V3AppUsage
+import com.v07.v3.core.data.EventRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
+
+data class DayTrendPoint(
+    val dateStr: String,
+    val dayLabel: String,
+    val dayNumber: String,
+    val durationMs: Long,
+    val isSelected: Boolean
+)
+
+enum class ScreenTimeChartMode {
+    HOURLY_RHYTHM,
+    WEEKLY_TREND
+}
 
 @Composable
 fun ScreenTimeScreen(
@@ -44,7 +66,7 @@ fun ScreenTimeScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val repository = remember { com.v07.v3.core.data.EventRepository.getInstance(context) }
+    val repository = remember { EventRepository.getInstance(context) }
     val tracker = remember { ScreenTimeTracker(context, repository) }
     val scope = rememberCoroutineScope()
 
@@ -55,23 +77,65 @@ fun ScreenTimeScreen(
     var selectedDateStr by remember { mutableStateOf(todayDateStr) }
     var hasPermission by remember { mutableStateOf(tracker.hasUsageStatsPermission()) }
     var appUsages by remember { mutableStateOf<List<ScreenTimeTracker.AppUsageStat>>(emptyList()) }
-    var isWeeklyView by remember { mutableStateOf(false) }
+    var hourlyMinutes by remember { mutableStateOf(List(24) { 0 }) }
+    var weeklyTrend by remember { mutableStateOf<List<DayTrendPoint>>(emptyList()) }
+
+    var chartMode by remember { mutableStateOf(ScreenTimeChartMode.HOURLY_RHYTHM) }
+    var selectedHourIndex by remember { mutableStateOf<Int?>(null) }
 
     fun loadData(dateStr: String) {
         hasPermission = tracker.hasUsageStatsPermission()
         if (!hasPermission) {
             appUsages = emptyList()
+            hourlyMinutes = List(24) { 0 }
+            weeklyTrend = emptyList()
             return
         }
+
         scope.launch(Dispatchers.IO) {
             val summary = tracker.collectForDate(dateStr)
+            val sortedApps = summary.topApps.sortedByDescending { it.durationMs }
+            val hours = summary.hourlyMinutes
+
+            // Compute 7-day trend
+            val trend = mutableListOf<DayTrendPoint>()
+            try {
+                val cal = Calendar.getInstance()
+                val parsed = sdfIso.parse(dateStr) ?: Date()
+                cal.time = parsed
+
+                for (i in 6 downTo 0) {
+                    val dayCal = Calendar.getInstance().apply {
+                        time = parsed
+                        add(Calendar.DAY_OF_YEAR, -i)
+                    }
+                    val dStr = sdfIso.format(dayCal.time)
+                    val daySum = if (dStr == dateStr) summary else tracker.collectForDate(dStr)
+                    val label = SimpleDateFormat("EEE", Locale.getDefault()).format(dayCal.time)
+                    val num = SimpleDateFormat("d", Locale.getDefault()).format(dayCal.time)
+
+                    trend.add(
+                        DayTrendPoint(
+                            dateStr = dStr,
+                            dayLabel = label,
+                            dayNumber = num,
+                            durationMs = daySum.totalDurationMs,
+                            isSelected = (dStr == dateStr)
+                        )
+                    )
+                }
+            } catch (_: Exception) {}
+
             withContext(Dispatchers.Main) {
-                appUsages = summary.topApps.sortedByDescending { it.durationMs }
+                appUsages = sortedApps
+                hourlyMinutes = hours
+                weeklyTrend = trend
             }
         }
     }
 
     LaunchedEffect(selectedDateStr) {
+        selectedHourIndex = null
         loadData(selectedDateStr)
     }
 
@@ -101,7 +165,7 @@ fun ScreenTimeScreen(
             .statusBarsPadding()
             .navigationBarsPadding()
             .padding(horizontal = 16.dp),
-        contentPadding = PaddingValues(top = 10.dp, bottom = 32.dp),
+        contentPadding = PaddingValues(top = 10.dp, bottom = 48.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // --- 1. Top Header ---
@@ -129,15 +193,31 @@ fun ScreenTimeScreen(
                     }
 
                     Column {
-                        Text(
-                            text = "Digital Stillness",
-                            style = MaterialTheme.typography.titleLarge.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onBackground
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Text(
+                                text = "Digital Stillness",
+                                style = MaterialTheme.typography.titleLarge.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onBackground
+                                )
                             )
-                        )
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = Color(0x26F59E0B)
+                            ) {
+                                Text(
+                                    text = "CORE TOOL",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontSize = 9.5.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFFF59E0B)
+                                    ),
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
                         Text(
-                            text = "Telemetry & usage boundaries",
+                            text = "Telemetry & mindful attention boundaries",
                             style = MaterialTheme.typography.bodySmall.copy(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -214,7 +294,7 @@ fun ScreenTimeScreen(
             Surface(
                 shape = cardShape,
                 color = MaterialTheme.colorScheme.surface,
-                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
                 shadowElevation = 1.dp,
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -287,7 +367,7 @@ fun ScreenTimeScreen(
             Surface(
                 shape = cardShape,
                 color = MaterialTheme.colorScheme.surface,
-                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
                 shadowElevation = 2.dp,
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -296,10 +376,10 @@ fun ScreenTimeScreen(
                         .fillMaxWidth()
                         .padding(20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "TOTAL SCREEN TIME",
+                        text = "TOTAL SCREEN ATTENTION",
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -313,34 +393,402 @@ fun ScreenTimeScreen(
                             color = MaterialTheme.colorScheme.primary
                         )
                     )
-                    Text(
-                        text = "${appUsages.size} active applications monitored",
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.surfaceVariant
+                        ) {
+                            Text(
+                                text = "${appUsages.size} apps active",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                ),
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                            )
+                        }
+
+                        val peakHour = hourlyMinutes.indices.maxByOrNull { hourlyMinutes[it] } ?: 0
+                        val peakMinutes = hourlyMinutes.getOrElse(peakHour) { 0 }
+                        if (peakMinutes > 0) {
+                            val peakLabel = when {
+                                peakHour == 0 -> "12 AM"
+                                peakHour < 12 -> "${peakHour} AM"
+                                peakHour == 12 -> "12 PM"
+                                else -> "${peakHour - 12} PM"
+                            }
+                            Surface(
+                                shape = CircleShape,
+                                color = Color(0x26F59E0B)
+                            ) {
+                                Text(
+                                    text = "Peak: $peakLabel ($peakMinutes m)",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFFF59E0B)
+                                    ),
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
 
-        // --- 5. Application Usage Breakdown ---
+        // =====================================================================
+        // --- 5. TACTILE BARGRAPH REPRESENTATION (Hourly & 7-Day Trend) ---
+        // =====================================================================
+        item {
+            Surface(
+                shape = cardShape,
+                color = MaterialTheme.colorScheme.surface,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
+                shadowElevation = 2.dp,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    // Header
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = "ATTENTION BARGRAPH",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                letterSpacing = 1.sp
+                            )
+                        )
+                        Text(
+                            text = if (chartMode == ScreenTimeChartMode.HOURLY_RHYTHM) "24-Hour Rhythm Distribution" else "7-Day Daily Attention Comparison",
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                        )
+                    }
+
+                    // Full-width Tactile Toggle Switch
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(44.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                            .padding(4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .clip(RoundedCornerShape(9.dp))
+                                .background(if (chartMode == ScreenTimeChartMode.HOURLY_RHYTHM) MaterialTheme.colorScheme.primary else Color.Transparent)
+                                .clickable { chartMode = ScreenTimeChartMode.HOURLY_RHYTHM },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "24-Hour Rhythm",
+                                textAlign = TextAlign.Center,
+                                style = MaterialTheme.typography.labelMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 12.5.sp,
+                                    color = if (chartMode == ScreenTimeChartMode.HOURLY_RHYTHM) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            )
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .clip(RoundedCornerShape(9.dp))
+                                .background(if (chartMode == ScreenTimeChartMode.WEEKLY_TREND) MaterialTheme.colorScheme.primary else Color.Transparent)
+                                .clickable { chartMode = ScreenTimeChartMode.WEEKLY_TREND },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "7-Day Trend",
+                                textAlign = TextAlign.Center,
+                                style = MaterialTheme.typography.labelMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 12.5.sp,
+                                    color = if (chartMode == ScreenTimeChartMode.WEEKLY_TREND) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            )
+                        }
+                    }
+
+                    if (chartMode == ScreenTimeChartMode.HOURLY_RHYTHM) {
+                        // -------------------------------------------------------------
+                        // Mode A: 24-Hour Hourly Rhythm Bar Chart
+                        // -------------------------------------------------------------
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            // Selected hour callout
+                            if (selectedHourIndex != null) {
+                                val idx = selectedHourIndex!!
+                                val mins = hourlyMinutes.getOrElse(idx) { 0 }
+                                val hourTitle = when {
+                                    idx == 0 -> "12:00 AM – 1:00 AM"
+                                    idx < 12 -> "$idx:00 AM – ${idx + 1}:00 AM"
+                                    idx == 12 -> "12:00 PM – 1:00 PM"
+                                    else -> "${idx - 12}:00 PM – ${idx - 11}:00 PM"
+                                }
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = hourTitle,
+                                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
+                                        )
+                                        Text(
+                                            text = "$mins min active",
+                                            style = MaterialTheme.typography.labelMedium.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.primary
+                                            )
+                                        )
+                                    }
+                                }
+                            }
+
+                            // 24 Bar chart representation
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(130.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f))
+                                    .padding(horizontal = 8.dp, vertical = 10.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxSize(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.Bottom
+                                ) {
+                                    for (hour in 0..23) {
+                                        val mins = hourlyMinutes.getOrElse(hour) { 0 }
+                                        val heightRatio = (mins.toFloat() / 60f).coerceIn(0f, 1f)
+                                        val isSelected = (selectedHourIndex == hour)
+
+                                        Column(
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            verticalArrangement = Arrangement.Bottom,
+                                            modifier = Modifier
+                                                .fillMaxHeight()
+                                                .weight(1f)
+                                                .clickable {
+                                                    selectedHourIndex = if (selectedHourIndex == hour) null else hour
+                                                }
+                                                .padding(horizontal = 1.dp)
+                                        ) {
+                                            // Top pill indicator if selected
+                                            if (isSelected) {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(4.dp)
+                                                        .clip(CircleShape)
+                                                        .background(MaterialTheme.colorScheme.primary)
+                                                )
+                                                Spacer(modifier = Modifier.height(2.dp))
+                                            }
+
+                                            // Bar body
+                                            val barColor = when {
+                                                isSelected -> MaterialTheme.colorScheme.primary
+                                                mins >= 40 -> Color(0xFFEF4444) // Intense screen time
+                                                mins >= 20 -> Color(0xFFF59E0B) // Moderate
+                                                mins > 0 -> Color(0xFF10B981)   // Light / Mindful
+                                                else -> MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                                            }
+
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .fillMaxHeight(fraction = if (mins > 0) heightRatio.coerceAtLeast(0.08f) else 0.04f)
+                                                    .clip(RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
+                                                    .background(barColor)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            // X-axis markings (12a, 3a, 6a, 9a, 12p, 3p, 6p, 9p)
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                val labels = listOf("12a", "3a", "6a", "9a", "12p", "3p", "6p", "9p", "11p")
+                                labels.forEach { lbl ->
+                                    Text(
+                                        text = lbl,
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontSize = 9.5.sp,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            fontFamily = FontFamily.Monospace
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        // -------------------------------------------------------------
+                        // Mode B: 7-Day Trend Bar Chart
+                        // -------------------------------------------------------------
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            val maxTrendMs = weeklyTrend.maxOfOrNull { it.durationMs }?.coerceAtLeast(3600_000L) ?: 3600_000L
+                            val avgTrendMs = if (weeklyTrend.isNotEmpty()) weeklyTrend.sumOf { it.durationMs } / weeklyTrend.size else 0L
+                            val avgHrs = (avgTrendMs / 3600000L)
+                            val avgMins = ((avgTrendMs % 3600000L) / 60000L)
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "7-Day Daily Average: ${avgHrs}h ${avgMins}m",
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                )
+                                Text(
+                                    text = "Tap a bar to inspect",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                )
+                            }
+
+                            // 7 Bar flex layout
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(130.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f))
+                                    .padding(horizontal = 12.dp, vertical = 10.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxSize(),
+                                    horizontalArrangement = Arrangement.SpaceEvenly,
+                                    verticalAlignment = Alignment.Bottom
+                                ) {
+                                    weeklyTrend.forEach { point ->
+                                        val fraction = (point.durationMs.toFloat() / maxTrendMs.toFloat()).coerceIn(0f, 1f)
+                                        val dayMins = point.durationMs / 60000L
+                                        val dayHrs = dayMins / 60L
+                                        val remM = dayMins % 60L
+                                        val timeStr = if (dayHrs > 0) "${dayHrs}h" else "${remM}m"
+
+                                        Column(
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            verticalArrangement = Arrangement.Bottom,
+                                            modifier = Modifier
+                                                .fillMaxHeight()
+                                                .width(36.dp)
+                                                .clickable {
+                                                    selectedDateStr = point.dateStr
+                                                }
+                                        ) {
+                                            // Value label above bar
+                                            if (point.durationMs > 0) {
+                                                Text(
+                                                    text = timeStr,
+                                                    style = MaterialTheme.typography.labelSmall.copy(
+                                                        fontSize = 9.sp,
+                                                        fontWeight = if (point.isSelected) FontWeight.Bold else FontWeight.Normal,
+                                                        color = if (point.isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                                                    )
+                                                )
+                                                Spacer(modifier = Modifier.height(2.dp))
+                                            }
+
+                                            // Bar body
+                                            val barColor = when {
+                                                point.isSelected -> MaterialTheme.colorScheme.primary
+                                                point.durationMs > 14400000L -> Color(0xFFEF4444) // > 4h
+                                                point.durationMs > 0 -> Color(0xFFF59E0B)
+                                                else -> MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                                            }
+
+                                            Box(
+                                                modifier = Modifier
+                                                    .width(22.dp)
+                                                    .fillMaxHeight(fraction = if (point.durationMs > 0) fraction.coerceAtLeast(0.1f) else 0.05f)
+                                                    .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
+                                                    .background(barColor)
+                                            )
+
+                                            Spacer(modifier = Modifier.height(4.dp))
+
+                                            // Day label
+                                            Text(
+                                                text = point.dayLabel,
+                                                style = MaterialTheme.typography.labelSmall.copy(
+                                                    fontSize = 10.sp,
+                                                    fontWeight = if (point.isSelected) FontWeight.Bold else FontWeight.Medium,
+                                                    color = if (point.isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                                                )
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // --- 6. Application Usage Breakdown ---
         item {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text(
-                    text = "APPLICATION TELEMETRY",
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        letterSpacing = 1.sp
-                    ),
-                    modifier = Modifier.padding(horizontal = 2.dp)
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "APPLICATION TELEMETRY",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            letterSpacing = 1.sp
+                        )
+                    )
+                    Text(
+                        text = "${appUsages.size} apps logged",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    )
+                }
 
                 if (appUsages.isEmpty()) {
                     Surface(
                         shape = cardShape,
                         color = MaterialTheme.colorScheme.surface,
-                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(
@@ -364,7 +812,7 @@ fun ScreenTimeScreen(
                         Surface(
                             shape = cardShape,
                             color = MaterialTheme.colorScheme.surface,
-                            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Column(
@@ -421,13 +869,23 @@ fun ScreenTimeScreen(
                                         }
                                     }
 
-                                    Text(
-                                        text = durationText,
-                                        style = MaterialTheme.typography.titleSmall.copy(
-                                            fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.onSurface
+                                    Column(horizontalAlignment = Alignment.End) {
+                                        Text(
+                                            text = durationText,
+                                            style = MaterialTheme.typography.titleSmall.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
                                         )
-                                    )
+                                        Text(
+                                            text = String.format("%.1f%%", usage.percentage),
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                color = MaterialTheme.colorScheme.primary,
+                                                fontSize = 10.5.sp,
+                                                fontWeight = FontWeight.SemiBold
+                                            )
+                                        )
+                                    }
                                 }
 
                                 // Proportional progress bar

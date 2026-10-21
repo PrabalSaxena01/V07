@@ -35,8 +35,12 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
 import com.v07.dashboard.ForegroundAppTracker
 import com.v07.dashboard.R
 import com.v07.v3.app.V3Activity
@@ -44,7 +48,12 @@ import com.v07.v3.app.timer.TimerManager
 import com.v07.v3.app.timer.TimerMode
 import com.v07.v3.core.data.EventRepository
 import com.v07.v3.core.data.V3Event
+import com.v07.v3.core.data.V3Task
 import com.v07.v3.core.data.V3Thought
+import com.v07.v3.ui.compose.FloatingBubblePillCompose
+import com.v07.v3.ui.compose.FloatingOverlayMenuModal
+import com.v07.v3.ui.compose.OverlayServiceLifecycleOwner
+import com.v07.v3.ui.compose.bindViewToOverlayLifecycle
 import kotlinx.coroutines.*
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -107,7 +116,11 @@ class V3BubbleOverlayService : Service() {
 
         fun isOverlayEnabled(context: Context): Boolean {
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            return prefs.getBoolean(PREF_KEY_ENABLED, false)
+            return if (prefs.contains(PREF_KEY_ENABLED)) {
+                prefs.getBoolean(PREF_KEY_ENABLED, false)
+            } else {
+                com.v07.dashboard.NotificationPreferences.isOverlayEnabled()
+            }
         }
 
         fun setOverlayEnabled(context: Context, enabled: Boolean) {
@@ -123,11 +136,17 @@ class V3BubbleOverlayService : Service() {
     private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var pollJob: Job? = null
 
-    // Overlay views
+    // Overlay lifecycle & Compose views
+    private val serviceLifecycleOwner = OverlayServiceLifecycleOwner()
     private var bubbleView: View? = null
     private var menuView: View? = null
-    private var quickThoughtView: View? = null
-    private var checklistView: View? = null
+
+    // Compose reactive state for overlay telemetry
+    private val activeAppIconState = mutableStateOf<Drawable?>(null)
+    private val activeAppLabelState = mutableStateOf("V07 Sanctuary")
+    private val activeAppUsageMsState = mutableStateOf(0L)
+    private val formattedUsageState = mutableStateOf("0m")
+    private val tasksState = mutableStateOf<List<V3Task>>(emptyList())
 
     private lateinit var bubbleParams: WindowManager.LayoutParams
 
@@ -225,6 +244,10 @@ class V3BubbleOverlayService : Service() {
         super.onCreate()
         Log.i(TAG, "V3BubbleOverlayService initializing")
 
+        serviceLifecycleOwner.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
+        serviceLifecycleOwner.handleLifecycleEvent(Lifecycle.Event.ON_START)
+        serviceLifecycleOwner.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
+
         repository = EventRepository.getInstance(this)
         timerManager = TimerManager.getInstance(this, repository)
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
@@ -290,6 +313,10 @@ class V3BubbleOverlayService : Service() {
         unregisterDayChangeReceiver()
         pollJob?.cancel()
         serviceScope.cancel()
+        serviceLifecycleOwner.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+        serviceLifecycleOwner.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
+        serviceLifecycleOwner.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+        serviceLifecycleOwner.clear()
         removeAllViews()
         super.onDestroy()
     }
@@ -356,12 +383,8 @@ class V3BubbleOverlayService : Service() {
         return (dp * resources.displayMetrics.density).toInt()
     }
 
-    @SuppressLint("InflateParams")
     private fun initializeBubble() {
         if (bubbleView != null) return
-
-        val inflater = LayoutInflater.from(this)
-        bubbleView = inflater.inflate(R.layout.v3_overlay_bubble, null)
 
         val dm = resources.displayMetrics
         val minY = dpToPx(56)
@@ -380,7 +403,21 @@ class V3BubbleOverlayService : Service() {
             y = dpToPx(160).coerceIn(minY, maxY)
         }
 
-        setupBubbleTouch(bubbleView!!, bubbleParams)
+        val composeView = ComposeView(this).apply {
+            bindViewToOverlayLifecycle(this, serviceLifecycleOwner)
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
+
+            setContent {
+                FloatingBubblePillCompose(
+                    appIcon = activeAppIconState.value,
+                    formattedUsage = formattedUsageState.value,
+                    onClick = { toggleMenu() }
+                )
+            }
+        }
+
+        bubbleView = composeView
+        setupBubbleTouch(composeView, bubbleParams)
 
         try {
             windowManager.addView(bubbleView, bubbleParams)
@@ -671,31 +708,20 @@ class V3BubbleOverlayService : Service() {
     }
 
     private fun updateBubbleUi(icon: Drawable?, formattedUsage: String) {
-        val root = bubbleView ?: return
-        val iconView = root.findViewById<ImageView>(R.id.v3_bubble_icon)
-        val textView = root.findViewById<TextView>(R.id.v3_bubble_text)
-
-        if (icon != null && activePackage.isNotBlank() && activePackage != packageName && !ignoredPackages.contains(activePackage)) {
-            iconView.setImageDrawable(icon)
-        } else {
-            iconView.setImageResource(R.drawable.v07_logo)
-        }
-        textView.text = formattedUsage
+        val displayIcon = if (icon != null && activePackage.isNotBlank() && activePackage != packageName && !ignoredPackages.contains(activePackage)) {
+            icon
+        } else null
+        activeAppIconState.value = displayIcon
+        formattedUsageState.value = formattedUsage
     }
 
     private fun updateMenuUi(icon: Drawable?, appName: String, formattedUsage: String) {
-        val menu = menuView ?: return
-        val iconView = menu.findViewById<ImageView>(R.id.v3_menu_app_icon)
-        val nameView = menu.findViewById<TextView>(R.id.v3_menu_app_name)
-        val usageView = menu.findViewById<TextView>(R.id.v3_menu_app_usage)
-
-        if (icon != null && activePackage.isNotBlank() && activePackage != packageName && !ignoredPackages.contains(activePackage)) {
-            iconView.setImageDrawable(icon)
-        } else {
-            iconView.setImageResource(R.drawable.v07_logo)
-        }
-        nameView.text = appName
-        usageView.text = "$formattedUsage active today"
+        val displayIcon = if (icon != null && activePackage.isNotBlank() && activePackage != packageName && !ignoredPackages.contains(activePackage)) {
+            icon
+        } else null
+        activeAppIconState.value = displayIcon
+        activeAppLabelState.value = appName
+        formattedUsageState.value = formattedUsage
     }
 
     private fun formatUsageDuration(ms: Long): String {
@@ -735,7 +761,7 @@ class V3BubbleOverlayService : Service() {
     }
 
     // =========================================================================
-    // Editorial Action Menu
+    // Editorial Action Menu & Compose Modal
     // =========================================================================
 
     private fun toggleMenu() {
@@ -746,93 +772,63 @@ class V3BubbleOverlayService : Service() {
         }
     }
 
-    @SuppressLint("InflateParams")
     private fun showMenu() {
         if (menuView != null) return
-        collapseQuickThought()
-        collapseChecklist()
 
-        val inflater = LayoutInflater.from(this)
-        menuView = inflater.inflate(R.layout.v3_overlay_menu, null)
+        refreshTasks()
 
         val menuParams = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.MATCH_PARENT,
             getOverlayWindowType(),
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
                     @Suppress("DEPRECATION") WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED,
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START
+            softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
             x = 0
             y = 0
         }
 
-        // Initialize menu views with latest active app telemetry
-        val iconView = menuView!!.findViewById<ImageView>(R.id.v3_menu_app_icon)
-        val nameView = menuView!!.findViewById<TextView>(R.id.v3_menu_app_name)
-        val usageView = menuView!!.findViewById<TextView>(R.id.v3_menu_app_usage)
+        val composeView = ComposeView(this).apply {
+            bindViewToOverlayLifecycle(this, serviceLifecycleOwner)
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
 
-        val currentIcon = getAppIcon(activePackage)
-        if (currentIcon != null) iconView.setImageDrawable(currentIcon)
-        nameView.text = activeAppLabel
-        usageView.text = "${formatUsageDuration(activeAppUsageMs)} active today"
-
-        // Backdrop tap to dismiss
-        menuView!!.findViewById<View>(R.id.v3_menu_backdrop).setOnClickListener {
-            collapseMenu()
+            setContent {
+                FloatingOverlayMenuModal(
+                    appIcon = activeAppIconState.value,
+                    appName = activeAppLabelState.value,
+                    formattedUsage = formattedUsageState.value,
+                    tasks = tasksState.value,
+                    onClose = { collapseMenu() },
+                    onStartFocus = {
+                        collapseMenu()
+                        startQuickFocusSession()
+                    },
+                    onOpenSanctuary = {
+                        collapseMenu()
+                        openSanctuaryApp()
+                    },
+                    onTurnOffOverlay = {
+                        collapseMenu()
+                        turnOffOverlay()
+                    },
+                    onSaveThought = { thoughtText ->
+                        saveThoughtAtomic(thoughtText)
+                        Toast.makeText(this@V3BubbleOverlayService, "Reflection recorded in Sanctuary", Toast.LENGTH_SHORT).show()
+                    },
+                    onToggleTask = { task ->
+                        toggleTaskAtomic(task)
+                    }
+                )
+            }
         }
 
-        menuView!!.findViewById<View>(R.id.v3_btn_close).setOnClickListener {
-            collapseMenu()
-        }
-
-        // 1. Quick Thought
-        menuView!!.findViewById<View>(R.id.v3_btn_quick_thought).setOnClickListener {
-            collapseMenu()
-            showQuickThought()
-        }
-
-        // 2. Directives & Tasks Checklist
-        menuView!!.findViewById<View>(R.id.v3_btn_checklist)?.setOnClickListener {
-            collapseMenu()
-            showChecklistOverlay()
-        }
-
-        // 3. Focus Interval (25 min session)
-        menuView!!.findViewById<View>(R.id.v3_btn_focus_timer).setOnClickListener {
-            collapseMenu()
-            startQuickFocusSession()
-        }
-
-        // 3. Open Sanctuary
-        menuView!!.findViewById<View>(R.id.v3_btn_open_app).setOnClickListener {
-            collapseMenu()
-            openSanctuaryApp()
-        }
-
-        // 4. Turn Off Overlay
-        menuView!!.findViewById<View>(R.id.v3_btn_turn_off).setOnClickListener {
-            collapseMenu()
-            turnOffOverlay()
-        }
-
-        // Animate card entrance
-        val card = menuView!!.findViewById<View>(R.id.v3_menu_card)
-        card.alpha = 0f
-        card.scaleX = 0.92f
-        card.scaleY = 0.92f
+        menuView = composeView
 
         try {
             windowManager.addView(menuView, menuParams)
-            card.animate()
-                .alpha(1f)
-                .scaleX(1f)
-                .scaleY(1f)
-                .setDuration(180)
-                .setInterpolator(DecelerateInterpolator())
-                .start()
         } catch (e: Exception) {
             Log.e(TAG, "Error displaying overlay menu: ${e.message}", e)
         }
@@ -844,6 +840,37 @@ class V3BubbleOverlayService : Service() {
             windowManager.removeView(view)
         } catch (_: Exception) {}
         menuView = null
+    }
+
+    private fun refreshTasks() {
+        serviceScope.launch(Dispatchers.IO) {
+            val tasks = try {
+                repository.getTasks()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error fetching tasks: ${e.message}")
+                emptyList()
+            }
+            withContext(Dispatchers.Main) {
+                tasksState.value = tasks
+            }
+        }
+    }
+
+    private fun toggleTaskAtomic(task: V3Task) {
+        serviceScope.launch(Dispatchers.IO) {
+            val isDone = task.status.equals("completed", ignoreCase = true) ||
+                    task.status.equals("done", ignoreCase = true)
+            repository.toggleTaskStatus(task.id)
+            val updated = repository.getTasks()
+            withContext(Dispatchers.Main) {
+                tasksState.value = updated
+                Toast.makeText(
+                    this@V3BubbleOverlayService,
+                    if (isDone) "Task reopened" else "Task completed ✓",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
     }
 
     private fun startQuickFocusSession() {
@@ -870,96 +897,6 @@ class V3BubbleOverlayService : Service() {
         Toast.makeText(this, "Bubble Overlay turned off", Toast.LENGTH_SHORT).show()
         stopForegroundSafely()
         stopSelf()
-    }
-
-    // =========================================================================
-    // Floating Quick Thought Dialog
-    // =========================================================================
-
-    @SuppressLint("InflateParams")
-    private fun showQuickThought() {
-        if (quickThoughtView != null) return
-        collapseChecklist()
-
-        val inflater = LayoutInflater.from(this)
-        quickThoughtView = inflater.inflate(R.layout.v3_overlay_quick_thought, null)
-
-        val thoughtParams = WindowManager.LayoutParams(
-            WindowManager.LayoutParams.MATCH_PARENT,
-            WindowManager.LayoutParams.MATCH_PARENT,
-            getOverlayWindowType(),
-            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
-                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
-                    @Suppress("DEPRECATION") WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED,
-            PixelFormat.TRANSLUCENT
-        ).apply {
-            gravity = Gravity.TOP or Gravity.START
-            softInputMode = WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE or
-                    WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN
-            x = 0
-            y = 0
-        }
-
-        val input = quickThoughtView!!.findViewById<EditText>(R.id.v3_thought_input)
-        val closeBtn = quickThoughtView!!.findViewById<View>(R.id.v3_thought_close_btn)
-        val cancelBtn = quickThoughtView!!.findViewById<View>(R.id.v3_thought_cancel_btn)
-        val saveBtn = quickThoughtView!!.findViewById<View>(R.id.v3_thought_save_btn)
-        val backdrop = quickThoughtView!!.findViewById<View>(R.id.v3_thought_backdrop)
-
-        backdrop.setOnClickListener {
-            collapseQuickThought()
-        }
-        closeBtn.setOnClickListener {
-            collapseQuickThought()
-        }
-        cancelBtn.setOnClickListener {
-            collapseQuickThought()
-        }
-
-        saveBtn.setOnClickListener {
-            val text = input.text.toString().trim()
-            if (text.isNotBlank()) {
-                saveThoughtAtomic(text)
-                Toast.makeText(this, "Reflection recorded in Sanctuary", Toast.LENGTH_SHORT).show()
-            }
-            collapseQuickThought()
-        }
-
-        // Entrance animation
-        val card = quickThoughtView!!.findViewById<View>(R.id.v3_thought_card)
-        card.alpha = 0f
-        card.scaleX = 0.92f
-        card.scaleY = 0.92f
-
-        try {
-            windowManager.addView(quickThoughtView, thoughtParams)
-            card.animate()
-                .alpha(1f)
-                .scaleX(1f)
-                .scaleY(1f)
-                .setDuration(200)
-                .setInterpolator(DecelerateInterpolator())
-                .start()
-
-            input.requestFocus()
-            input.postDelayed({
-                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
-                imm?.showSoftInput(input, InputMethodManager.SHOW_IMPLICIT)
-            }, 150)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error displaying quick thought view: ${e.message}", e)
-        }
-    }
-
-    private fun collapseQuickThought() {
-        val view = quickThoughtView ?: return
-        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
-        imm?.hideSoftInputFromWindow(view.windowToken, 0)
-
-        try {
-            windowManager.removeView(view)
-        } catch (_: Exception) {}
-        quickThoughtView = null
     }
 
     private fun saveThoughtAtomic(content: String) {
@@ -997,145 +934,8 @@ class V3BubbleOverlayService : Service() {
         }
     }
 
-    // =========================================================================
-    // Floating Directives & Tasks Checklist Overlay
-    // =========================================================================
-
-    @SuppressLint("InflateParams")
-    private fun showChecklistOverlay() {
-        if (checklistView != null) return
-        collapseMenu()
-        collapseQuickThought()
-
-        val inflater = LayoutInflater.from(this)
-        checklistView = inflater.inflate(R.layout.overlay_checklist, null)
-
-        val params = WindowManager.LayoutParams(
-            WindowManager.LayoutParams.MATCH_PARENT,
-            WindowManager.LayoutParams.MATCH_PARENT,
-            getOverlayWindowType(),
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
-                    @Suppress("DEPRECATION") WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED,
-            PixelFormat.TRANSLUCENT
-        ).apply {
-            gravity = Gravity.TOP or Gravity.START
-            x = 0
-            y = 0
-        }
-
-        val container = checklistView!!.findViewById<LinearLayout>(R.id.checklist_items_container)
-        val emptyView = checklistView!!.findViewById<TextView>(R.id.checklist_empty)
-        val loadingView = checklistView!!.findViewById<TextView>(R.id.checklist_loading)
-        val closeBtn = checklistView!!.findViewById<TextView>(R.id.checklist_close)
-
-        closeBtn.setOnClickListener { collapseChecklist() }
-        checklistView!!.findViewById<View>(R.id.checklist_backdrop)?.setOnClickListener {
-            collapseChecklist()
-        }
-
-        try {
-            windowManager.addView(checklistView, params)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error displaying checklist overlay: ${e.message}", e)
-            return
-        }
-
-        renderTasksList(container, emptyView, loadingView)
-    }
-
-    private fun renderTasksList(
-        container: LinearLayout,
-        emptyView: TextView,
-        loadingView: TextView
-    ) {
-        serviceScope.launch(Dispatchers.IO) {
-            val tasks = try {
-                repository.getTasks()
-            } catch (e: Exception) {
-                Log.e(TAG, "Error fetching tasks: ${e.message}")
-                emptyList()
-            }
-
-            withContext(Dispatchers.Main) {
-                loadingView.visibility = View.GONE
-                container.removeAllViews()
-
-                if (tasks.isEmpty()) {
-                    emptyView.visibility = View.VISIBLE
-                    return@withContext
-                }
-
-                emptyView.visibility = View.GONE
-                val inflater = LayoutInflater.from(this@V3BubbleOverlayService)
-
-                tasks.forEach { task ->
-                    val row = inflater.inflate(R.layout.overlay_checklist_item, container, false)
-                    val circle = row.findViewById<TextView>(R.id.check_circle)
-                    val labelView = row.findViewById<TextView>(R.id.check_label)
-
-                    val isDone = task.status.equals("completed", ignoreCase = true) ||
-                            task.status.equals("done", ignoreCase = true)
-
-                    val deadlineText = if (!task.deadline.isNullOrBlank()) {
-                        " • ${task.deadline.substringAfter('T').take(5)}"
-                    } else ""
-                    val priorityPrefix = if (task.priority.equals("HIGH", ignoreCase = true)) "⚡ " else ""
-                    labelView.text = "$priorityPrefix${task.title}$deadlineText"
-
-                    if (isDone) {
-                        circle.text = "\u2713"
-                        circle.setTextSize(9f)
-                        circle.setTextColor(0xFF003A73.toInt())
-                        circle.setBackgroundResource(R.drawable.overlay_check_circle_checked)
-                        circle.alpha = 1.0f
-                        labelView.setTextColor(0xFF50BF8E.toInt())
-                        labelView.alpha = 0.7f
-                        labelView.paint.isStrikeThruText = true
-                    } else {
-                        circle.text = ""
-                        circle.setBackgroundResource(R.drawable.overlay_check_circle)
-                        circle.alpha = 0.6f
-                        labelView.setTextColor(0xFFFFFFFF.toInt())
-                        labelView.alpha = 1.0f
-                        labelView.paint.isStrikeThruText = false
-                    }
-
-                    val clickListener = View.OnClickListener {
-                        serviceScope.launch(Dispatchers.IO) {
-                            repository.toggleTaskStatus(task.id)
-                            withContext(Dispatchers.Main) {
-                                Toast.makeText(
-                                    this@V3BubbleOverlayService,
-                                    if (isDone) "Task reopened" else "Task completed ✓",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                renderTasksList(container, emptyView, loadingView)
-                            }
-                        }
-                    }
-                    circle.setOnClickListener(clickListener)
-                    labelView.setOnClickListener(clickListener)
-                    row.setOnClickListener(clickListener)
-
-                    container.addView(row)
-                }
-            }
-        }
-    }
-
-    private fun collapseChecklist() {
-        val view = checklistView ?: return
-        try {
-            windowManager.removeView(view)
-        } catch (_: Exception) {}
-        checklistView = null
-    }
-
     private fun removeAllViews() {
         collapseMenu()
-        collapseQuickThought()
-        collapseChecklist()
         bubbleView?.let {
             try {
                 windowManager.removeView(it)
