@@ -165,6 +165,17 @@ class V3Activity : AppCompatActivity() {
                     onSetFullscreen = { isModalOpenState.value = it },
                     onProfileClick = {
                         isModalOpenState.value = true
+                    },
+                    onImportPluginZip = {
+                        launchZipPicker { res ->
+                            val success = res.optBoolean("success", false)
+                            val msg = if (success) {
+                                "Plugin installed: ${res.optString("pluginId", "Success")}"
+                            } else {
+                                "Plugin install failed: ${res.optString("error", "Unknown error")}"
+                            }
+                            android.widget.Toast.makeText(this@V3Activity, msg, android.widget.Toast.LENGTH_LONG).show()
+                        }
                     }
                 )
             }

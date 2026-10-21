@@ -11,7 +11,8 @@ import androidx.compose.ui.unit.dp
 /**
  * Root Sanctuary Hybrid Shell faithful to V07 Sanctuary:
  * - 5 native Compose core tabs: HOME, TOOLS, LEDGER, DAY, SETTINGS
- * - Dedicated sub-views: FOCUS (Focus Sanctuary), SCREENTIME (Digital Stillness)
+ * - Dedicated sub-views: FOCUS (Focus Sanctuary), SCREENTIME (Digital Stillness), DATACENTER (Data Center)
+ * - Dedicated sandboxed plugin host: PLUGIN (PluginHostScreen)
  * - Native Compose Top Bar (V07 SANCTUARY)
  * - Floating Bottom Dock (Home, Tools, Ledger, Day, Settings)
  * - Background WebView Host for plugin extension execution
@@ -24,21 +25,25 @@ fun SanctuaryShell(
     isPluginFullscreen: Boolean = false,
     onSetFullscreen: (Boolean) -> Unit = {},
     onProfileClick: () -> Unit = {},
+    onImportPluginZip: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var currentTab by remember { mutableStateOf(SanctuaryTab.HOME) }
     var activeSubView by remember { mutableStateOf(SanctuarySubView.NONE) }
+    var activePlugin by remember { mutableStateOf<Triple<String, String, String>?>(null) }
 
-    // Intercept back presses: exit sub-view first, or return to Home tab
-    BackHandler(enabled = activeSubView != SanctuarySubView.NONE || currentTab != SanctuaryTab.HOME) {
-        if (activeSubView != SanctuarySubView.NONE) {
+    // Intercept back presses: exit plugin first, then sub-view, or return to Home tab
+    BackHandler(enabled = activePlugin != null || activeSubView != SanctuarySubView.NONE || currentTab != SanctuaryTab.HOME) {
+        if (activePlugin != null) {
+            activePlugin = null
+        } else if (activeSubView != SanctuarySubView.NONE) {
             activeSubView = SanctuarySubView.NONE
         } else if (currentTab != SanctuaryTab.HOME) {
             currentTab = SanctuaryTab.HOME
         }
     }
 
-    val isSubViewActive = activeSubView != SanctuarySubView.NONE
+    val isSubViewActive = activeSubView != SanctuarySubView.NONE || activePlugin != null
     val showScaffoldBars = !isPluginFullscreen && !isSubViewActive
 
     Scaffold(
@@ -85,7 +90,17 @@ fun SanctuaryShell(
 
             // When not in external plugin fullscreen, render native Compose Sanctuary screens
             if (!isPluginFullscreen) {
-                if (activeSubView != SanctuarySubView.NONE) {
+                if (activePlugin != null) {
+                    val p = activePlugin!!
+                    PluginHostScreen(
+                        pluginId = p.first,
+                        pluginTitle = p.second,
+                        pluginSubtitle = p.third,
+                        isLight = isLight,
+                        onBack = { activePlugin = null },
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else if (activeSubView != SanctuarySubView.NONE) {
                     when (activeSubView) {
                         SanctuarySubView.FOCUS -> {
                             FocusSanctuaryScreen(
@@ -95,6 +110,62 @@ fun SanctuaryShell(
                         }
                         SanctuarySubView.SCREENTIME -> {
                             ScreenTimeScreen(
+                                onBack = { activeSubView = SanctuarySubView.NONE },
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                        SanctuarySubView.DATACENTER -> {
+                            DataCenterScreen(
+                                onBack = { activeSubView = SanctuarySubView.NONE },
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                        SanctuarySubView.READING -> {
+                            PluginHostScreen(
+                                pluginId = "com.v07.reader",
+                                pluginTitle = "Sovereign Shelf",
+                                pluginSubtitle = "Kindle & physical book reading progress",
+                                isLight = isLight,
+                                onBack = { activeSubView = SanctuarySubView.NONE },
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                        SanctuarySubView.GITA -> {
+                            PluginHostScreen(
+                                pluginId = "com.v07.gita",
+                                pluginTitle = "Bhagavad Gita",
+                                pluginSubtitle = "Sacred verses, Sanskrit & commentaries",
+                                isLight = isLight,
+                                onBack = { activeSubView = SanctuarySubView.NONE },
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                        SanctuarySubView.HABITS -> {
+                            PluginHostScreen(
+                                pluginId = "com.v07.habits",
+                                pluginTitle = "Gentle Habits",
+                                pluginSubtitle = "Rhythm, cadence & consistency tracking",
+                                isLight = isLight,
+                                onBack = { activeSubView = SanctuarySubView.NONE },
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                        SanctuarySubView.TASKS -> {
+                            PluginHostScreen(
+                                pluginId = "com.v07.tasks",
+                                pluginTitle = "Sovereign Tasks",
+                                pluginSubtitle = "Daily directives, quiet priorities & deadlines",
+                                isLight = isLight,
+                                onBack = { activeSubView = SanctuarySubView.NONE },
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                        SanctuarySubView.MOOD -> {
+                            PluginHostScreen(
+                                pluginId = "com.v07.vitals",
+                                pluginTitle = "Mood & Energy",
+                                pluginSubtitle = "Emotional equilibrium & wellness trends",
+                                isLight = isLight,
                                 onBack = { activeSubView = SanctuarySubView.NONE },
                                 modifier = Modifier.fillMaxSize()
                             )
@@ -118,9 +189,10 @@ fun SanctuaryShell(
                             ToolsScreen(
                                 onNavigateToSubView = { subView -> activeSubView = subView },
                                 onNavigateToTab = { tab -> currentTab = tab },
-                                onImportPluginZip = {
-                                    // Sideload plugin
+                                onOpenPlugin = { pid, title, subtitle ->
+                                    activePlugin = Triple(pid, title, subtitle)
                                 },
+                                onImportPluginZip = onImportPluginZip,
                                 modifier = Modifier.fillMaxSize()
                             )
                         }
