@@ -89,7 +89,7 @@ fun ToolsScreen(
     var focusStatus by remember { mutableStateOf("Deep work ready") }
     var screentimeStatus by remember { mutableStateOf("Telemetry active") }
     var ledgerStatus by remember { mutableStateOf("Reflections log") }
-    var datacenterStatus by remember { mutableStateOf("100% Local SQLite") }
+    var datacenterStatus by remember { mutableStateOf("Local SQLite Vault") }
     var gitaStatus by remember { mutableStateOf("Sacred verses · 700 verses") }
 
     LaunchedEffect(Unit) {
@@ -192,7 +192,7 @@ fun ToolsScreen(
             SanctuaryTool(
                 id = "tasks",
                 pluginId = null,
-                title = "Sovereign Tasks",
+                title = "Sanctuary Tasks",
                 category = "Action Items",
                 description = "Daily directives, quiet priorities & deadlines",
                 icon = Icons.Outlined.Checklist,
@@ -219,8 +219,8 @@ fun ToolsScreen(
                 id = "datacenter",
                 pluginId = null,
                 title = "Data Center",
-                category = "Sovereign Console",
-                description = "Sovereign JSON export, import, DB explorer & vault sync",
+                category = "System Console",
+                description = "Local JSON export, import, DB explorer & vault sync",
                 icon = Icons.Outlined.Storage,
                 accentColor = Color(0xFF0284C7),
                 accentBg = Color(0x1A0284C7),
@@ -248,7 +248,7 @@ fun ToolsScreen(
             SanctuaryTool(
                 id = "reading",
                 pluginId = "com.v07.reader",
-                title = "Sovereign Shelf",
+                title = "Reading Shelf",
                 category = "Literary Shelf",
                 description = "Kindle & physical book reading progress",
                 icon = Icons.Outlined.AutoStories,
@@ -261,7 +261,7 @@ fun ToolsScreen(
                 id = "mood",
                 pluginId = "com.v07.vitals",
                 title = "Mood & Energy",
-                category = "Sovereign Check-in",
+                category = "Daily Check-in",
                 description = "Emotional equilibrium & wellness trends",
                 icon = Icons.Outlined.Spa,
                 accentColor = Color(0xFF10B981),
@@ -511,7 +511,7 @@ fun ToolsScreen(
                 }
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = "Core sovereign foundation tools and extensible companion plugins.",
+                    text = "Core sanctuary tools and extensible companion plugins.",
                     style = MaterialTheme.typography.bodySmall.copy(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 12.sp

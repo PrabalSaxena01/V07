@@ -123,7 +123,7 @@ fun SanctuaryShell(
                         SanctuarySubView.READING -> {
                             PluginHostScreen(
                                 pluginId = "com.v07.reader",
-                                pluginTitle = "Sovereign Shelf",
+                                pluginTitle = "Reading Shelf",
                                 pluginSubtitle = "Kindle & physical book reading progress",
                                 isLight = isLight,
                                 onBack = { activeSubView = SanctuarySubView.NONE },

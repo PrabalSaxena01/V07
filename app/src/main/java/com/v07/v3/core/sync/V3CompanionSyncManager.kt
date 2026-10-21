@@ -68,11 +68,17 @@ class V3CompanionSyncManager private constructor(
         return user != null || !custom.isNullOrBlank()
     }
 
+    fun getAuthenticatedUser(): com.google.firebase.auth.FirebaseUser? = getSafeAuth()?.currentUser
+
+    fun getAuthenticatedEmail(): String? = getSafeAuth()?.currentUser?.email
+
+    fun isAnonymous(): Boolean = getSafeAuth()?.currentUser?.isAnonymous == true
+
     fun getTargetUid(): String {
-        val custom = prefs.getString("custom_companion_uid", null)?.trim()
-        if (!custom.isNullOrBlank()) return custom
         val user = getSafeAuth()?.currentUser
         if (user != null) return user.uid
+        val custom = prefs.getString("custom_companion_uid", null)?.trim()
+        if (!custom.isNullOrBlank()) return custom
         var guestUuid = prefs.getString("guest_device_uuid", null)
         if (guestUuid.isNullOrBlank()) {
             guestUuid = "guest_" + java.util.UUID.randomUUID().toString().replace("-", "")
@@ -198,6 +204,7 @@ class V3CompanionSyncManager private constructor(
                 val user = auth.currentUser
                 if (user != null) {
                     val profileId = "user_${user.uid}"
+                    prefs.edit().putString("custom_companion_uid", user.uid).apply()
                     V07Database.switchProfile(context, profileId)
                     startRealtimeSync()
                     syncNow { _, _ -> }
@@ -205,6 +212,29 @@ class V3CompanionSyncManager private constructor(
                 callback(true, null)
             } else {
                 callback(false, t.exception?.message ?: "Authentication failed")
+            }
+        }
+    }
+
+    fun signInAnonymously(callback: (Boolean, String?) -> Unit) {
+        val auth = getSafeAuth()
+        if (auth == null) {
+            callback(false, "Firebase authentication is not available")
+            return
+        }
+        auth.signInAnonymously().addOnCompleteListener { t ->
+            if (t.isSuccessful) {
+                val user = auth.currentUser
+                if (user != null) {
+                    val profileId = "user_${user.uid}"
+                    prefs.edit().putString("custom_companion_uid", user.uid).apply()
+                    V07Database.switchProfile(context, profileId)
+                    startRealtimeSync()
+                    syncNow { _, _ -> }
+                }
+                callback(true, null)
+            } else {
+                callback(false, t.exception?.message ?: "Anonymous sign-in failed")
             }
         }
     }
@@ -948,9 +978,10 @@ class V3CompanionSyncManager private constructor(
             var appUsageDays = 0
             var dayTrackerCount = 0
 
-            val uid = targetUid?.ifBlank { null } ?: getTargetUid()
+            val auth = getSafeAuth()
+            val targetDocUid = auth?.currentUser?.uid ?: (targetUid?.ifBlank { null } ?: getTargetUid())
 
-            Log.i(TAG, "Starting full Web Companion migration for UID: $uid")
+            Log.i(TAG, "Starting full Web Companion migration for UID: $targetDocUid")
 
             try {
                 val db = getSafeFirestore()
@@ -959,7 +990,12 @@ class V3CompanionSyncManager private constructor(
                     onComplete(false, "FirebaseFirestore unavailable", stats)
                     return@launch
                 }
-                val userDoc = db.collection("users").document(uid)
+                if (auth?.currentUser == null) {
+                    Log.w(TAG, "Migration skipped: Cloud account not authenticated")
+                    onComplete(false, "Authentication required: Please sign in to your Cloud Account", stats)
+                    return@launch
+                }
+                val userDoc = db.collection("users").document(targetDocUid)
 
                 // 1. PULL ALL EVENTS (No 200 limit)
                 val eventsSnap = Tasks.await(userDoc.collection("events").get())
@@ -1116,7 +1152,7 @@ class V3CompanionSyncManager private constructor(
                 prefs.edit().putLong(KEY_LAST_SYNCED, now).apply()
 
                 stats.put("source", "Live Firestore (v07-dashboard)")
-                stats.put("uid", uid)
+                stats.put("uid", targetDocUid)
                 stats.put("eventsCount", eventsMigrated)
                 stats.put("sessionsCount", sessionsMigrated)
                 stats.put("tasksCount", tasksMigrated)
@@ -1129,7 +1165,12 @@ class V3CompanionSyncManager private constructor(
 
             } catch (e: Exception) {
                 Log.w(TAG, "Live Firestore migration encountered error: ${e.message}")
-                onComplete(false, e.message ?: "Firestore migration error", stats)
+                val friendlyMsg = if (e.message?.contains("PERMISSION_DENIED", ignoreCase = true) == true) {
+                    "Cloud permission denied. Please sign in to your cloud account."
+                } else {
+                    e.message ?: "Firestore migration error"
+                }
+                onComplete(false, friendlyMsg, stats)
             }
         }
     }
@@ -1161,7 +1202,28 @@ class V3CompanionSyncManager private constructor(
                     onComplete(false, "Firebase service not available")
                     return@launch
                 }
-                val userDoc = db.collection("users").document(uid)
+
+                val auth = getSafeAuth()
+                if (auth?.currentUser == null) {
+                    try {
+                        Log.i(TAG, "No Firebase user authenticated. Attempting anonymous auth fallback...")
+                        Tasks.await(auth?.signInAnonymously() ?: throw IllegalStateException("Auth is null"))
+                        Log.i(TAG, "Anonymous sign-in succeeded: ${auth?.currentUser?.uid}")
+                    } catch (authEx: Exception) {
+                        Log.w(TAG, "Anonymous sign-in fallback unavailable: ${authEx.message}")
+                    }
+                }
+
+                val currentAuthUser = auth?.currentUser
+                if (currentAuthUser == null) {
+                    isSyncing.set(false)
+                    Log.w(TAG, "Cloud sync aborted: No authenticated Firebase session.")
+                    onComplete(false, "Authentication required: Please sign in to your Cloud Account")
+                    return@launch
+                }
+
+                val targetDocUid = currentAuthUser.uid
+                val userDoc = db.collection("users").document(targetDocUid)
                 val sessionsCol = userDoc.collection("sessions")
                 val tasksCol = userDoc.collection("tasks")
                 val thoughtsCol = userDoc.collection("thoughts")
@@ -1564,7 +1626,12 @@ class V3CompanionSyncManager private constructor(
             } catch (e: Exception) {
                 isSyncing.set(false)
                 Log.e(TAG, "V3 Companion cloud sync error: ${e.message}", e)
-                onComplete(false, e.message)
+                val friendlyMsg = if (e.message?.contains("PERMISSION_DENIED", ignoreCase = true) == true) {
+                    "Cloud sync permission denied. Please sign in to your cloud account."
+                } else {
+                    e.message ?: "Sync failed"
+                }
+                onComplete(false, friendlyMsg)
             }
         }
     }

@@ -26,6 +26,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -69,16 +72,27 @@ fun SettingsScreen(
 
     val profilePrefs = remember { context.getSharedPreferences("v07_profiles", Context.MODE_PRIVATE) }
     var activeProfileId by remember { mutableStateOf(profilePrefs.getString("active_profile_id", "guest") ?: "guest") }
-    var profileDisplayName by remember { mutableStateOf(profilePrefs.getString("profile_display_name", "Sovereign Thinker") ?: "Sovereign Thinker") }
-    var profileBio by remember { mutableStateOf(profilePrefs.getString("profile_bio", "Local Sovereign Vault") ?: "Local Sovereign Vault") }
+    var profileDisplayName by remember { mutableStateOf(profilePrefs.getString("profile_display_name", "Sanctuary Thinker") ?: "Sanctuary Thinker") }
+    var profileBio by remember { mutableStateOf(profilePrefs.getString("profile_bio", "Local Vault") ?: "Local Vault") }
     var profileAvatarSymbol by remember { mutableStateOf(profilePrefs.getString("profile_avatar_symbol", "S") ?: "S") }
     var showEditProfileDialog by remember { mutableStateOf(false) }
 
+    var showCloudAuthDialog by remember { mutableStateOf(false) }
+    var authEmail by remember { mutableStateOf("") }
+    var authPassword by remember { mutableStateOf("") }
+    var authCreateMode by remember { mutableStateOf(false) }
+    var authErrorMsg by remember { mutableStateOf<String?>(null) }
+    var isAuthLoading by remember { mutableStateOf(false) }
+    var authenticatedUser by remember { mutableStateOf(syncManager.getAuthenticatedUser()) }
+
     fun refreshProfile() {
         activeProfileId = profilePrefs.getString("active_profile_id", "guest") ?: "guest"
-        profileDisplayName = profilePrefs.getString("profile_display_name", "Sovereign Thinker") ?: "Sovereign Thinker"
-        profileBio = profilePrefs.getString("profile_bio", "Local Sovereign Vault") ?: "Local Sovereign Vault"
+        profileDisplayName = profilePrefs.getString("profile_display_name", "Sanctuary Thinker") ?: "Sanctuary Thinker"
+        profileBio = profilePrefs.getString("profile_bio", "Local Vault") ?: "Local Vault"
         profileAvatarSymbol = profilePrefs.getString("profile_avatar_symbol", "S") ?: "S"
+        authenticatedUser = syncManager.getAuthenticatedUser()
+        isCloudSyncEnabled = syncManager.isCloudSyncEnabled()
+        companionUidInput = syncManager.getTargetUid()
     }
 
     var pluginsList by remember { mutableStateOf<List<PluginRecord>>(emptyList()) }
@@ -339,7 +353,7 @@ fun SettingsScreen(
                                         modifier = Modifier.size(13.dp)
                                     )
                                     Text(
-                                        text = "Active: $activeProfileId · Encrypted Local Vault",
+                                        text = "Active: $activeProfileId · Local Vault",
                                         style = MaterialTheme.typography.labelSmall.copy(
                                             color = MaterialTheme.colorScheme.primary
                                         )
@@ -613,6 +627,7 @@ fun SettingsScreen(
 
         // --- Section 5: V07 Companion Sync ---
         item {
+            val isAuthed = authenticatedUser != null
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp),
@@ -629,13 +644,15 @@ fun SettingsScreen(
                     )
                     Surface(
                         shape = RoundedCornerShape(6.dp),
-                        color = if (isCloudSyncEnabled) Color(0xFF10B981).copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant
+                        color = if (isAuthed) Color(0xFF10B981).copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant
                     ) {
                         Text(
-                            text = if (isCloudSyncEnabled) "ONLINE SYNC" else "OFFLINE GUEST",
+                            text = if (isAuthed) {
+                                if (authenticatedUser?.isAnonymous == true) "ONLINE (ANON)" else "ONLINE SYNC"
+                            } else "OFFLINE GUEST",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = if (isCloudSyncEnabled) Color(0xFF10B981) else MaterialTheme.colorScheme.onSurfaceVariant,
+                                color = if (isAuthed) Color(0xFF10B981) else MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 10.sp
                             ),
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
@@ -671,7 +688,7 @@ fun SettingsScreen(
                                     )
                                 )
                                 Text(
-                                    text = if (isCloudSyncEnabled) "Realtime bidirectional sync with web companion active" else "Running in offline sovereign isolation",
+                                    text = if (isCloudSyncEnabled) "Realtime bidirectional sync with web companion active" else "Running in offline local mode",
                                     style = MaterialTheme.typography.bodySmall.copy(
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -692,6 +709,128 @@ fun SettingsScreen(
                                     }
                                 }
                             )
+                        }
+
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f), thickness = 1.dp)
+
+                        // Cloud Account Identity Section
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f))
+                                .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+                                .padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = if (isAuthed) Icons.Outlined.CheckCircle else Icons.Outlined.CloudOff,
+                                        contentDescription = null,
+                                        tint = if (isAuthed) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Text(
+                                        text = if (isAuthed) "Cloud Account Connected" else "Cloud Account Required",
+                                        style = MaterialTheme.typography.labelMedium.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    )
+                                }
+                                if (isAuthed) {
+                                    TextButton(
+                                        onClick = {
+                                            syncManager.signOut()
+                                            refreshProfile()
+                                            Toast.makeText(context, "Signed out of Cloud Account", Toast.LENGTH_SHORT).show()
+                                        },
+                                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
+                                    ) {
+                                        Icon(Icons.Outlined.Logout, null, modifier = Modifier.size(13.dp), tint = MaterialTheme.colorScheme.error)
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text("Sign out", fontSize = 11.sp, color = MaterialTheme.colorScheme.error)
+                                    }
+                                }
+                            }
+
+                            if (isAuthed) {
+                                Text(
+                                    text = "User: ${authenticatedUser?.email ?: "Anonymous Cloud Session"}",
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                )
+                                Text(
+                                    text = "UID: ${authenticatedUser?.uid}",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                                        fontSize = 10.5.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                )
+                            } else {
+                                Text(
+                                    text = "Firestore security rules require authentication to sync data. Sign in with your web dashboard account or connect anonymously.",
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        fontSize = 11.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                )
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Button(
+                                        onClick = {
+                                            authErrorMsg = null
+                                            showCloudAuthDialog = true
+                                        },
+                                        shape = RoundedCornerShape(10.dp),
+                                        modifier = Modifier.weight(1f).height(38.dp),
+                                        contentPadding = PaddingValues(horizontal = 10.dp)
+                                    ) {
+                                        Icon(Icons.Outlined.Login, null, modifier = Modifier.size(14.dp))
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text("Sign In / Register", fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                                    }
+                                    OutlinedButton(
+                                        onClick = {
+                                            isAuthLoading = true
+                                            syncManager.signInAnonymously { success, err ->
+                                                isAuthLoading = false
+                                                if (success) {
+                                                    refreshProfile()
+                                                    Toast.makeText(context, "Connected anonymously to cloud", Toast.LENGTH_SHORT).show()
+                                                    triggerSync()
+                                                } else {
+                                                    Toast.makeText(context, err ?: "Anonymous connection failed", Toast.LENGTH_LONG).show()
+                                                }
+                                            }
+                                        },
+                                        shape = RoundedCornerShape(10.dp),
+                                        modifier = Modifier.height(38.dp),
+                                        contentPadding = PaddingValues(horizontal = 10.dp)
+                                    ) {
+                                        if (isAuthLoading) {
+                                            CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp)
+                                        } else {
+                                            Icon(Icons.Outlined.PersonOutline, null, modifier = Modifier.size(14.dp))
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text("Guest Connect", fontSize = 11.sp)
+                                        }
+                                    }
+                                }
+                            }
                         }
 
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f), thickness = 1.dp)
@@ -1133,7 +1272,7 @@ fun SettingsScreen(
                         label = { Text("Display Name") },
                         placeholder = {
                             Text(
-                                text = "e.g. Sovereign Thinker",
+                                text = "e.g. Sanctuary Thinker",
                                 style = MaterialTheme.typography.bodyMedium.copy(
                                     fontSize = 13.5.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.65f)
@@ -1154,7 +1293,7 @@ fun SettingsScreen(
                         label = { Text("Bio & Focus Role") },
                         placeholder = {
                             Text(
-                                text = "e.g. Local Sovereign Vault",
+                                text = "e.g. Local Vault",
                                 style = MaterialTheme.typography.bodyMedium.copy(
                                     fontSize = 13.5.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.65f)
@@ -1248,8 +1387,8 @@ fun SettingsScreen(
             confirmButton = {
                 Button(
                     onClick = {
-                        val trimmedName = nameInput.trim().ifBlank { "Sovereign Thinker" }
-                        val trimmedBio = bioInput.trim().ifBlank { "Local Sovereign Vault" }
+                        val trimmedName = nameInput.trim().ifBlank { "Sanctuary Thinker" }
+                        val trimmedBio = bioInput.trim().ifBlank { "Local Vault" }
                         profilePrefs.edit()
                             .putString("profile_display_name", trimmedName)
                             .putString("profile_bio", trimmedBio)
@@ -1272,6 +1411,134 @@ fun SettingsScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showEditProfileDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    if (showCloudAuthDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                if (!isAuthLoading) showCloudAuthDialog = false
+            },
+            title = {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = if (authCreateMode) Icons.Outlined.PersonAdd else Icons.Outlined.Login,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(22.dp)
+                    )
+                    Text(
+                        text = if (authCreateMode) "Create Cloud Account" else "Sign In to Cloud Account",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                    )
+                }
+            },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text(
+                        text = if (authCreateMode)
+                            "Create an account to synchronize tasks, habits, and focus sessions with the web dashboard."
+                        else
+                            "Sign in with your email and password to sync with the V07 Companion Dashboard.",
+                        style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    )
+
+                    OutlinedTextField(
+                        value = authEmail,
+                        onValueChange = { authEmail = it },
+                        label = { Text("Email Address") },
+                        placeholder = { Text("user@example.com") },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    OutlinedTextField(
+                        value = authPassword,
+                        onValueChange = { authPassword = it },
+                        label = { Text("Password (6+ chars)") },
+                        singleLine = true,
+                        visualTransformation = PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    if (!authErrorMsg.isNullOrBlank()) {
+                        Text(
+                            text = authErrorMsg!!,
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                color = MaterialTheme.colorScheme.error,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        )
+                    }
+
+                    TextButton(
+                        onClick = {
+                            authCreateMode = !authCreateMode
+                            authErrorMsg = null
+                        },
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    ) {
+                        Text(
+                            text = if (authCreateMode) "Already have an account? Sign In" else "New to V07 Cloud? Create Account",
+                            fontSize = 11.5.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val cleanEmail = authEmail.trim()
+                        val cleanPass = authPassword
+                        if (cleanEmail.isEmpty() || !cleanEmail.contains("@") || cleanPass.length < 6) {
+                            authErrorMsg = "Please enter a valid email and 6+ character password"
+                            return@Button
+                        }
+                        isAuthLoading = true
+                        authErrorMsg = null
+                        syncManager.signIn(cleanEmail, cleanPass, authCreateMode) { success, error ->
+                            isAuthLoading = false
+                            if (success) {
+                                refreshProfile()
+                                showCloudAuthDialog = false
+                                Toast.makeText(context, "Connected to cloud successfully!", Toast.LENGTH_SHORT).show()
+                                triggerSync()
+                            } else {
+                                authErrorMsg = error ?: "Authentication failed"
+                            }
+                        }
+                    },
+                    enabled = !isAuthLoading,
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    if (isAuthLoading) {
+                        CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onPrimary)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Connecting...")
+                    } else {
+                        Text(if (authCreateMode) "Create Account" else "Sign In")
+                    }
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { if (!isAuthLoading) showCloudAuthDialog = false },
+                    enabled = !isAuthLoading
+                ) {
                     Text("Cancel")
                 }
             }

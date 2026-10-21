@@ -356,7 +356,7 @@ fun FloatingOverlayMenuModal(
 
                     OverlayModalPage.QUICK_THOUGHT -> {
                         var selectedTag by remember { mutableStateOf("General Reflection") }
-                        val tagOptions = remember { listOf("General Reflection", "Work Observation", "Quiet Insight", "Personal Sovereign", "Urgent Thought") }
+                        val tagOptions = remember { listOf("General Reflection", "Work Observation", "Quiet Insight", "Personal Growth", "Urgent Thought") }
 
                         Column(
                             modifier = Modifier

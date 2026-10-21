@@ -155,7 +155,7 @@ fun DataCenterScreen(
                                 overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                             )
                             Text(
-                                text = "Sovereign JSON, local SQLite & vault sync",
+                                text = "Local JSON, SQLite & vault sync",
                                 style = MaterialTheme.typography.bodySmall.copy(
                                     fontSize = 11.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -212,7 +212,7 @@ fun DataCenterScreen(
                             }
                             Surface(shape = PillShape, color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)) {
                                 Text(
-                                    text = "100% Local SQLite First",
+                                    text = "Local SQLite First",
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.primary,
@@ -224,7 +224,7 @@ fun DataCenterScreen(
                         }
 
                         Text(
-                            text = "Your records reside exclusively in your sovereign local SQLite database. Telemetry and insights remain on-device without third-party surveillance.",
+                            text = "Your records reside exclusively in your local SQLite database. Telemetry and insights remain on-device without third-party surveillance.",
                             style = MaterialTheme.typography.bodySmall.copy(
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -257,7 +257,7 @@ fun DataCenterScreen(
                         .border(1.dp, MaterialTheme.colorScheme.outline, CardShape)
                 ) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Text("Sovereign Entity Counts", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                        Text("Vault Entity Counts", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
 
                         val counts = dbStats?.tableCounts ?: emptyMap()
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -269,7 +269,7 @@ fun DataCenterScreen(
                             Text("${counts["sessions"] ?: 0}", style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary))
                         }
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Sovereign Directives / Tasks", style = MaterialTheme.typography.bodySmall)
+                            Text("Directives & Tasks", style = MaterialTheme.typography.bodySmall)
                             Text("${counts["tasks"] ?: 0}", style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary))
                         }
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -535,7 +535,7 @@ fun DataCenterScreen(
                                             putExtra(Intent.EXTRA_TEXT, exportObj.toString(2))
                                             type = "text/plain"
                                         }
-                                        val shareIntent = Intent.createChooser(sendIntent, "Export Sovereign JSON")
+                                        val shareIntent = Intent.createChooser(sendIntent, "Export Vault JSON")
                                         context.startActivity(shareIntent)
                                     }
                                 } catch (e: Exception) {
@@ -550,7 +550,7 @@ fun DataCenterScreen(
                     ) {
                         Icon(Icons.Outlined.FileDownload, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Export Sovereign JSON Archive")
+                        Text("Export Vault JSON Archive")
                     }
                 }
             }

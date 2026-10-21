@@ -772,7 +772,7 @@ fun FocusSanctuaryScreen(
             },
             text = {
                 Text(
-                    "Move \"${s.activity}\" (${(s.durationSec / 60).coerceAtLeast(1)}m) to the Recycle Bin? The session will be safely preserved in your sovereign recycle bin.",
+                    "Move \"${s.activity}\" (${(s.durationSec / 60).coerceAtLeast(1)}m) to the Recycle Bin? The session will be safely preserved in your recycle bin.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

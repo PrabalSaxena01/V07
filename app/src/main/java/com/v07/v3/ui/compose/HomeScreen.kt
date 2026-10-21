@@ -308,7 +308,7 @@ fun HomeScreen(
 
     val syncStatusSubtitle = remember {
         val syncMgr = com.v07.v3.core.sync.V3CompanionSyncManager.getInstance(context, repository, screenTimeTracker)
-        if (syncMgr.isCloudSyncEnabled()) "Cloud sync active" else "100% Local SQLite Vault"
+        if (syncMgr.isCloudSyncEnabled()) "Cloud sync active" else "Local SQLite Vault"
     }
 
     val todayDateFormatted = remember {
@@ -1039,7 +1039,7 @@ fun HomeScreen(
                         Column {
                             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                 Text(
-                                    text = "Sovereign Tasks",
+                                    text = "Sanctuary Tasks",
                                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontSize = 15.sp),
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
@@ -1288,7 +1288,7 @@ fun HomeScreen(
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(
-                        text = "Add a sovereign daily cadence to your sanctuary.",
+                        text = "Add a gentle daily cadence to your sanctuary.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

@@ -190,7 +190,7 @@ fun SovereignTasksScreen(
                             verticalArrangement = Arrangement.Center
                         ) {
                             Text(
-                                text = "Sovereign Tasks",
+                                text = "Sanctuary Tasks",
                                 style = MaterialTheme.typography.titleMedium.copy(
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 15.sp
@@ -594,7 +594,7 @@ fun SovereignTasksScreen(
                                 modifier = Modifier.size(36.dp)
                             )
                             Text(
-                                text = "All clear in Sovereign Tasks",
+                                text = "All clear in Sanctuary Tasks",
                                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                             )
                             Text(

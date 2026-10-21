@@ -303,7 +303,7 @@ fun SanctuaryProfileDropdownMenu(
                 )
             )
             Text(
-                text = "100% Sovereign SQLite First",
+                text = "Local SQLite First",
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontSize = 11.sp,
                     color = SanctuaryPalette.AccentHabits

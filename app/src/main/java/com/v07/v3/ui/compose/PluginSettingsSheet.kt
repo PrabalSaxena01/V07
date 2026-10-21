@@ -222,7 +222,7 @@ fun PluginSettingsSheet(
                                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                             )
                             Text(
-                                text = if (isEnabled) "Active in Sovereign Sanctuary" else "Disabled • Inactive",
+                                text = if (isEnabled) "Active in Sanctuary" else "Disabled • Inactive",
                                 style = MaterialTheme.typography.bodySmall.copy(
                                     color = if (isEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -387,7 +387,7 @@ fun PluginSettingsSheet(
                                         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
                                     )
                                     Text(
-                                        text = "Automatically include data in sovereign SQLite backups",
+                                        text = "Automatically include data in SQLite backups",
                                         style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                                     )
                                 }
