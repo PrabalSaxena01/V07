@@ -4,6 +4,42 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Gita Wisdom</title>
+<script>
+  (function(){
+    function resolveTheme(){
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var qTheme = params.get('theme');
+        if (qTheme === 'light' || qTheme === 'dark') return qTheme;
+        if (window.AndroidTheme && typeof window.AndroidTheme.isDark === 'function') {
+          return window.AndroidTheme.isDark() ? 'dark' : 'light';
+        }
+        var local = localStorage.getItem('v07_theme') || localStorage.getItem('v07_app_theme');
+        if (local === 'light' || local === 'dark') return local;
+        if (window.parent && window.parent !== window && window.parent.document && window.parent.document.documentElement.dataset.theme) {
+          return window.parent.document.documentElement.dataset.theme;
+        }
+      } catch(e){}
+      return 'dark';
+    }
+    function apply(t){
+      document.documentElement.setAttribute('data-theme', t);
+      if (t === 'light') {
+        document.documentElement.classList.add('light');
+        document.documentElement.classList.remove('dark');
+        if (document.body) { document.body.classList.add('light'); document.body.classList.remove('dark'); }
+      } else {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+        if (document.body) { document.body.classList.add('dark'); document.body.classList.remove('light'); }
+      }
+    }
+    apply(resolveTheme());
+    window.addEventListener('storage', function(){ apply(resolveTheme()); });
+    window.addEventListener('v07-theme-changed', function(e){ if(e.detail && e.detail.theme) apply(e.detail.theme); });
+    document.addEventListener('DOMContentLoaded', function(){ apply(resolveTheme()); });
+  })();
+</script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   :root {
@@ -12,21 +48,29 @@
     --surface-alt: #1A1F2C;
     --border: #262D3D;
     --text: #F1F5F9;
+    --text-primary: #F1F5F9;
+    --text-secondary: #94A3B8;
     --text-muted: #8E9BAE;
     --accent: #FF9F43;
     --accent-glow: rgba(255, 159, 67, 0.15);
     --gold: #F6C90E;
+    --gold-bg: rgba(246, 201, 14, 0.15);
+    --btn-text: #0B0E14;
   }
-  :root[data-theme="light"], .light {
+  :root[data-theme="light"], html.light, body.light, .light {
     --bg: #FAF6F9;
     --surface: #FFFFFF;
     --surface-alt: #F1EDF0;
     --border: #DDD6DD;
     --text: #182230;
+    --text-primary: #182230;
+    --text-secondary: #475569;
     --text-muted: #64748B;
     --accent: #EA580C;
     --accent-glow: rgba(234, 88, 12, 0.12);
-    --gold: #D97706;
+    --gold: #B45309;
+    --gold-bg: rgba(180, 83, 9, 0.12);
+    --btn-text: #FFFFFF;
   }
   body {
     background: var(--bg);
@@ -85,7 +129,7 @@
   .sanskrit {
     font-size: 17px; line-height: 1.7; color: var(--gold);
     text-align: center; padding: 12px 8px; font-style: italic;
-    background: var(--surface-alt); border-radius: 10px; border: 1px solid rgba(246, 201, 14, 0.15);
+    background: var(--surface-alt); border-radius: 10px; border: 1px solid var(--gold-bg);
   }
   .translation {
     font-size: 14px; line-height: 1.6; color: var(--text);
@@ -106,7 +150,7 @@
     resize: vertical; outline: none; min-height: 60px;
   }
   .btn-save {
-    align-self: flex-end; background: var(--accent); color: #000;
+    align-self: flex-end; background: var(--accent); color: var(--btn-text);
     font-weight: 700; font-size: 11px; padding: 7px 16px; border-radius: 8px;
     border: none; cursor: pointer; transition: 0.15s;
   }

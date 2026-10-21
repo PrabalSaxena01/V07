@@ -4,6 +4,42 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Weekly Digest // AI Weekly Intelligence Engine</title>
+<script>
+  (function(){
+    function resolveTheme(){
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var qTheme = params.get('theme');
+        if (qTheme === 'light' || qTheme === 'dark') return qTheme;
+        if (window.AndroidTheme && typeof window.AndroidTheme.isDark === 'function') {
+          return window.AndroidTheme.isDark() ? 'dark' : 'light';
+        }
+        var local = localStorage.getItem('v07_theme') || localStorage.getItem('v07_app_theme');
+        if (local === 'light' || local === 'dark') return local;
+        if (window.parent && window.parent !== window && window.parent.document && window.parent.document.documentElement.dataset.theme) {
+          return window.parent.document.documentElement.dataset.theme;
+        }
+      } catch(e){}
+      return 'dark';
+    }
+    function apply(t){
+      document.documentElement.setAttribute('data-theme', t);
+      if (t === 'light') {
+        document.documentElement.classList.add('light');
+        document.documentElement.classList.remove('dark');
+        if (document.body) { document.body.classList.add('light'); document.body.classList.remove('dark'); }
+      } else {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+        if (document.body) { document.body.classList.add('dark'); document.body.classList.remove('light'); }
+      }
+    }
+    apply(resolveTheme());
+    window.addEventListener('storage', function(){ apply(resolveTheme()); });
+    window.addEventListener('v07-theme-changed', function(e){ if(e.detail && e.detail.theme) apply(e.detail.theme); });
+    document.addEventListener('DOMContentLoaded', function(){ apply(resolveTheme()); });
+  })();
+</script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   :root {
@@ -20,18 +56,18 @@
     --red: #FF5370;
     --font-mono: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   }
-  :root[data-theme="light"] {
-    --bg: #f4f5f9;
+  :root[data-theme="light"], html.light, body.light, .light {
+    --bg: #FAF6F9;
     --surface: #ffffff;
-    --surface-low: #eaebf2;
-    --border: #d4d6e2;
-    --text: #151722;
-    --muted: #6a6f82;
-    --primary: #1a8a5a;
+    --surface-low: #f3eff2;
+    --border: #dcd6dc;
+    --text: #182230;
+    --muted: #64748b;
+    --primary: #15803D;
     --purple: #6938ef;
     --yellow: #b45309;
     --blue: #0284c7;
-    --red: #d32f2f;
+    --red: #dc2626;
   }
   body {
     background: var(--bg);

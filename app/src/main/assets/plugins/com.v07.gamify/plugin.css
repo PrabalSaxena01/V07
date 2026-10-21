@@ -5,17 +5,24 @@
   --surface-low: #111319;
   --border: #2C2C2C;
   --text: #e1e2ea;
-  --muted: #717171;
+  --muted: #8a8f98;
   --primary: #4DE086;
+  --btn-text: #000000;
+  --stat-streak: #F4D35E;
+  --today-outline: #FFFFFF;
 }
 
-:root[data-theme="light"] {
-  --bg: #f0f0f2;
+:root[data-theme="light"], html.light, body.light, .light {
+  --bg: #FAF6F9;
   --surface: #ffffff;
-  --surface-low: #f5f5f7;
-  --border: #d0d0d5;
-  --text: #1a1a2e;
-  --muted: #777;
+  --surface-low: #f3eff2;
+  --border: #dcd6dc;
+  --text: #182230;
+  --muted: #64748b;
+  --primary: #15803D;
+  --btn-text: #ffffff;
+  --stat-streak: #B45309;
+  --today-outline: #182230;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -105,14 +112,14 @@ body {
 }
 
 .g-stat-xp { color: var(--primary); }
-.g-stat-streak { color: #F4D35E; }
+.g-stat-streak { color: var(--stat-streak); }
 
 .g-btn {
   width: 100%;
   margin-top: 12px;
   padding: 12px;
   background: var(--primary);
-  color: #000;
+  color: var(--btn-text);
   border: none;
   border-radius: 8px;
   font-size: 14px;
@@ -276,9 +283,9 @@ body {
   cursor: pointer;
   transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
-:root[data-theme="light"] .g-h-cell {
+:root[data-theme="light"] .g-h-cell, html.light .g-h-cell, body.light .g-h-cell, .light .g-h-cell {
   background: rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(0, 0, 0, 0.07);
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .g-h-cell:active, .g-h-cell.selected {
@@ -304,6 +311,24 @@ body {
   box-shadow: 0 0 6px rgba(77, 224, 134, 0.5);
 }
 
+:root[data-theme="light"] .g-h-cell.intensity-1, html.light .g-h-cell.intensity-1, body.light .g-h-cell.intensity-1, .light .g-h-cell.intensity-1 {
+  background: rgba(21, 128, 61, 0.22);
+  border-color: rgba(21, 128, 61, 0.35);
+}
+:root[data-theme="light"] .g-h-cell.intensity-2, html.light .g-h-cell.intensity-2, body.light .g-h-cell.intensity-2, .light .g-h-cell.intensity-2 {
+  background: rgba(21, 128, 61, 0.45);
+  border-color: rgba(21, 128, 61, 0.60);
+}
+:root[data-theme="light"] .g-h-cell.intensity-3, html.light .g-h-cell.intensity-3, body.light .g-h-cell.intensity-3, .light .g-h-cell.intensity-3 {
+  background: rgba(21, 128, 61, 0.70);
+  border-color: rgba(21, 128, 61, 0.85);
+}
+:root[data-theme="light"] .g-h-cell.intensity-4, html.light .g-h-cell.intensity-4, body.light .g-h-cell.intensity-4, .light .g-h-cell.intensity-4 {
+  background: #15803D;
+  border-color: #166534;
+  box-shadow: 0 0 6px rgba(21, 128, 61, 0.4);
+}
+
 .g-h-cell.is-future {
   opacity: 0.18;
   cursor: default;
@@ -311,7 +336,7 @@ body {
 }
 
 .g-h-cell.is-today {
-  outline: 2px solid #FFFFFF;
+  outline: 2px solid var(--today-outline);
   outline-offset: 1px;
   box-shadow: 0 0 10px rgba(77, 224, 134, 0.85);
   position: relative;

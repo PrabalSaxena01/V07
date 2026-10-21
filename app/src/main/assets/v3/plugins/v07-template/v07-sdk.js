@@ -113,9 +113,18 @@
       },
       getTheme: function() {
         try {
-          return window.parent.document.documentElement.dataset.theme ||
-                 localStorage.getItem('v07_theme') ||
-                 (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          var params = new URLSearchParams(window.location.search);
+          var qTheme = params.get('theme');
+          if (qTheme === 'light' || qTheme === 'dark') return qTheme;
+          if (window.AndroidTheme && typeof window.AndroidTheme.isDark === 'function') {
+            return window.AndroidTheme.isDark() ? 'dark' : 'light';
+          }
+          var local = localStorage.getItem('v07_theme') || localStorage.getItem('v07_app_theme');
+          if (local === 'light' || local === 'dark') return local;
+          if (window.parent && window.parent !== window && window.parent.document && window.parent.document.documentElement.dataset.theme) {
+            return window.parent.document.documentElement.dataset.theme;
+          }
+          return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         } catch (_) {
           return 'dark';
         }
@@ -160,13 +169,22 @@
     const theme = v07.ui.getTheme();
     if (theme === 'light') {
       document.documentElement.setAttribute('data-theme', 'light');
+      document.documentElement.classList.add('light');
+      document.documentElement.classList.remove('dark');
+      if (document.body) { document.body.classList.add('light'); document.body.classList.remove('dark'); }
     } else {
-      document.documentElement.removeAttribute('data-theme');
+      document.documentElement.setAttribute('data-theme', 'dark');
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+      if (document.body) { document.body.classList.add('dark'); document.body.classList.remove('light'); }
     }
   }
 
   window.v07 = v07;
   window.V07Platform = v07;
+
+  window.addEventListener('storage', syncTheme);
+  window.addEventListener('v07-theme-changed', function(e) { if(e.detail && e.detail.theme) { if (e.detail.theme === 'light') { document.documentElement.setAttribute('data-theme', 'light'); document.documentElement.classList.add('light'); document.documentElement.classList.remove('dark'); } else { document.documentElement.setAttribute('data-theme', 'dark'); document.documentElement.classList.add('dark'); document.documentElement.classList.remove('light'); } } });
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', syncTheme);

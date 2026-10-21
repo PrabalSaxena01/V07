@@ -7,12 +7,12 @@
   --muted: #8A8F98;
   --primary: #A7C8FF;
 }
-:root[data-theme="light"] {
-  --bg: #f0f0f2;
+:root[data-theme="light"], html.light, body.light, .light {
+  --bg: #FAF6F9;
   --surface: #ffffff;
-  --border: #d0d0d5;
-  --text: #1a1a2e;
-  --muted: #666666;
+  --border: #dcd6dc;
+  --text: #182230;
+  --muted: #64748b;
   --primary: #1a5fb4;
 }
 body {

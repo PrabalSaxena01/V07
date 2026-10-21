@@ -22,6 +22,7 @@
     --blue: #68A6FF;
     --purple: #A78BFA;
     --rose: #FF5370;
+    --text: #F1F5F9;
     --text-primary: #F1F5F9;
     --text-secondary: #94A3B8;
     --text-muted: #64748B;
@@ -30,24 +31,25 @@
     --radius-lg: 12px;
   }
 
-  :root[data-theme="light"] {
-    --bg: #F8FAFC;
+  :root[data-theme="light"], html.light, body.light, .light {
+    --bg: #FAF6F9;
     --surface: #FFFFFF;
-    --surface-card: #F1F5F9;
-    --surface-elevated: #E2E8F0;
-    --border: #CBD5E1;
+    --surface-card: #F3EFF2;
+    --surface-elevated: #ECE6EB;
+    --border: #DDD6DD;
     --border-subtle: rgba(0, 0, 0, 0.08);
-    --accent: #16A34A;
-    --accent-light: #15803D;
-    --accent-glow: rgba(22, 163, 74, 0.12);
+    --accent: #15803D;
+    --accent-light: #16A34A;
+    --accent-glow: rgba(21, 128, 61, 0.12);
     --yellow: #D97706;
     --yellow-glow: rgba(217, 119, 6, 0.12);
     --blue: #2563EB;
     --purple: #7C3AED;
     --rose: #E11D48;
-    --text-primary: #0F172A;
+    --text: #182230;
+    --text-primary: #182230;
     --text-secondary: #475569;
-    --text-muted: #94A3B8;
+    --text-muted: #64748B;
   }
 
   body {
@@ -376,18 +378,38 @@
 </style>
 <script>
 (function(){
-  function syncTheme(){
-    var t = 'dark';
+  function resolveTheme(){
     try {
-      t = window.parent.document.documentElement.dataset.theme || localStorage.getItem('v07_theme') || 'dark';
-    } catch(e){
-      try { t = localStorage.getItem('v07_theme') || 'dark'; } catch(e2){}
-    }
-    if(t === 'light') document.documentElement.setAttribute('data-theme', 'light');
-    else document.documentElement.removeAttribute('data-theme');
+      var params = new URLSearchParams(window.location.search);
+      var qTheme = params.get('theme');
+      if (qTheme === 'light' || qTheme === 'dark') return qTheme;
+      if (window.AndroidTheme && typeof window.AndroidTheme.isDark === 'function') {
+        return window.AndroidTheme.isDark() ? 'dark' : 'light';
+      }
+      var local = localStorage.getItem('v07_theme') || localStorage.getItem('v07_app_theme');
+      if (local === 'light' || local === 'dark') return local;
+      if (window.parent && window.parent !== window && window.parent.document && window.parent.document.documentElement.dataset.theme) {
+        return window.parent.document.documentElement.dataset.theme;
+      }
+    } catch(e){}
+    return 'dark';
   }
-  syncTheme();
-  window.addEventListener('storage', syncTheme);
+  function apply(t){
+    document.documentElement.setAttribute('data-theme', t);
+    if (t === 'light') {
+      document.documentElement.classList.add('light');
+      document.documentElement.classList.remove('dark');
+      if (document.body) { document.body.classList.add('light'); document.body.classList.remove('dark'); }
+    } else {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+      if (document.body) { document.body.classList.add('dark'); document.body.classList.remove('light'); }
+    }
+  }
+  apply(resolveTheme());
+  window.addEventListener('storage', function(){ apply(resolveTheme()); });
+  window.addEventListener('v07-theme-changed', function(e){ if(e.detail && e.detail.theme) apply(e.detail.theme); });
+  document.addEventListener('DOMContentLoaded', function(){ apply(resolveTheme()); });
 })();
 </script>
 </head>

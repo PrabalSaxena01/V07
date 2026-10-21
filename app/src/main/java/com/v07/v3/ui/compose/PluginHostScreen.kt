@@ -78,6 +78,7 @@ fun PluginHostScreen(
                     }
                     localStorage.setItem('v07_theme', t);
                     localStorage.setItem('v07_app_theme', t);
+                    window.dispatchEvent(new CustomEvent('v07-theme-changed', { detail: { theme: t } }));
                     window.dispatchEvent(new Event('storage'));
                 } catch(e){}
             })();
@@ -302,6 +303,23 @@ fun PluginHostScreen(
                         webViewClient = object : WebViewClient() {
                             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                                 isLoading = true
+                                val themeName = if (pluginIsLight) "light" else "dark"
+                                val earlyJs = """
+                                    (function() {
+                                        try {
+                                            var t = '$themeName';
+                                            document.documentElement.setAttribute('data-theme', t);
+                                            if (t === 'light') {
+                                                document.documentElement.classList.add('light');
+                                                document.documentElement.classList.remove('dark');
+                                            } else {
+                                                document.documentElement.classList.add('dark');
+                                                document.documentElement.classList.remove('light');
+                                            }
+                                        } catch(e){}
+                                    })();
+                                """.trimIndent()
+                                view?.evaluateJavascript(earlyJs, null)
                             }
 
                             override fun onPageFinished(view: WebView?, url: String?) {
@@ -382,7 +400,7 @@ fun PluginHostScreen(
                         onClick = {
                             val baseUrl = V3PlatformHost.baseUrl
                             val token = V3PlatformHost.sessionToken
-                            val theme = if (isLight) "light" else "dark"
+                            val theme = if (pluginIsLight) "light" else "dark"
                             val settingsUrl = "$baseUrl/plugins/$pluginId/settings.html?token=$token&theme=$theme"
                             webViewRef?.loadUrl(settingsUrl)
                             showSettingsDialog = false

@@ -8,11 +8,11 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
     --bg: #090909; --surface: #111319; --surface-low: #1D2025; --border: #2C2C2C;
-    --text: #E1E2EA; --muted: #8A8F98; --accent: #4DE086;
+    --text: #E1E2EA; --muted: #8A8F98; --accent: #4DE086; --btn-text: #000;
   }
-  :root[data-theme="light"] {
-    --bg: #f0f0f2; --surface: #ffffff; --surface-low: #f5f5f7; --border: #d0d0d5;
-    --text: #1a1a2e; --muted: #666666; --accent: #1a8a5a;
+  :root[data-theme="light"], html.light, body.light, .light {
+    --bg: #FAF6F9; --surface: #ffffff; --surface-low: #f3eff2; --border: #dcd6dc;
+    --text: #182230; --muted: #64748b; --accent: #15803D; --btn-text: #fff;
   }
   body {
     background: var(--bg); color: var(--text); padding: 14px;
@@ -33,14 +33,14 @@
     color: var(--muted); padding: 6px 4px; border-radius: 4px; font-family: inherit;
     font-size: 10px; font-weight: 700; cursor: pointer; text-align: center;
   }
-  .pill-btn.active { background: var(--accent); border-color: var(--accent); color: #000; }
+  .pill-btn.active { background: var(--accent); border-color: var(--accent); color: var(--btn-text); }
   .field { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
   input[type="time"], input[type="text"], select {
     background: var(--surface-low); color: var(--text); border: 1px solid var(--border);
     border-radius: 4px; padding: 5px 8px; font-family: inherit; font-size: 11px;
   }
   .btn-action {
-    background: var(--accent); color: #000; border: none; border-radius: 4px;
+    background: var(--accent); color: var(--btn-text); border: none; border-radius: 4px;
     padding: 7px 12px; font-family: inherit; font-size: 10px; font-weight: 700;
     cursor: pointer; text-transform: uppercase;
   }
@@ -54,18 +54,38 @@
 </style>
 <script>
 (function(){
-  function syncTheme(){
-    var t = 'dark';
+  function resolveTheme(){
     try {
-      t = window.parent.document.documentElement.dataset.theme || localStorage.getItem('v07_theme') || 'dark';
-    } catch(e){
-      try { t = localStorage.getItem('v07_theme') || 'dark'; } catch(e2){}
-    }
-    if(t === 'light') document.documentElement.setAttribute('data-theme', 'light');
-    else document.documentElement.removeAttribute('data-theme');
+      var params = new URLSearchParams(window.location.search);
+      var qTheme = params.get('theme');
+      if (qTheme === 'light' || qTheme === 'dark') return qTheme;
+      if (window.AndroidTheme && typeof window.AndroidTheme.isDark === 'function') {
+        return window.AndroidTheme.isDark() ? 'dark' : 'light';
+      }
+      var local = localStorage.getItem('v07_theme') || localStorage.getItem('v07_app_theme');
+      if (local === 'light' || local === 'dark') return local;
+      if (window.parent && window.parent !== window && window.parent.document && window.parent.document.documentElement.dataset.theme) {
+        return window.parent.document.documentElement.dataset.theme;
+      }
+    } catch(e){}
+    return 'dark';
   }
-  syncTheme();
-  window.addEventListener('storage', syncTheme);
+  function apply(t){
+    document.documentElement.setAttribute('data-theme', t);
+    if (t === 'light') {
+      document.documentElement.classList.add('light');
+      document.documentElement.classList.remove('dark');
+      if (document.body) { document.body.classList.add('light'); document.body.classList.remove('dark'); }
+    } else {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+      if (document.body) { document.body.classList.add('dark'); document.body.classList.remove('light'); }
+    }
+  }
+  apply(resolveTheme());
+  window.addEventListener('storage', function(){ apply(resolveTheme()); });
+  window.addEventListener('v07-theme-changed', function(e){ if(e.detail && e.detail.theme) apply(e.detail.theme); });
+  document.addEventListener('DOMContentLoaded', function(){ apply(resolveTheme()); });
 })();
 </script>
 </head>

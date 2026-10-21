@@ -4,6 +4,42 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Reader Settings</title>
+<script>
+  (function(){
+    function resolveTheme(){
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var qTheme = params.get('theme');
+        if (qTheme === 'light' || qTheme === 'dark') return qTheme;
+        if (window.AndroidTheme && typeof window.AndroidTheme.isDark === 'function') {
+          return window.AndroidTheme.isDark() ? 'dark' : 'light';
+        }
+        var local = localStorage.getItem('v07_theme') || localStorage.getItem('v07_app_theme');
+        if (local === 'light' || local === 'dark') return local;
+        if (window.parent && window.parent !== window && window.parent.document && window.parent.document.documentElement.dataset.theme) {
+          return window.parent.document.documentElement.dataset.theme;
+        }
+      } catch(e){}
+      return 'dark';
+    }
+    function apply(t){
+      document.documentElement.setAttribute('data-theme', t);
+      if (t === 'light') {
+        document.documentElement.classList.add('light');
+        document.documentElement.classList.remove('dark');
+        if (document.body) { document.body.classList.add('light'); document.body.classList.remove('dark'); }
+      } else {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+        if (document.body) { document.body.classList.add('dark'); document.body.classList.remove('light'); }
+      }
+    }
+    apply(resolveTheme());
+    window.addEventListener('storage', function(){ apply(resolveTheme()); });
+    window.addEventListener('v07-theme-changed', function(e){ if(e.detail && e.detail.theme) apply(e.detail.theme); });
+    document.addEventListener('DOMContentLoaded', function(){ apply(resolveTheme()); });
+  })();
+</script>
 
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -20,18 +56,18 @@
     --ink-secondary: #C4B9A7;
     --ink-muted: #8F8474;
   }
-  :root[data-theme="light"] {
-    --bg: #FBF9F4;
+  :root[data-theme="light"], html.light, body.light, .light {
+    --bg: #FAF6F9;
     --surface: #FFFFFF;
-    --surface-parchment: #F5EFE1;
-    --border: #E2D9C8;
+    --surface-parchment: #F3EFF2;
+    --border: #DDD6DD;
     --stitch: #C5A059;
     --gold: #D4AF37;
     --gold-dark: #997A24;
     --leather: #4A2E1B;
-    --ink: #1F1C18;
-    --ink-secondary: #5C5549;
-    --ink-muted: #8C8272;
+    --ink: #182230;
+    --ink-secondary: #475569;
+    --ink-muted: #64748B;
   }
   body {
     background: var(--bg);

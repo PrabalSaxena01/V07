@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Sovereign Tasks &amp; Priorities</title>
+<title>Focus Tasks &amp; Priorities</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
@@ -22,6 +22,7 @@
     --yellow-glow: rgba(255, 184, 77, 0.15);
     --rose: #FF5370;
     --rose-glow: rgba(255, 83, 112, 0.15);
+    --text: #F1F5F9;
     --text-primary: #F1F5F9;
     --text-secondary: #94A3B8;
     --text-muted: #64748B;
@@ -30,24 +31,25 @@
     --radius-lg: 16px;
   }
 
-  :root[data-theme="light"] {
-    --bg: #F8FAFC;
+  :root[data-theme="light"], html.light, body.light, .light {
+    --bg: #FAF6F9;
     --surface: #FFFFFF;
-    --surface-card: #F1F5F9;
-    --surface-elevated: #E2E8F0;
-    --border: #CBD5E1;
+    --surface-card: #F3EFF2;
+    --surface-elevated: #ECE6EB;
+    --border: #DDD6DD;
     --border-subtle: rgba(0, 0, 0, 0.08);
-    --accent: #10B981;
-    --accent-glow: rgba(16, 185, 129, 0.12);
+    --accent: #059669;
+    --accent-glow: rgba(5, 150, 105, 0.12);
     --green: #16A34A;
     --green-glow: rgba(22, 163, 74, 0.12);
     --yellow: #D97706;
     --yellow-glow: rgba(217, 119, 6, 0.12);
     --rose: #E11D48;
     --rose-glow: rgba(225, 29, 72, 0.12);
-    --text-primary: #0F172A;
+    --text: #182230;
+    --text-primary: #182230;
     --text-secondary: #475569;
-    --text-muted: #94A3B8;
+    --text-muted: #64748B;
   }
 
   body {
@@ -509,18 +511,38 @@
 </style>
 <script>
 (function(){
-  function syncTheme(){
-    var t = 'dark';
+  function resolveTheme(){
     try {
-      t = window.parent.document.documentElement.dataset.theme || localStorage.getItem('v07_theme') || 'dark';
-    } catch(e){
-      try { t = localStorage.getItem('v07_theme') || 'dark'; } catch(e2){}
-    }
-    if(t === 'light') document.documentElement.setAttribute('data-theme', 'light');
-    else document.documentElement.removeAttribute('data-theme');
+      var params = new URLSearchParams(window.location.search);
+      var qTheme = params.get('theme');
+      if (qTheme === 'light' || qTheme === 'dark') return qTheme;
+      if (window.AndroidTheme && typeof window.AndroidTheme.isDark === 'function') {
+        return window.AndroidTheme.isDark() ? 'dark' : 'light';
+      }
+      var local = localStorage.getItem('v07_theme') || localStorage.getItem('v07_app_theme');
+      if (local === 'light' || local === 'dark') return local;
+      if (window.parent && window.parent !== window && window.parent.document && window.parent.document.documentElement.dataset.theme) {
+        return window.parent.document.documentElement.dataset.theme;
+      }
+    } catch(e){}
+    return 'dark';
   }
-  syncTheme();
-  window.addEventListener('storage', syncTheme);
+  function apply(t){
+    document.documentElement.setAttribute('data-theme', t);
+    if (t === 'light') {
+      document.documentElement.classList.add('light');
+      document.documentElement.classList.remove('dark');
+      if (document.body) { document.body.classList.add('light'); document.body.classList.remove('dark'); }
+    } else {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+      if (document.body) { document.body.classList.add('dark'); document.body.classList.remove('light'); }
+    }
+  }
+  apply(resolveTheme());
+  window.addEventListener('storage', function(){ apply(resolveTheme()); });
+  window.addEventListener('v07-theme-changed', function(e){ if(e.detail && e.detail.theme) apply(e.detail.theme); });
+  document.addEventListener('DOMContentLoaded', function(){ apply(resolveTheme()); });
 })();
 </script>
 </head>
@@ -528,8 +550,8 @@
 
 <!-- Header -->
 <div class="header">
-  <div class="header-badge">📋 SOVEREIGN DIRECTIVES</div>
-  <div class="header-title">Sovereign Tasks</div>
+  <div class="header-badge">📋 FOCUS DIRECTIVES</div>
+  <div class="header-title">Focus Tasks</div>
   <div class="header-sub">Offline execution matrix, exact deadline alarms &amp; quiet focus priorities</div>
 </div>
 
