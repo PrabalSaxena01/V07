@@ -98,8 +98,10 @@ fun ScreenTimeScreen(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .statusBarsPadding()
+            .navigationBarsPadding()
             .padding(horizontal = 16.dp),
-        contentPadding = PaddingValues(top = 12.dp, bottom = 96.dp),
+        contentPadding = PaddingValues(top = 10.dp, bottom = 32.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // --- 1. Top Header ---

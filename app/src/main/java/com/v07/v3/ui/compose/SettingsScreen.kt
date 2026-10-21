@@ -64,6 +64,19 @@ fun SettingsScreen(
         isOverlayEnabled = V3BubbleOverlayService.isOverlayEnabled(context)
     }
 
+    val lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+                refreshPermissions()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
     fun toggleOverlay() {
         if (!hasOverlayPermission && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:${context.packageName}"))
@@ -76,8 +89,10 @@ fun SettingsScreen(
         V3BubbleOverlayService.setOverlayEnabled(context, newState)
         if (newState) {
             V3BubbleOverlayService.start(context)
+            Toast.makeText(context, "Screen Time Bubble enabled", Toast.LENGTH_SHORT).show()
         } else {
             V3BubbleOverlayService.stop(context)
+            Toast.makeText(context, "Screen Time Bubble disabled", Toast.LENGTH_SHORT).show()
         }
         isOverlayEnabled = newState
     }

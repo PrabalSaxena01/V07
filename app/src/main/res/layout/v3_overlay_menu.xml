@@ -65,9 +65,9 @@
 
             <ImageView
                 android:id="@+id/v3_btn_close"
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:padding="4dp"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:padding="10dp"
                 android:src="@android:drawable/ic_menu_close_clear_cancel"
                 android:tint="#88FFFFFF"
                 android:background="?android:attr/selectableItemBackgroundBorderless"

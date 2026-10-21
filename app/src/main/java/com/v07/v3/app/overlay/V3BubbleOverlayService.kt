@@ -26,6 +26,7 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewConfiguration
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.view.inputmethod.InputMethodManager
@@ -363,17 +364,20 @@ class V3BubbleOverlayService : Service() {
         bubbleView = inflater.inflate(R.layout.v3_overlay_bubble, null)
 
         val dm = resources.displayMetrics
+        val minY = dpToPx(56)
+        val maxY = dm.heightPixels - dpToPx(110)
+
         bubbleParams = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
             getOverlayWindowType(),
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                    @Suppress("DEPRECATION") WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED,
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START
-            x = (dm.widthPixels - dpToPx(100)).coerceAtLeast(0)
-            y = dpToPx(140)
+            x = (dm.widthPixels - dpToPx(110)).coerceAtLeast(0)
+            y = dpToPx(160).coerceIn(minY, maxY)
         }
 
         setupBubbleTouch(bubbleView!!, bubbleParams)
@@ -383,6 +387,12 @@ class V3BubbleOverlayService : Service() {
         } catch (e: Exception) {
             Log.e(TAG, "Error adding bubble view to window manager: ${e.message}", e)
         }
+
+        // Initialize immediately with current telemetry
+        val currentIcon = if (activePackage.isNotBlank() && activePackage != packageName && !ignoredPackages.contains(activePackage)) {
+            getAppIcon(activePackage)
+        } else null
+        updateBubbleUi(currentIcon, formatUsageDuration(activeAppUsageMs))
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -392,8 +402,13 @@ class V3BubbleOverlayService : Service() {
         var initialParamsX = 0
         var initialParamsY = 0
         var isDragging = false
+        val touchSlop = ViewConfiguration.get(this).scaledTouchSlop.coerceAtLeast(dpToPx(12))
 
         view.setOnTouchListener { _, event ->
+            val dm = resources.displayMetrics
+            val minY = dpToPx(56)
+            val maxY = dm.heightPixels - dpToPx(110)
+
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     startX = event.rawX
@@ -401,20 +416,22 @@ class V3BubbleOverlayService : Service() {
                     initialParamsX = params.x
                     initialParamsY = params.y
                     isDragging = false
-                    view.animate().scaleX(1.06f).scaleY(1.06f).setDuration(100).start()
+                    view.animate().scaleX(1.08f).scaleY(1.08f).setDuration(100).start()
                     true
                 }
                 MotionEvent.ACTION_MOVE -> {
                     val dx = event.rawX - startX
                     val dy = event.rawY - startY
-                    if (abs(dx) > 8 || abs(dy) > 8) {
+                    if (!isDragging && (abs(dx) > touchSlop || abs(dy) > touchSlop)) {
                         isDragging = true
                     }
-                    params.x = (initialParamsX + dx.toInt())
-                    params.y = (initialParamsY + dy.toInt())
-                    try {
-                        windowManager.updateViewLayout(view, params)
-                    } catch (_: Exception) {}
+                    if (isDragging) {
+                        params.x = (initialParamsX + dx.toInt())
+                        params.y = (initialParamsY + dy.toInt()).coerceIn(minY, maxY)
+                        try {
+                            windowManager.updateViewLayout(view, params)
+                        } catch (_: Exception) {}
+                    }
                     true
                 }
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
@@ -438,6 +455,10 @@ class V3BubbleOverlayService : Service() {
         val centerX = params.x + viewW / 2
         val margin = dpToPx(12)
         val targetX = if (centerX < screenW / 2) margin else screenW - viewW - margin
+
+        val minY = dpToPx(56)
+        val maxY = dm.heightPixels - dpToPx(110)
+        params.y = params.y.coerceIn(minY, maxY)
 
         val startX = params.x
         val animator = ValueAnimator.ofInt(startX, targetX).apply {
@@ -654,8 +675,10 @@ class V3BubbleOverlayService : Service() {
         val iconView = root.findViewById<ImageView>(R.id.v3_bubble_icon)
         val textView = root.findViewById<TextView>(R.id.v3_bubble_text)
 
-        if (icon != null) {
+        if (icon != null && activePackage.isNotBlank() && activePackage != packageName && !ignoredPackages.contains(activePackage)) {
             iconView.setImageDrawable(icon)
+        } else {
+            iconView.setImageResource(R.drawable.v07_logo)
         }
         textView.text = formattedUsage
     }
@@ -666,8 +689,10 @@ class V3BubbleOverlayService : Service() {
         val nameView = menu.findViewById<TextView>(R.id.v3_menu_app_name)
         val usageView = menu.findViewById<TextView>(R.id.v3_menu_app_usage)
 
-        if (icon != null) {
+        if (icon != null && activePackage.isNotBlank() && activePackage != packageName && !ignoredPackages.contains(activePackage)) {
             iconView.setImageDrawable(icon)
+        } else {
+            iconView.setImageResource(R.drawable.v07_logo)
         }
         nameView.text = appName
         usageView.text = "$formattedUsage active today"
@@ -677,10 +702,11 @@ class V3BubbleOverlayService : Service() {
         val totalMins = (ms / 1000L) / 60
         val hrs = totalMins / 60
         val remMins = totalMins % 60
-        return if (hrs > 0) {
-            "${hrs}h ${remMins}m"
-        } else {
-            "${remMins}m"
+        return when {
+            hrs > 0 -> "${hrs}h ${remMins}m"
+            remMins > 0 -> "${remMins}m"
+            ms > 0L -> "<1m"
+            else -> "0m"
         }
     }
 
@@ -734,7 +760,8 @@ class V3BubbleOverlayService : Service() {
             WindowManager.LayoutParams.MATCH_PARENT,
             getOverlayWindowType(),
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+                    @Suppress("DEPRECATION") WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED,
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START
@@ -862,7 +889,8 @@ class V3BubbleOverlayService : Service() {
             WindowManager.LayoutParams.MATCH_PARENT,
             getOverlayWindowType(),
             WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
-                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+                    @Suppress("DEPRECATION") WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED,
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START
@@ -987,7 +1015,8 @@ class V3BubbleOverlayService : Service() {
             WindowManager.LayoutParams.MATCH_PARENT,
             getOverlayWindowType(),
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+                    @Suppress("DEPRECATION") WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED,
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START

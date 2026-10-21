@@ -69,20 +69,28 @@ fun DataCenterScreen(
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(58.dp)
-                    .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)),
+                    .statusBarsPadding()
+                    .height(56.dp)
+                    .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)),
                 color = MaterialTheme.colorScheme.surface,
                 tonalElevation = 2.dp
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(horizontal = 8.dp),
+                        .padding(horizontal = 6.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        IconButton(onClick = onBack) {
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        IconButton(
+                            onClick = onBack,
+                            modifier = Modifier.size(44.dp)
+                        ) {
                             Icon(
                                 imageVector = Icons.Outlined.ArrowBack,
                                 contentDescription = "Back",
@@ -90,26 +98,36 @@ fun DataCenterScreen(
                             )
                         }
 
-                        Column(modifier = Modifier.padding(start = 4.dp)) {
+                        Column(
+                            modifier = Modifier.padding(start = 2.dp),
+                            verticalArrangement = Arrangement.Center
+                        ) {
                             Text(
                                 text = "Data Center",
                                 style = MaterialTheme.typography.titleMedium.copy(
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = 16.sp
+                                    fontSize = 15.sp
                                 ),
-                                color = MaterialTheme.colorScheme.onSurface
+                                color = MaterialTheme.colorScheme.onSurface,
+                                maxLines = 1,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                             )
                             Text(
                                 text = "Sovereign JSON, local SQLite & vault sync",
                                 style = MaterialTheme.typography.bodySmall.copy(
                                     fontSize = 11.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                ),
+                                maxLines = 1,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                             )
                         }
                     }
 
-                    IconButton(onClick = { refreshStats() }) {
+                    IconButton(
+                        onClick = { refreshStats() },
+                        modifier = Modifier.size(44.dp)
+                    ) {
                         Icon(
                             imageVector = Icons.Outlined.Refresh,
                             contentDescription = "Refresh",
@@ -126,6 +144,7 @@ fun DataCenterScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .navigationBarsPadding()
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
             contentPadding = PaddingValues(top = 14.dp, bottom = 48.dp)

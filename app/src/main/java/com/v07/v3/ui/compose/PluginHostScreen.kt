@@ -65,24 +65,28 @@ fun PluginHostScreen(
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(58.dp)
-                    .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)),
+                    .statusBarsPadding()
+                    .height(56.dp)
+                    .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)),
                 color = MaterialTheme.colorScheme.surface,
                 tonalElevation = 2.dp
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(horizontal = 8.dp),
+                        .padding(horizontal = 6.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Row(
                         modifier = Modifier.weight(1f),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        horizontalArrangement = Arrangement.spacedBy(2.dp)
                     ) {
-                        IconButton(onClick = onBack) {
+                        IconButton(
+                            onClick = onBack,
+                            modifier = Modifier.size(44.dp)
+                        ) {
                             Icon(
                                 imageVector = Icons.Outlined.ArrowBack,
                                 contentDescription = "Back to Tool Kit",
@@ -90,7 +94,10 @@ fun PluginHostScreen(
                             )
                         }
 
-                        Column(modifier = Modifier.padding(start = 4.dp)) {
+                        Column(
+                            modifier = Modifier.padding(start = 2.dp),
+                            verticalArrangement = Arrangement.Center
+                        ) {
                             Text(
                                 text = pluginTitle,
                                 style = MaterialTheme.typography.titleMedium.copy(
@@ -98,7 +105,8 @@ fun PluginHostScreen(
                                     fontSize = 15.sp
                                 ),
                                 color = MaterialTheme.colorScheme.onSurface,
-                                maxLines = 1
+                                maxLines = 1,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                             )
                             Text(
                                 text = pluginSubtitle,
@@ -106,7 +114,8 @@ fun PluginHostScreen(
                                     fontSize = 11.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 ),
-                                maxLines = 1
+                                maxLines = 1,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                             )
                         }
                     }
@@ -115,7 +124,10 @@ fun PluginHostScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(2.dp)
                     ) {
-                        IconButton(onClick = { webViewRef?.reload() }) {
+                        IconButton(
+                            onClick = { webViewRef?.reload() },
+                            modifier = Modifier.size(44.dp)
+                        ) {
                             Icon(
                                 imageVector = Icons.Outlined.Refresh,
                                 contentDescription = "Reload",
@@ -124,7 +136,10 @@ fun PluginHostScreen(
                             )
                         }
 
-                        IconButton(onClick = { showSettingsDialog = true }) {
+                        IconButton(
+                            onClick = { showSettingsDialog = true },
+                            modifier = Modifier.size(44.dp)
+                        ) {
                             Icon(
                                 imageVector = Icons.Outlined.Tune,
                                 contentDescription = "Plugin Settings",
@@ -142,6 +157,7 @@ fun PluginHostScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .navigationBarsPadding()
         ) {
             AndroidView(
                 modifier = Modifier.fillMaxSize(),
@@ -237,12 +253,24 @@ fun PluginHostScreen(
 
                             override fun onPageFinished(view: WebView?, url: String?) {
                                 isLoading = false
-                                // Enforce theme synchronization
+                                // Enforce theme synchronization & clean responsive padding
                                 val themeName = if (isLight) "light" else "dark"
-                                view?.evaluateJavascript(
-                                    "try { document.documentElement.setAttribute('data-theme', '$themeName'); localStorage.setItem('v07_theme', '$themeName'); } catch(e){}",
-                                    null
-                                )
+                                val js = """
+                                    (function() {
+                                        try {
+                                            document.documentElement.setAttribute('data-theme', '$themeName');
+                                            localStorage.setItem('v07_theme', '$themeName');
+                                            var style = document.getElementById('v07-insets-override');
+                                            if (!style) {
+                                                style = document.createElement('style');
+                                                style.id = 'v07-insets-override';
+                                                document.head.appendChild(style);
+                                            }
+                                            style.innerHTML = 'html, body { box-sizing: border-box !important; overflow-x: hidden !important; max-width: 100vw !important; } body { padding-top: 12px !important; padding-bottom: 28px !important; padding-left: 14px !important; padding-right: 14px !important; }';
+                                        } catch(e){}
+                                    })();
+                                """.trimIndent()
+                                view?.evaluateJavascript(js, null)
                             }
                         }
 
