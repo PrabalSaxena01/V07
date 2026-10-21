@@ -37,7 +37,10 @@ import com.v07.v3.app.timer.TimerManager
 import com.v07.v3.app.timer.TimerMode
 import com.v07.v3.app.timer.TimerStatus
 import com.v07.v3.core.data.EventRepository
+import com.v07.v3.core.data.V3Event
 import com.v07.v3.core.data.V3Task
+import org.json.JSONArray
+import org.json.JSONObject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -87,15 +90,164 @@ fun HomeScreen(
     }
 
     // Habits state
-    var habitsList by remember {
-        mutableStateOf(
-            listOf(
-                HabitItem("h1", "Morning Stillness", "Daily mindfulness", true, 12),
-                HabitItem("h2", "Hydration Rhythm", "8 glasses pure water", true, 7),
-                HabitItem("h3", "Evening Reflection", "Journal thoughts", false, 4),
-                HabitItem("h4", "Deep Reading", "30 mins physical book", false, 9)
-            )
+    var habitsList by remember { mutableStateOf<List<HabitItem>>(emptyList()) }
+    var showAddHabitDialog by remember { mutableStateOf(false) }
+    var habitToDeleteOnHome by remember { mutableStateOf<HabitItem?>(null) }
+
+    fun loadRealHabits() {
+        val defsJson = repository.getPluginValue("com.v07.habits", "definitions")
+        val loaded = mutableListOf<HabitItemModel>()
+        if (!defsJson.isNullOrBlank()) {
+            try {
+                val arr = JSONArray(defsJson)
+                for (i in 0 until arr.length()) {
+                    val obj = arr.getJSONObject(i)
+                    loaded.add(HabitItemModel(
+                        id = obj.optString("id", java.util.UUID.randomUUID().toString()),
+                        name = obj.optString("name", "Habit"),
+                        icon = obj.optString("icon", "🌱"),
+                        hexColor = obj.optString("color", "#10B981")
+                    ))
+                }
+            } catch (_: Exception) {}
+        }
+        val actualHabitDefs = if (loaded.isNotEmpty()) loaded else listOf(
+            HabitItemModel("hbt_ssb", "SSB Practice", "⚔️", "#FFB454"),
+            HabitItemModel("hbt_running", "Running", "🏃", "#4DE086"),
+            HabitItemModel("hbt_dsa", "DSA Problem Solving", "💻", "#68A6FF"),
+            HabitItemModel("hbt_chess", "Chess Training", "♟️", "#F4D35E"),
+            HabitItemModel("hbt_content_creation", "Content Creation", "✍️", "#FF6F61"),
+            HabitItemModel("hbt_development", "Development", "⚡", "#63D1F4"),
+            HabitItemModel("hbt_meditation", "Meditation", "🧘", "#C792EA"),
+            HabitItemModel("hmudx8p39", "Pushups", "💪", "#FF9F45"),
+            HabitItemModel("hmud3qf88", "Mindfulness", "🌿", "#80CBC4"),
+            HabitItemModel("hmud3qz2i", "Deep Study", "📚", "#A78BFA"),
+            HabitItemModel("hmudmiwt3", "Daily Routine", "✨", "#FBBF24")
         )
+
+        val sdfDate = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+        val todayStr = sdfDate.format(Date())
+        val compMap = mutableMapOf<String, Boolean>()
+        val logsJson = repository.getPluginValue("com.v07.habits", "logs")
+        if (!logsJson.isNullOrBlank()) {
+            try {
+                val arr = JSONArray(logsJson)
+                for (i in 0 until arr.length()) {
+                    val item = arr.getJSONObject(i)
+                    val hid = item.optString("habit", item.optString("habit_id", ""))
+                    val d = item.optString("date", "")
+                    val on = item.optBoolean("on", item.optBoolean("completed", true))
+                    if (d == todayStr && hid.isNotBlank()) {
+                        compMap[hid] = on
+                    }
+                }
+            } catch (_: Exception) {}
+        }
+        val habitEvents = repository.getEvents(category = "habit", limit = 200)
+        for (ev in habitEvents) {
+            if (ev.date == todayStr) {
+                val hid = actualHabitDefs.firstOrNull { ev.title?.contains(it.name, ignoreCase = true) == true }?.id
+                if (hid != null) compMap[hid] = true
+            }
+        }
+
+        val mappedHabits = actualHabitDefs.map { def ->
+            HabitItem(
+                id = def.id,
+                title = "${def.icon} ${def.name}",
+                description = "Daily ritual",
+                completed = compMap[def.id] == true,
+                streak = if (compMap[def.id] == true) 1 else 0
+            )
+        }
+        habitsList = mappedHabits
+    }
+
+    fun toggleHabitOnHome(habit: HabitItem) {
+        val newStatus = !habit.completed
+        habitsList = habitsList.map { if (it.id == habit.id) it.copy(completed = newStatus) else it }
+        coroutineScope.launch(Dispatchers.IO) {
+            val sdfDate = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+            val todayStr = sdfDate.format(Date())
+            if (newStatus) {
+                val event = V3Event(
+                    id = "hbt_${habit.id}_$todayStr",
+                    category = "habit",
+                    date = todayStr,
+                    ts = "${todayStr}T12:00:00Z",
+                    timestamp = System.currentTimeMillis(),
+                    title = habit.title,
+                    content = "Completed ${habit.title}",
+                    score = 10,
+                    metadataJson = "{\"habit_id\":\"${habit.id}\",\"completed\":true}"
+                )
+                repository.insertEvent(event)
+            } else {
+                repository.deleteEvent("hbt_${habit.id}_$todayStr")
+            }
+            try {
+                val currentLogsStr = repository.getPluginValue("com.v07.habits", "logs")
+                val logsArr = if (!currentLogsStr.isNullOrBlank()) JSONArray(currentLogsStr) else JSONArray()
+                val newArr = JSONArray()
+                for (i in 0 until logsArr.length()) {
+                    val item = logsArr.getJSONObject(i)
+                    val hid = item.optString("habit", item.optString("habit_id", ""))
+                    val d = item.optString("date", "")
+                    if (!(hid == habit.id && d == todayStr)) {
+                        newArr.put(item)
+                    }
+                }
+                if (newStatus) {
+                    newArr.put(JSONObject().apply {
+                        put("habit", habit.id)
+                        put("date", todayStr)
+                        put("on", true)
+                        put("created", System.currentTimeMillis())
+                    })
+                }
+                repository.setPluginValue("com.v07.habits", "logs", newArr.toString())
+            } catch (_: Exception) {}
+        }
+    }
+
+    fun addHabitOnHome(name: String, icon: String) {
+        val newId = "hbt_${System.currentTimeMillis()}"
+        val newTitle = "$icon $name"
+        val updatedList = habitsList + HabitItem(newId, newTitle, "Daily ritual", false, 0)
+        habitsList = updatedList
+        coroutineScope.launch(Dispatchers.IO) {
+            try {
+                val defsJson = repository.getPluginValue("com.v07.habits", "definitions")
+                val arr = if (!defsJson.isNullOrBlank()) JSONArray(defsJson) else JSONArray()
+                arr.put(JSONObject().apply {
+                    put("id", newId)
+                    put("name", name)
+                    put("icon", icon)
+                    put("color", "#10B981")
+                })
+                repository.setPluginValue("com.v07.habits", "definitions", arr.toString())
+            } catch (_: Exception) {}
+        }
+    }
+
+    fun removeHabitOnHome(habitId: String) {
+        habitsList = habitsList.filter { it.id != habitId }
+        coroutineScope.launch(Dispatchers.IO) {
+            try {
+                val defsJson = repository.getPluginValue("com.v07.habits", "definitions")
+                if (!defsJson.isNullOrBlank()) {
+                    val arr = JSONArray(defsJson)
+                    val newArr = JSONArray()
+                    for (i in 0 until arr.length()) {
+                        val obj = arr.getJSONObject(i)
+                        if (obj.optString("id") != habitId) {
+                            newArr.put(obj)
+                        }
+                    }
+                    repository.setPluginValue("com.v07.habits", "definitions", newArr.toString())
+                }
+            } catch (_: Exception) {}
+        }
     }
 
     // Refresh telemetry & repository data
@@ -103,6 +255,7 @@ fun HomeScreen(
         coroutineScope.launch {
             withContext(Dispatchers.IO) {
                 try {
+                    loadRealHabits()
                     hasUsagePermission = screenTimeTracker.hasUsageStatsPermission()
                     if (hasUsagePermission) {
                         val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
@@ -678,6 +831,16 @@ fun HomeScreen(
         // 5. Gentle Habits Snapshot Card
         // =====================================================================
         item {
+            val completedCount = habitsList.count { it.completed }
+            val totalHabits = habitsList.size
+            val pendingHabits = habitsList.filter { !it.completed }
+            val habitSubtitle = when {
+                totalHabits == 0 -> "No rituals yet · Tap + to create"
+                completedCount == totalHabits -> "All $totalHabits rituals completed today! 🌿"
+                completedCount == 0 -> "0 of $totalHabits completed · Start your gentle cadence"
+                else -> "$completedCount of $totalHabits met (${((completedCount.toFloat() / totalHabits) * 100).toInt()}%) · Next: ${pendingHabits.firstOrNull()?.title ?: ""}"
+            }
+
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = CardShape,
@@ -690,31 +853,33 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column {
+                        Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
                             Text(
                                 text = "Gentle habits",
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontSize = 15.sp),
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                text = "Cadence without pressure",
+                                text = habitSubtitle,
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontSize = 11.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                    color = if (completedCount == totalHabits && totalHabits > 0) Color(0xFF10B981) else MaterialTheme.colorScheme.onSurfaceVariant
+                                ),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
                         }
 
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                             Box(
                                 modifier = Modifier
-                                    .size(30.dp)
+                                    .size(32.dp)
                                     .clip(CircleShape)
                                     .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f))
-                                    .clickable { onNavigateToSubView(SanctuarySubView.HABITS) },
+                                    .clickable { showAddHabitDialog = true },
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(Icons.Outlined.Add, contentDescription = "Add", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                                Icon(Icons.Outlined.Add, contentDescription = "Add Habit", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(17.dp))
                             }
                             TextButton(
                                 onClick = { onNavigateToSubView(SanctuarySubView.HABITS) },
@@ -728,62 +893,88 @@ fun HomeScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        habitsList.forEach { habit ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                                    .clickable {
-                                        habitsList = habitsList.map {
-                                            if (it.id == habit.id) it.copy(completed = !it.completed) else it
+                    if (habitsList.isEmpty()) {
+                        Text(
+                            text = "No rituals recorded yet. Tap + above to add your first daily habit.",
+                            style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        )
+                    } else {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            habitsList.take(6).forEach { habit ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                                        .clickable { toggleHabitOnHome(habit) }
+                                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Icon(
+                                            imageVector = if (habit.completed) Icons.Outlined.CheckCircle else Icons.Outlined.RadioButtonUnchecked,
+                                            contentDescription = null,
+                                            tint = if (habit.completed) SanctuaryPalette.AccentHabits else MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Column {
+                                            Text(
+                                                text = habit.title,
+                                                style = MaterialTheme.typography.labelLarge.copy(
+                                                    fontWeight = FontWeight.SemiBold,
+                                                    fontSize = 13.sp,
+                                                    textDecoration = if (habit.completed) TextDecoration.LineThrough else TextDecoration.None
+                                                ),
+                                                color = if (habit.completed) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
+                                            Text(
+                                                text = if (habit.completed) "Completed for today" else habit.description,
+                                                style = MaterialTheme.typography.labelSmall.copy(
+                                                    fontSize = 10.5.sp,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                                                )
+                                            )
                                         }
                                     }
-                                    .padding(horizontal = 12.dp, vertical = 10.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                    Icon(
-                                        imageVector = if (habit.completed) Icons.Outlined.CheckCircle else Icons.Outlined.RadioButtonUnchecked,
-                                        contentDescription = null,
-                                        tint = if (habit.completed) SanctuaryPalette.AccentHabits else MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                    Column {
-                                        Text(
-                                            text = habit.title,
-                                            style = MaterialTheme.typography.labelLarge.copy(
-                                                fontWeight = FontWeight.SemiBold,
-                                                fontSize = 13.sp,
-                                                textDecoration = if (habit.completed) TextDecoration.LineThrough else TextDecoration.None
-                                            ),
-                                            color = if (habit.completed) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
-                                        )
-                                        Text(
-                                            text = habit.description,
-                                            style = MaterialTheme.typography.labelSmall.copy(
-                                                fontSize = 10.5.sp,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
-                                            )
-                                        )
-                                    }
-                                }
 
-                                Surface(
-                                    shape = PillShape,
-                                    color = SanctuaryPalette.AccentHabitsBg
-                                ) {
-                                    Text(
-                                        text = "${habit.streak}d streak",
-                                        style = MaterialTheme.typography.labelSmall.copy(
-                                            fontSize = 9.5.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = SanctuaryPalette.AccentHabits
-                                        ),
-                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                                    )
+                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                        if (habit.streak > 0) {
+                                            Surface(
+                                                shape = PillShape,
+                                                color = SanctuaryPalette.AccentHabitsBg
+                                            ) {
+                                                Text(
+                                                    text = "${habit.streak}d streak",
+                                                    style = MaterialTheme.typography.labelSmall.copy(
+                                                        fontSize = 9.5.sp,
+                                                        fontWeight = FontWeight.Bold,
+                                                        color = SanctuaryPalette.AccentHabits
+                                                    ),
+                                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                                )
+                                            }
+                                        }
+
+                                        IconButton(
+                                            onClick = { habitToDeleteOnHome = habit },
+                                            modifier = Modifier.size(28.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Outlined.DeleteOutline,
+                                                contentDescription = "Remove Habit",
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f),
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -1028,6 +1219,128 @@ fun HomeScreen(
                 }
             }
         }
+    }
+
+    // Add Habit Dialog on Home Screen
+    if (showAddHabitDialog) {
+        var nameInput by remember { mutableStateOf("") }
+        var selectedIcon by remember { mutableStateOf("🌱") }
+        val iconsList = listOf("🌱", "🏃", "💪", "🧘", "📚", "💻", "✍️", "⚡", "🎯", "✨", "💧", "♟️", "⚔️")
+
+        AlertDialog(
+            onDismissRequest = { showAddHabitDialog = false },
+            title = {
+                Text(
+                    text = "New Gentle Habit",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        text = "Add a sovereign daily cadence to your sanctuary.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    OutlinedTextField(
+                        value = nameInput,
+                        onValueChange = { nameInput = it },
+                        label = { Text("Habit Name") },
+                        placeholder = { Text("e.g. Cold Shower, Reading...") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(10.dp)
+                    )
+                    Text("Select Ritual Glyph:", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        iconsList.take(6).forEach { icon ->
+                            val isSel = selectedIcon == icon
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(if (isSel) SanctuaryPalette.AccentHabits else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                                    .clickable { selectedIcon = icon },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(text = icon, fontSize = 18.sp)
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val trimmed = nameInput.trim()
+                        if (trimmed.isNotBlank()) {
+                            addHabitOnHome(trimmed, selectedIcon)
+                            showAddHabitDialog = false
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = SanctuaryPalette.AccentHabits),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("Add Habit", fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAddHabitDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    // Delete Habit Confirmation Dialog on Home Screen
+    if (habitToDeleteOnHome != null) {
+        val habit = habitToDeleteOnHome!!
+        AlertDialog(
+            onDismissRequest = { habitToDeleteOnHome = null },
+            icon = {
+                Icon(
+                    imageVector = Icons.Outlined.DeleteOutline,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(28.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = "Remove Ritual",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(
+                    text = "Are you sure you want to remove \"${habit.title}\" from your daily rituals? Historical logs are preserved in your local vault.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        removeHabitOnHome(habit.id)
+                        habitToDeleteOnHome = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("Remove", fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { habitToDeleteOnHome = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
 

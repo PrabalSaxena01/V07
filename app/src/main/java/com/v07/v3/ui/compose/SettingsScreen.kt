@@ -62,6 +62,20 @@ fun SettingsScreen(
     var notificationsEnabled by remember { mutableStateOf(true) }
     var syncStatusText by remember { mutableStateOf("Ready to sync") }
 
+    val profilePrefs = remember { context.getSharedPreferences("v07_profiles", Context.MODE_PRIVATE) }
+    var activeProfileId by remember { mutableStateOf(profilePrefs.getString("active_profile_id", "guest") ?: "guest") }
+    var profileDisplayName by remember { mutableStateOf(profilePrefs.getString("profile_display_name", "Sovereign Thinker") ?: "Sovereign Thinker") }
+    var profileBio by remember { mutableStateOf(profilePrefs.getString("profile_bio", "Local Sovereign Vault") ?: "Local Sovereign Vault") }
+    var profileAvatarSymbol by remember { mutableStateOf(profilePrefs.getString("profile_avatar_symbol", "S") ?: "S") }
+    var showEditProfileDialog by remember { mutableStateOf(false) }
+
+    fun refreshProfile() {
+        activeProfileId = profilePrefs.getString("active_profile_id", "guest") ?: "guest"
+        profileDisplayName = profilePrefs.getString("profile_display_name", "Sovereign Thinker") ?: "Sovereign Thinker"
+        profileBio = profilePrefs.getString("profile_bio", "Local Sovereign Vault") ?: "Local Sovereign Vault"
+        profileAvatarSymbol = profilePrefs.getString("profile_avatar_symbol", "S") ?: "S"
+    }
+
     var pluginsList by remember { mutableStateOf<List<PluginRecord>>(emptyList()) }
     var selectedPluginForConfig by remember { mutableStateOf<PluginRecord?>(null) }
 
@@ -247,10 +261,11 @@ fun SettingsScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = "S",
+                                    text = profileAvatarSymbol,
                                     style = MaterialTheme.typography.titleLarge.copy(
                                         fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.primary
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontSize = if (profileAvatarSymbol.length > 1) 22.sp else 24.sp
                                     )
                                 )
                             }
@@ -261,7 +276,7 @@ fun SettingsScreen(
                                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                                 ) {
                                     Text(
-                                        text = "Sovereign User",
+                                        text = profileDisplayName,
                                         style = MaterialTheme.typography.titleMedium.copy(
                                             fontWeight = FontWeight.Bold,
                                             color = MaterialTheme.colorScheme.onSurface
@@ -275,7 +290,7 @@ fun SettingsScreen(
                                     )
                                 }
                                 Text(
-                                    text = "Local Sovereign Vault",
+                                    text = profileBio,
                                     style = MaterialTheme.typography.bodySmall.copy(
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -292,7 +307,7 @@ fun SettingsScreen(
                                         modifier = Modifier.size(13.dp)
                                     )
                                     Text(
-                                        text = "Local journal active · Backed up securely",
+                                        text = "Active: $activeProfileId · Encrypted Local Vault",
                                         style = MaterialTheme.typography.labelSmall.copy(
                                             color = MaterialTheme.colorScheme.primary
                                         )
@@ -308,7 +323,7 @@ fun SettingsScreen(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             FilledTonalButton(
-                                onClick = { Toast.makeText(context, "Sovereign profile active", Toast.LENGTH_SHORT).show() },
+                                onClick = { showEditProfileDialog = true },
                                 modifier = Modifier.weight(1f),
                                 shape = RoundedCornerShape(12.dp),
                                 colors = ButtonDefaults.filledTonalButtonColors(
@@ -897,6 +912,151 @@ fun SettingsScreen(
             pluginRecord = plugin,
             onDismiss = { selectedPluginForConfig = null },
             onStateChanged = { refreshPlugins() }
+        )
+    }
+
+    // Edit Profile Dialog
+    if (showEditProfileDialog) {
+        var nameInput by remember { mutableStateOf(profileDisplayName) }
+        var bioInput by remember { mutableStateOf(profileBio) }
+        var selectedGlyph by remember { mutableStateOf(profileAvatarSymbol) }
+        var selectedProfile by remember { mutableStateOf(activeProfileId) }
+        val availableProfiles = remember { listOf("guest", "Work", "Deep Study", "Monk Routine") }
+        val glyphs = listOf("S", "P", "A", "V", "🧘", "⚡", "⚔️", "🌿", "📚", "💎", "🎯", "🛡️")
+
+        AlertDialog(
+            onDismissRequest = { showEditProfileDialog = false },
+            title = {
+                Text(text = "Edit Sanctuary Profile", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    OutlinedTextField(
+                        value = nameInput,
+                        onValueChange = { nameInput = it },
+                        label = { Text("Display Name") },
+                        placeholder = { Text("e.g. Sovereign Thinker") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(10.dp)
+                    )
+
+                    OutlinedTextField(
+                        value = bioInput,
+                        onValueChange = { bioInput = it },
+                        label = { Text("Bio & Focus Role") },
+                        placeholder = { Text("e.g. Local Sovereign Vault") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(10.dp)
+                    )
+
+                    Text(text = "Avatar Initial / Glyph:", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        glyphs.take(6).forEach { glyph ->
+                            val isSel = selectedGlyph == glyph
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(if (isSel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
+                                    .clickable { selectedGlyph = glyph },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = glyph,
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isSel) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        glyphs.drop(6).take(6).forEach { glyph ->
+                            val isSel = selectedGlyph == glyph
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(if (isSel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
+                                    .clickable { selectedGlyph = glyph },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = glyph,
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isSel) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                    }
+
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 2.dp))
+
+                    Text(text = "Active Database Profile:", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        availableProfiles.forEach { prof ->
+                            val isSel = selectedProfile.equals(prof, ignoreCase = true)
+                            Surface(
+                                shape = PillShape,
+                                color = if (isSel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                border = if (isSel) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
+                                modifier = Modifier.clickable { selectedProfile = prof }
+                            ) {
+                                Text(
+                                    text = prof,
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal,
+                                        color = if (isSel) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                                    ),
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val trimmedName = nameInput.trim().ifBlank { "Sovereign Thinker" }
+                        val trimmedBio = bioInput.trim().ifBlank { "Local Sovereign Vault" }
+                        profilePrefs.edit()
+                            .putString("profile_display_name", trimmedName)
+                            .putString("profile_bio", trimmedBio)
+                            .putString("profile_avatar_symbol", selectedGlyph)
+                            .putString("active_profile_id", selectedProfile)
+                            .apply()
+
+                        if (!selectedProfile.equals(activeProfileId, ignoreCase = true)) {
+                            com.v07.v3.core.data.V07Database.switchProfile(context, selectedProfile)
+                        }
+
+                        refreshProfile()
+                        showEditProfileDialog = false
+                        Toast.makeText(context, "Profile updated: $trimmedName", Toast.LENGTH_SHORT).show()
+                    },
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("Save Changes", fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showEditProfileDialog = false }) {
+                    Text("Cancel")
+                }
+            }
         )
     }
 }

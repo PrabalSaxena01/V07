@@ -1,5 +1,6 @@
 package com.v07.v3.ui.compose
 
+import android.content.Context
 import android.widget.Toast
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -16,8 +17,7 @@ import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material.icons.filled.Stop
-import androidx.compose.material.icons.outlined.CheckCircle
-import androidx.compose.material.icons.outlined.Timer
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -63,8 +63,40 @@ fun FocusSanctuaryScreen(
 
     val timerState by timerManager.timerState.collectAsState()
 
+    val focusPrefs = remember { context.getSharedPreferences("v07_focus_prefs", Context.MODE_PRIVATE) }
+    val defaultTitles = remember {
+        listOf("Deep Focus", "Coding & DSA", "Reading & Study", "Writing & Reflection", "System Architecture", "Meditation & Breath")
+    }
+
+    var titleOptions by remember {
+        val saved = focusPrefs.getStringSet("custom_session_titles", null)
+        mutableStateOf(if (!saved.isNullOrEmpty()) saved.toList().sorted() else defaultTitles)
+    }
+    var selectedTitle by remember { mutableStateOf(titleOptions.firstOrNull() ?: "Deep Focus") }
+    var isTitleDropdownExpanded by remember { mutableStateOf(false) }
+    var showAddTitleDialog by remember { mutableStateOf(false) }
+    var sessionDetailsText by remember { mutableStateOf("") }
+    var sessionToDelete by remember { mutableStateOf<V3Session?>(null) }
+
+    fun addCustomTitle(title: String) {
+        val trimmed = title.trim()
+        if (trimmed.isBlank() || trimmed in titleOptions) return
+        val updated = (titleOptions + trimmed).distinct()
+        titleOptions = updated
+        selectedTitle = trimmed
+        focusPrefs.edit().putStringSet("custom_session_titles", updated.toSet()).apply()
+    }
+
+    fun deleteCustomTitle(title: String) {
+        val updated = titleOptions.filter { it != title }
+        titleOptions = if (updated.isNotEmpty()) updated else defaultTitles
+        if (selectedTitle == title) {
+            selectedTitle = titleOptions.firstOrNull() ?: "Deep Focus"
+        }
+        focusPrefs.edit().putStringSet("custom_session_titles", titleOptions.toSet()).apply()
+    }
+
     var selectedPreset by remember { mutableStateOf(FocusPreset.P25) }
-    var intentionText by remember { mutableStateOf("") }
     var recentSessions by remember { mutableStateOf<List<V3Session>>(emptyList()) }
     var currentDisplayTime by remember { mutableStateOf("25:00") }
 
@@ -72,7 +104,7 @@ fun FocusSanctuaryScreen(
 
     fun loadSessions() {
         scope.launch(Dispatchers.IO) {
-            val list = repository.getRecentSessions(20)
+            val list = repository.getRecentSessions(30)
             withContext(Dispatchers.Main) {
                 recentSessions = list
             }
@@ -114,8 +146,7 @@ fun FocusSanctuaryScreen(
     }
 
     fun handleStart() {
-        val topic = if (intentionText.isNotBlank()) intentionText.trim() else "Deep Focus"
-        val targetMs = selectedPreset.minutes * 60 * 1000L
+        val topic = selectedTitle.ifBlank { "Deep Focus" }
         timerManager.startSession(
             topic = topic,
             category = "Focus",
@@ -133,11 +164,11 @@ fun FocusSanctuaryScreen(
     }
 
     fun handleStopAndLog() {
-        val session = timerManager.finishSession(finalNotes = intentionText)
+        val session = timerManager.finishSession(finalNotes = sessionDetailsText.ifBlank { null })
         if (session != null) {
             Toast.makeText(context, "Logged ${session.durationSec / 60}m focus", Toast.LENGTH_SHORT).show()
         }
-        intentionText = ""
+        sessionDetailsText = ""
         loadSessions()
     }
 
@@ -291,24 +322,175 @@ fun FocusSanctuaryScreen(
                         )
                     }
 
-                    // Intention input
+                    // 1. Session Title Selector Dropdown
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { isTitleDropdownExpanded = true }
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Label,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Column {
+                                        Text(
+                                            text = "SESSION FOCUS TITLE",
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                fontSize = 9.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.primary,
+                                                letterSpacing = 0.5.sp
+                                            )
+                                        )
+                                        Text(
+                                            text = selectedTitle,
+                                            style = MaterialTheme.typography.bodyMedium.copy(
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
+                                        )
+                                    }
+                                }
+
+                                Icon(
+                                    imageVector = Icons.Outlined.ArrowDropDown,
+                                    contentDescription = "Select Title",
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+
+                        DropdownMenu(
+                            expanded = isTitleDropdownExpanded,
+                            onDismissRequest = { isTitleDropdownExpanded = false },
+                            modifier = Modifier
+                                .fillMaxWidth(0.85f)
+                                .background(MaterialTheme.colorScheme.surface)
+                        ) {
+                            Text(
+                                text = "FOCUS SESSION TITLES",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    letterSpacing = 1.sp
+                                ),
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
+                            )
+                            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+                            titleOptions.forEach { opt ->
+                                val isSelected = opt == selectedTitle
+                                DropdownMenuItem(
+                                    text = {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                text = opt,
+                                                style = MaterialTheme.typography.bodyMedium.copy(
+                                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                                                )
+                                            )
+                                            if (titleOptions.size > 1) {
+                                                IconButton(
+                                                    onClick = { deleteCustomTitle(opt) },
+                                                    modifier = Modifier.size(24.dp)
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Outlined.DeleteOutline,
+                                                        contentDescription = "Delete Title",
+                                                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                                                        modifier = Modifier.size(15.dp)
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    },
+                                    onClick = {
+                                        selectedTitle = opt
+                                        isTitleDropdownExpanded = false
+                                    },
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = if (isSelected) Icons.Outlined.CheckCircle else Icons.Outlined.RadioButtonUnchecked,
+                                            contentDescription = null,
+                                            tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
+                                )
+                            }
+
+                            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = "+ Add Custom Title...",
+                                        style = MaterialTheme.typography.labelMedium.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    )
+                                },
+                                onClick = {
+                                    isTitleDropdownExpanded = false
+                                    showAddTitleDialog = true
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Add,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            )
+                        }
+                    }
+
+                    // 2. Session Details & Notes
                     OutlinedTextField(
-                        value = intentionText,
-                        onValueChange = { intentionText = it },
+                        value = sessionDetailsText,
+                        onValueChange = { sessionDetailsText = it },
+                        label = { Text("Details & Deliverables (optional)") },
                         placeholder = {
                             Text(
-                                text = "What is your quiet priority for this session?",
+                                text = "Key goals, notes, or reflections for this interval...",
                                 style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.outline)
                             )
                         },
-                        singleLine = true,
+                        singleLine = false,
+                        maxLines = 3,
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         colors = TextFieldDefaults.outlinedTextFieldColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f),
                             unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            focusedTextColor = MaterialTheme.colorScheme.onSurface, unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                         )
                     )
 
@@ -451,21 +633,157 @@ fun FocusSanctuaryScreen(
                                             text = "Started at $startTimeStr",
                                             style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                                         )
+                                        if (!session.notes.isNullOrBlank()) {
+                                            Text(
+                                                text = session.notes,
+                                                style = MaterialTheme.typography.labelSmall.copy(
+                                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                                                    fontSize = 10.5.sp
+                                                ),
+                                                maxLines = 1,
+                                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                                            )
+                                        }
                                     }
                                 }
 
-                                Text(
-                                    text = "${durationMins}m",
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.primary
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Text(
+                                        text = "${durationMins}m",
+                                        style = MaterialTheme.typography.titleMedium.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
                                     )
-                                )
+
+                                    IconButton(
+                                        onClick = { sessionToDelete = session },
+                                        modifier = Modifier.size(32.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Outlined.DeleteOutline,
+                                            contentDescription = "Soft delete session",
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                                            modifier = Modifier.size(17.dp)
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
         }
+    }
+
+    // Add Custom Title Dialog
+    if (showAddTitleDialog) {
+        var newTitleInput by remember { mutableStateOf("") }
+        AlertDialog(
+            onDismissRequest = { showAddTitleDialog = false },
+            title = {
+                Text("New Focus Category", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        "Add a custom activity or focus title to your sanctuary dropdown menu.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    OutlinedTextField(
+                        value = newTitleInput,
+                        onValueChange = { newTitleInput = it },
+                        placeholder = { Text("e.g. System Design, Guitar Practice...") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(10.dp)
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val trimmed = newTitleInput.trim()
+                        if (trimmed.isNotBlank()) {
+                            addCustomTitle(trimmed)
+                            showAddTitleDialog = false
+                        }
+                    },
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("Add Title", fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAddTitleDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    // Soft Delete Confirmation Dialog
+    if (sessionToDelete != null) {
+        val s = sessionToDelete!!
+        AlertDialog(
+            onDismissRequest = { sessionToDelete = null },
+            icon = {
+                Icon(
+                    imageVector = Icons.Outlined.DeleteOutline,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(28.dp)
+                )
+            },
+            title = {
+                Text("Soft Delete Session", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+            },
+            text = {
+                Text(
+                    "Move \"${s.activity}\" (${(s.durationSec / 60).coerceAtLeast(1)}m) to the Recycle Bin? The session will be safely preserved in your sovereign recycle bin.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        scope.launch(Dispatchers.IO) {
+                            val sessionJson = org.json.JSONObject().apply {
+                                put("id", s.id)
+                                put("activity", s.activity)
+                                put("start_time", s.startTime)
+                                put("end_time", s.endTime ?: (s.startTime + s.durationSec * 1000L))
+                                put("duration_sec", s.durationSec)
+                                put("notes", s.notes ?: "")
+                            }.toString()
+                            repository.recycleItem(
+                                originalId = s.id,
+                                category = "sessions",
+                                dataJson = sessionJson
+                            )
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(context, "Moved to Recycle Bin", Toast.LENGTH_SHORT).show()
+                                sessionToDelete = null
+                                loadSessions()
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("Soft Delete", fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { sessionToDelete = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }

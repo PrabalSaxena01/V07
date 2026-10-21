@@ -11,6 +11,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -25,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
@@ -101,22 +104,53 @@ fun drawableToBitmap(drawable: Drawable?): Bitmap? {
 /**
  * Jetpack Compose Floating Bubble Pill View.
  * Displays real-time active application usage telemetry in a subtle sovereign pill.
+ * Features native drag physics, touch-callout feedback, and tap-to-expand menu.
  */
 @Composable
 fun FloatingBubblePillCompose(
     appIcon: Drawable?,
     formattedUsage: String,
     onClick: () -> Unit = {},
+    onDrag: (dx: Float, dy: Float) -> Unit = { _, _ -> },
+    onDragEnd: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val bitmap = remember(appIcon) { drawableToBitmap(appIcon) }
+    var isInteracting by remember { mutableStateOf(false) }
 
     Surface(
         shape = PillShape,
-        color = Color(0xE60B111E),
-        border = BorderStroke(1.dp, Color(0x4060A5FA)),
-        shadowElevation = 10.dp,
-        modifier = modifier.clickable(onClick = onClick)
+        color = if (isInteracting) Color(0xF2152033) else Color(0xE60B111E),
+        border = BorderStroke(1.dp, if (isInteracting) Color(0x9960A5FA) else Color(0x4060A5FA)),
+        shadowElevation = if (isInteracting) 14.dp else 8.dp,
+        modifier = modifier
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onPress = {
+                        isInteracting = true
+                        tryAwaitRelease()
+                        isInteracting = false
+                    },
+                    onTap = { onClick() }
+                )
+            }
+            .pointerInput(Unit) {
+                detectDragGestures(
+                    onDragStart = { isInteracting = true },
+                    onDrag = { change, dragAmount ->
+                        change.consume()
+                        onDrag(dragAmount.x, dragAmount.y)
+                    },
+                    onDragEnd = {
+                        isInteracting = false
+                        onDragEnd()
+                    },
+                    onDragCancel = {
+                        isInteracting = false
+                        onDragEnd()
+                    }
+                )
+            }
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,

@@ -411,13 +411,25 @@ class V3BubbleOverlayService : Service() {
                 FloatingBubblePillCompose(
                     appIcon = activeAppIconState.value,
                     formattedUsage = formattedUsageState.value,
-                    onClick = { toggleMenu() }
+                    onClick = { toggleMenu() },
+                    onDrag = { dx, dy ->
+                        val dm = resources.displayMetrics
+                        val minY = dpToPx(56)
+                        val maxY = dm.heightPixels - dpToPx(110)
+                        bubbleParams.x += dx.toInt()
+                        bubbleParams.y = (bubbleParams.y + dy.toInt()).coerceIn(minY, maxY)
+                        try {
+                            windowManager.updateViewLayout(bubbleView, bubbleParams)
+                        } catch (_: Exception) {}
+                    },
+                    onDragEnd = {
+                        bubbleView?.let { snapBubbleToEdge(it, bubbleParams) }
+                    }
                 )
             }
         }
 
         bubbleView = composeView
-        setupBubbleTouch(composeView, bubbleParams)
 
         try {
             windowManager.addView(bubbleView, bubbleParams)

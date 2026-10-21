@@ -133,7 +133,7 @@ fun ToolsScreen(
             ),
             SanctuaryTool(
                 id = "gita",
-                pluginId = null,
+                pluginId = "com.v07.gita",
                 title = "Bhagavad Gita",
                 category = "Wisdom & Philosophy",
                 description = "Sacred verses, Sanskrit, Hindi commentary & English translations",
@@ -142,7 +142,7 @@ fun ToolsScreen(
                 accentBg = Color(0x1AEAB308),
                 statusPreview = "Chapter 2, Verse 47",
                 subView = SanctuarySubView.GITA,
-                type = SanctuaryToolType.CORE
+                type = SanctuaryToolType.PLUGIN
             ),
             SanctuaryTool(
                 id = "datacenter",

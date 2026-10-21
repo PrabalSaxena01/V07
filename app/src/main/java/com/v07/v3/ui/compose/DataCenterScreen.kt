@@ -58,13 +58,15 @@ fun DataCenterScreen(
             val mgr = DatabaseManager.getInstance(context)
             val names = mgr.getAllTableNames()
             val result = mgr.getTableData(tableName = table, limit = limit, offset = 0)
-            val total = result.optInt("total", 0)
-            val dataArray = result.optJSONArray("data") ?: JSONArray()
+            val total = result.optInt("total_count", result.optInt("total", 0))
+            val dataArray = result.optJSONArray("rows") ?: result.optJSONArray("data") ?: JSONArray()
             val list = mutableListOf<Map<String, String>>()
             for (i in 0 until dataArray.length()) {
                 val obj = dataArray.optJSONObject(i) ?: continue
                 val map = mutableMapOf<String, String>()
-                obj.keys().forEach { k ->
+                val keys = obj.keys()
+                while (keys.hasNext()) {
+                    val k = keys.next()
                     map[k] = obj.optString(k, "")
                 }
                 list.add(map)
@@ -271,12 +273,20 @@ fun DataCenterScreen(
                             Text("${counts["tasks"] ?: 0}", style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary))
                         }
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Gentle Habit Logs", style = MaterialTheme.typography.bodySmall)
-                            Text("${counts["day_tracker"] ?: 0}", style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary))
+                            Text("Ritual & Core Events", style = MaterialTheme.typography.bodySmall)
+                            Text("${counts["events"] ?: 0}", style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary))
                         }
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                             Text("App Usage Telemetry Rows", style = MaterialTheme.typography.bodySmall)
                             Text("${counts["app_usage"] ?: 0}", style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary))
+                        }
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text("Recycle Bin Soft-Deleted Items", style = MaterialTheme.typography.bodySmall)
+                            Text("${counts["recycle_bin"] ?: 0}", style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold, color = Color(0xFFF59E0B)))
+                        }
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text("Plugin Key-Value Store", style = MaterialTheme.typography.bodySmall)
+                            Text("${counts["plugin_storage"] ?: 0}", style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary))
                         }
                     }
                 }
@@ -369,7 +379,7 @@ fun DataCenterScreen(
                             )
                         } else {
                             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                tableRows.take(10).forEachIndexed { idx, row ->
+                                tableRows.forEachIndexed { idx, row ->
                                     Surface(
                                         shape = RoundedCornerShape(8.dp),
                                         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
@@ -378,21 +388,34 @@ fun DataCenterScreen(
                                     ) {
                                         Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                                             val primaryKey = row["id"] ?: row["key"] ?: "#$idx"
-                                            Text(
-                                                text = "Row: $primaryKey",
-                                                style = MaterialTheme.typography.labelSmall.copy(
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = MaterialTheme.colorScheme.primary
-                                                )
-                                            )
-                                            row.entries.filter { it.key != "id" }.take(3).forEach { (k, v) ->
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
                                                 Text(
-                                                    text = "$k: ${v.take(60)}",
+                                                    text = "Record: $primaryKey",
+                                                    style = MaterialTheme.typography.labelSmall.copy(
+                                                        fontWeight = FontWeight.Bold,
+                                                        color = MaterialTheme.colorScheme.primary
+                                                    )
+                                                )
+                                                Text(
+                                                    text = "${idx + 1} of ${tableRows.size}",
+                                                    style = MaterialTheme.typography.labelSmall.copy(
+                                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                        fontSize = 10.sp
+                                                    )
+                                                )
+                                            }
+                                            row.entries.filter { it.key != "id" }.take(5).forEach { (k, v) ->
+                                                Text(
+                                                    text = "$k: ${v.take(120)}",
                                                     style = MaterialTheme.typography.bodySmall.copy(
                                                         fontSize = 11.sp,
                                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                                     ),
-                                                    maxLines = 1,
+                                                    maxLines = 2,
                                                     overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                                                 )
                                             }

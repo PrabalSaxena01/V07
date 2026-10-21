@@ -125,6 +125,7 @@ fun HabitTrackerScreen(
     var completions by remember { mutableStateOf<Map<String, Boolean>>(emptyMap()) }
     var isLoading by remember { mutableStateOf(true) }
     var showAddDialog by remember { mutableStateOf(false) }
+    var habitToDelete by remember { mutableStateOf<HabitItemModel?>(null) }
 
     // Load definitions and logs from EventRepository
     fun loadHabitData() {
@@ -372,6 +373,27 @@ fun HabitTrackerScreen(
             hexColor = colorHex
         )
         val updatedList = habits + newHabit
+        habits = updatedList
+
+        scope.launch(Dispatchers.IO) {
+            try {
+                val arr = JSONArray()
+                updatedList.forEach { h ->
+                    arr.put(JSONObject().apply {
+                        put("id", h.id)
+                        put("name", h.name)
+                        put("icon", h.icon)
+                        put("color", h.hexColor)
+                    })
+                }
+                repository.setPluginValue("com.v07.habits", "definitions", arr.toString())
+            } catch (_: Exception) {}
+        }
+    }
+
+    // Remove an existing habit
+    fun removeHabit(habitId: String) {
+        val updatedList = habits.filter { it.id != habitId }
         habits = updatedList
 
         scope.launch(Dispatchers.IO) {
@@ -848,21 +870,38 @@ fun HabitTrackerScreen(
                                 }
                             }
 
-                            // Quick Streak Badge
-                            Surface(
-                                shape = PillShape,
-                                color = if (streak > 0) Color(0x1AFFB454) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-                                border = if (streak > 0) BorderStroke(1.dp, Color(0x60FFB454)) else null
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                // Quick Streak Badge
+                                Surface(
+                                    shape = PillShape,
+                                    color = if (streak > 0) Color(0x1AFFB454) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                                    border = if (streak > 0) BorderStroke(1.dp, Color(0x60FFB454)) else null
                                 ) {
-                                    Text(
-                                        text = "🔥 $streak d",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        fontWeight = FontWeight.Bold,
-                                        color = if (streak > 0) Color(0xFFFFB454) else MaterialTheme.colorScheme.onSurfaceVariant
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                    ) {
+                                        Text(
+                                            text = "🔥 $streak d",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (streak > 0) Color(0xFFFFB454) else MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+
+                                IconButton(
+                                    onClick = { habitToDelete = habit },
+                                    modifier = Modifier.size(32.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.DeleteOutline,
+                                        contentDescription = "Remove Habit",
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                                        modifier = Modifier.size(17.dp)
                                     )
                                 }
                             }
@@ -1004,6 +1043,54 @@ fun HabitTrackerScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showAddDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    // Delete Habit Confirmation Dialog
+    if (habitToDelete != null) {
+        val habit = habitToDelete!!
+        AlertDialog(
+            onDismissRequest = { habitToDelete = null },
+            icon = {
+                Icon(
+                    imageVector = Icons.Outlined.DeleteOutline,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(28.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = "Remove Ritual",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(
+                    text = "Are you sure you want to remove \"${habit.icon} ${habit.name}\" from your daily rituals? Your historical logs will remain safely stored.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        removeHabit(habit.id)
+                        Toast.makeText(context, "Removed ritual: ${habit.name}", Toast.LENGTH_SHORT).show()
+                        habitToDelete = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("Remove", fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { habitToDelete = null }) {
                     Text("Cancel")
                 }
             }

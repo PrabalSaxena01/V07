@@ -49,6 +49,24 @@ fun PluginHostScreen(
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var showSettingsDialog by remember { mutableStateOf(false) }
+    var pluginIsLight by remember(isLight) { mutableStateOf(isLight) }
+
+    fun applyTheme(light: Boolean) {
+        pluginIsLight = light
+        val themeName = if (light) "light" else "dark"
+        val bgColor = if (light) 0xFFFAF6F9.toInt() else 0xFF0B111E.toInt()
+        webViewRef?.setBackgroundColor(bgColor)
+        val js = """
+            (function() {
+                try {
+                    document.documentElement.setAttribute('data-theme', '$themeName');
+                    localStorage.setItem('v07_theme', '$themeName');
+                    window.dispatchEvent(new Event('storage'));
+                } catch(e){}
+            })();
+        """.trimIndent()
+        webViewRef?.evaluateJavascript(js, null)
+    }
 
     // Intercept back key: allow web view to navigate back, or exit host screen
     BackHandler {
@@ -125,6 +143,18 @@ fun PluginHostScreen(
                         horizontalArrangement = Arrangement.spacedBy(2.dp)
                     ) {
                         IconButton(
+                            onClick = { applyTheme(!pluginIsLight) },
+                            modifier = Modifier.size(44.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (pluginIsLight) Icons.Outlined.DarkMode else Icons.Outlined.LightMode,
+                                contentDescription = "Toggle Daylight Warm Paper / Night Ink",
+                                tint = if (pluginIsLight) Color(0xFFF59E0B) else Color(0xFF60A5FA),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+
+                        IconButton(
                             onClick = { webViewRef?.reload() },
                             modifier = Modifier.size(44.dp)
                         ) {
@@ -168,7 +198,7 @@ fun PluginHostScreen(
                             ViewGroup.LayoutParams.MATCH_PARENT
                         )
                         setLayerType(View.LAYER_TYPE_HARDWARE, null)
-                        setBackgroundColor(if (isLight) 0xFFFAF6F9.toInt() else 0xFF0B111E.toInt())
+                        setBackgroundColor(if (pluginIsLight) 0xFFFAF6F9.toInt() else 0xFF0B111E.toInt())
                         isVerticalScrollBarEnabled = false
                         isHorizontalScrollBarEnabled = false
                         overScrollMode = View.OVER_SCROLL_NEVER
@@ -193,7 +223,7 @@ fun PluginHostScreen(
                         // Attach theme bridge
                         addJavascriptInterface(object {
                             @JavascriptInterface
-                            fun isDark(): Boolean = !isLight
+                            fun isDark(): Boolean = !pluginIsLight
                         }, "AndroidTheme")
 
                         webChromeClient = object : WebChromeClient() {
@@ -253,8 +283,8 @@ fun PluginHostScreen(
 
                             override fun onPageFinished(view: WebView?, url: String?) {
                                 isLoading = false
-                                // Enforce theme synchronization & clean responsive padding
-                                val themeName = if (isLight) "light" else "dark"
+                                // Enforce theme synchronization & clean responsive bottom padding
+                                val themeName = if (pluginIsLight) "light" else "dark"
                                 val js = """
                                     (function() {
                                         try {
@@ -266,7 +296,7 @@ fun PluginHostScreen(
                                                 style.id = 'v07-insets-override';
                                                 document.head.appendChild(style);
                                             }
-                                            style.innerHTML = 'html, body { box-sizing: border-box !important; overflow-x: hidden !important; max-width: 100vw !important; } body { padding-top: 12px !important; padding-bottom: 28px !important; padding-left: 14px !important; padding-right: 14px !important; }';
+                                            style.innerHTML = 'html, body { box-sizing: border-box !important; overflow-x: hidden !important; max-width: 100vw !important; } body { padding-top: 12px !important; padding-bottom: 96px !important; padding-left: 14px !important; padding-right: 14px !important; } .container, .page, .main-wrap, #app, main { padding-bottom: 80px !important; }';
                                         } catch(e){}
                                     })();
                                 """.trimIndent()
@@ -276,7 +306,7 @@ fun PluginHostScreen(
 
                         val baseUrl = V3PlatformHost.baseUrl
                         val token = V3PlatformHost.sessionToken
-                        val theme = if (isLight) "light" else "dark"
+                        val theme = if (pluginIsLight) "light" else "dark"
                         val pluginUrl = "$baseUrl/plugins/$pluginId/index.html?token=$token&theme=$theme&v=${System.currentTimeMillis()}"
                         loadUrl(pluginUrl)
                         webViewRef = this

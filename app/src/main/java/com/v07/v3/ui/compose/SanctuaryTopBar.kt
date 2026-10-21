@@ -39,19 +39,20 @@ fun SanctuaryTopBar(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val profileInitial = remember {
+    var profileDropdownExpanded by remember { mutableStateOf(false) }
+
+    val profileInitial = remember(profileDropdownExpanded) {
         val prefs = context.getSharedPreferences("v07_profiles", Context.MODE_PRIVATE)
-        val active = prefs.getString("active_profile_id", null) ?: V07Database.getCurrentProfileId()
-        if (active.isNotBlank() && active != "guest" && active != "default") {
-            active.replace("_", " ").trim().firstOrNull()?.uppercase()
-        } else {
-            val userPrefs = context.getSharedPreferences("v07_user_prefs", Context.MODE_PRIVATE)
-            val custom = userPrefs.getString("display_name", "")?.trim() ?: ""
-            if (custom.isNotBlank()) custom.first().uppercase() else null
-        }
+        prefs.getString("profile_avatar_symbol", null)?.ifBlank { null }
+            ?: prefs.getString("profile_display_name", null)?.trim()?.firstOrNull()?.uppercase()
+            ?: run {
+                val active = prefs.getString("active_profile_id", null) ?: V07Database.getCurrentProfileId()
+                if (active.isNotBlank() && active != "guest" && active != "default") {
+                    active.replace("_", " ").trim().firstOrNull()?.uppercase()
+                } else null
+            }
     }
 
-    var profileDropdownExpanded by remember { mutableStateOf(false) }
     var activeProfileName by remember {
         val prefs = context.getSharedPreferences("v07_profiles", Context.MODE_PRIVATE)
         mutableStateOf(prefs.getString("active_profile_id", "guest") ?: "guest")
