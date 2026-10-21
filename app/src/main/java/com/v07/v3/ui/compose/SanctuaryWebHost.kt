@@ -40,12 +40,12 @@ fun SanctuaryWebHost(
         modifier = modifier.fillMaxSize(),
         factory = {
             (webView.parent as? ViewGroup)?.removeView(webView)
-            val shouldShow = isPluginFullscreen || currentTab != SanctuaryTab.COCKPIT
+            val shouldShow = isPluginFullscreen
             webView.visibility = if (shouldShow) View.VISIBLE else View.INVISIBLE
             webView
         },
         update = { view ->
-            val shouldShow = isPluginFullscreen || currentTab != SanctuaryTab.COCKPIT
+            val shouldShow = isPluginFullscreen
             view.visibility = if (shouldShow) View.VISIBLE else View.INVISIBLE
         }
     )

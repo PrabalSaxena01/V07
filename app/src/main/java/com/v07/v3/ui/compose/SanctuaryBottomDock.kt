@@ -23,17 +23,29 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 enum class SanctuaryTab(val id: String, val label: String, val icon: ImageVector) {
-    COCKPIT("cockpit", "Cockpit", Icons.Outlined.Dashboard),
-    CADENCE("habits", "Cadence", Icons.Outlined.Repeat),
-    FOCUS("chrono", "Focus", Icons.Outlined.Timer),
-    TASKS("tasks", "Tasks", Icons.Outlined.Checklist),
-    JOURNAL("journal", "Journal", Icons.Outlined.EditNote)
+    HOME("home", "Home", Icons.Outlined.Spa),
+    TOOLS("tools", "Tools", Icons.Outlined.GridView),
+    LEDGER("journal", "Ledger", Icons.Outlined.HistoryEdu),
+    DAY("day", "Day", Icons.Outlined.CalendarToday),
+    SETTINGS("settings", "Settings", Icons.Outlined.Settings)
+}
+
+enum class SanctuarySubView {
+    NONE,
+    FOCUS,
+    SCREENTIME,
+    HABITS,
+    TASKS,
+    READING,
+    GITA,
+    MOOD,
+    DATACENTER
 }
 
 /**
- * Mobile Bottom Navigation Dock faithful to the V3 main branch:
- * - 5 core tabs: Cockpit, Cadence, Focus, Tasks, Journal
- * - Floating rounded pill dock with elevation and subtle border
+ * Mobile Bottom Navigation Dock faithful to V07 Sanctuary:
+ * - 5 core tabs: Home, Tools, Ledger, Day, Settings
+ * - Floating rounded pill dock with backdrop elevation and subtle border
  * - Active tab highlighted in primary teal container
  * - Ergonomic touch targets
  */
@@ -53,23 +65,23 @@ fun SanctuaryBottomDock(
         Surface(
             modifier = Modifier
                 .shadow(
-                    elevation = 10.dp,
+                    elevation = 12.dp,
                     shape = PillShape,
                     spotColor = Color(0x33000000),
                     ambientColor = Color(0x22000000)
                 )
                 .border(
                     width = 1.dp,
-                    color = MaterialTheme.colorScheme.outline,
+                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
                     shape = PillShape
                 ),
             shape = PillShape,
-            color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 2.dp
+            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f),
+            tonalElevation = 3.dp
         ) {
             Row(
                 modifier = Modifier
-                    .padding(horizontal = 6.dp, vertical = 6.dp)
+                    .padding(horizontal = 8.dp, vertical = 6.dp)
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.CenterVertically
@@ -105,7 +117,7 @@ private fun SanctuaryDockItem(
             .scale(scale)
             .clip(PillShape)
             .background(
-                if (isActive) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
+                if (isActive) MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)
                 else Color.Transparent
             )
             .clickable(
