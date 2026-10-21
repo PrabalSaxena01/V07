@@ -1,0 +1,683 @@
+<div class="page-tab flex-col w-full space-y-5 pb-10" id="tab-settings">
+ <!-- Introductory Framing -->
+ <div class="flex flex-col space-y-1 pt-1">
+  <div class="inline-flex items-center gap-1.5 text-primary text-xs font-medium">
+   <span class="material-symbols-outlined text-[16px]">
+    tune
+   </span>
+   <span>
+    Sanctuary Preferences
+   </span>
+  </div>
+  <h2 class="text-2xl font-bold text-on-surface tracking-tight">
+   Your space
+  </h2>
+  <p class="text-sm text-on-surface-variant">
+   Make V07 feel like yours.
+  </p>
+ </div>
+ <!-- Section 1: Your Profile -->
+ <section class="flex flex-col space-y-2">
+  <div class="flex items-center justify-between px-1">
+   <h3 class="text-xs font-bold text-on-surface-variant uppercase tracking-wider">
+    Your profile
+   </h3>
+   <span class="text-[11px] text-primary font-medium flex items-center gap-1">
+    <span class="w-1.5 h-1.5 rounded-full bg-primary inline-block">
+    </span>
+    Encrypted &amp; private
+   </span>
+  </div>
+  <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high/40 flex flex-col gap-3.5" style="box-shadow: var(--card-shadow);">
+   <div class="flex items-center gap-3.5">
+    <div class="relative shrink-0">
+     <div class="w-14 h-14 rounded-full bg-primary-fixed text-primary flex items-center justify-center font-bold text-xl shadow-xs">
+      S
+     </div>
+     <div class="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-xs">
+      <span class="material-symbols-outlined text-[10px]">
+       favorite
+      </span>
+     </div>
+    </div>
+    <div class="flex flex-col min-w-0 flex-1">
+     <div class="flex items-center gap-1.5">
+      <span class="text-base font-bold text-on-surface truncate" id="settings-user-name">
+       Sovereign User
+      </span>
+      <span class="material-symbols-outlined text-primary text-[17px] material-symbols-filled">
+       verified
+      </span>
+     </div>
+     <p class="text-xs text-on-surface-variant truncate" id="settings-user-email">
+      Local Sovereign Vault
+     </p>
+     <div class="mt-1 flex items-center gap-1 text-primary text-[11px] font-medium">
+      <span class="material-symbols-outlined text-[13px]">
+       cloud_done
+      </span>
+      <span class="truncate">
+       Local journal active · Backed up securely
+      </span>
+     </div>
+    </div>
+   </div>
+   <div class="flex items-center gap-2 pt-1 border-t border-surface-container-low">
+    <button class="flex-1 py-2 px-3 rounded-full bg-surface-container-low text-primary hover:bg-surface-container text-xs font-semibold transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 cursor-pointer" onclick="promptEditProfile()">
+     <span class="material-symbols-outlined text-[15px]">
+      edit
+     </span>
+     <span>
+      Edit profile
+     </span>
+    </button>
+    <button class="flex-1 py-2 px-3 rounded-full bg-surface-container-low text-on-surface-variant hover:bg-surface-container text-xs font-semibold transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 cursor-pointer" onclick="shareSanctuaryStatus()">
+     <span class="material-symbols-outlined text-[15px]">
+      share
+     </span>
+     <span>
+      Share status
+     </span>
+    </button>
+   </div>
+  </div>
+ </section>
+ <!-- Section 2: Daily Rhythm & Notifications -->
+ <section class="flex flex-col space-y-2">
+  <div class="flex items-center justify-between px-1">
+   <h3 class="text-xs font-bold text-on-surface-variant uppercase tracking-wider">
+    Daily rhythm &amp; notifications
+   </h3>
+   <span class="material-symbols-outlined text-tertiary text-[17px]">
+    bedtime
+   </span>
+  </div>
+  <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high/40 flex flex-col space-y-3.5" style="box-shadow: var(--card-shadow);">
+   <!-- Morning prompt -->
+   <div class="flex items-center justify-between gap-3">
+    <div class="flex items-start gap-3 min-w-0">
+     <div class="w-8 h-8 rounded-full bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center shrink-0 mt-0.5">
+      <span class="material-symbols-outlined text-[17px]">
+       wb_sunny
+      </span>
+     </div>
+     <div class="flex flex-col min-w-0">
+      <span class="text-xs font-semibold text-on-surface">
+       Morning prompt
+      </span>
+      <span class="text-[11px] text-on-surface-variant">
+       Gentle reminder at 8:30 AM to reflect on quiet intent
+      </span>
+     </div>
+    </div>
+    <button aria-checked="true" class="toggle-switch shrink-0 w-11 h-6 rounded-full bg-primary p-0.5 transition-colors relative flex items-center cursor-pointer" onclick="toggleSettingSwitch(this, 'morning_prompt')">
+     <div class="w-5 h-5 rounded-full bg-surface-container-lowest shadow-sm transform translate-x-5 transition-transform flex items-center justify-center">
+      <span class="material-symbols-outlined text-[11px] text-primary">
+       check
+      </span>
+     </div>
+    </button>
+   </div>
+   <div class="h-[1px] bg-surface-container-low w-full">
+   </div>
+   <!-- Evening pause notification -->
+   <div class="flex items-center justify-between gap-3">
+    <div class="flex items-start gap-3 min-w-0">
+     <div class="w-8 h-8 rounded-full bg-surface-container text-tertiary flex items-center justify-center shrink-0 mt-0.5">
+      <span class="material-symbols-outlined text-[17px]">
+       nights_stay
+      </span>
+     </div>
+     <div class="flex flex-col min-w-0">
+      <span class="text-xs font-semibold text-on-surface">
+       Evening pause notification
+      </span>
+      <span class="text-[11px] text-on-surface-variant">
+       Warm reminder at 9:15 PM to release today's thoughts
+      </span>
+     </div>
+    </div>
+    <button aria-checked="false" class="toggle-switch shrink-0 w-11 h-6 rounded-full bg-surface-container-high p-0.5 transition-colors relative flex items-center cursor-pointer" onclick="toggleSettingSwitch(this, 'evening_pause')">
+     <div class="w-5 h-5 rounded-full bg-surface-container-lowest shadow-sm transform translate-x-0 transition-transform flex items-center justify-center">
+      <span class="material-symbols-outlined text-[11px] text-outline opacity-0">
+       check
+      </span>
+     </div>
+    </button>
+   </div>
+  </div>
+ </section>
+ <!-- Section 3: Appearance & Themes Gallery (Collapsible Accordion) -->
+ <section class="flex flex-col space-y-2">
+  <button aria-controls="settings-theme-accordion-body" aria-expanded="false" class="w-full p-3.5 bg-surface-container-lowest rounded-2xl border border-surface-container-high/60 flex items-center justify-between transition-all cursor-pointer select-none active:scale-[0.99] text-left" id="settings-theme-accordion-header" onclick="toggleThemeSettingsAccordion()" style="box-shadow: var(--card-shadow);" type="button">
+   <div class="flex items-center gap-3 min-w-0 flex-1 pr-2">
+    <div class="w-10 h-10 rounded-xl bg-primary-container text-primary flex items-center justify-center shrink-0 shadow-xs">
+     <span class="material-symbols-outlined text-[20px]">
+      palette
+     </span>
+    </div>
+    <div class="min-w-0 flex-1">
+     <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+      <h3 class="text-xs font-bold text-on-surface uppercase tracking-wider truncate">
+       Appearance &amp; Themes
+      </h3>
+      <span class="text-[10px] px-1.5 py-0.2 rounded-full bg-surface-container font-semibold text-on-surface-variant shrink-0" id="settings-theme-count-badge">
+       8 Distinct Styles
+      </span>
+     </div>
+     <p class="text-[11px] text-on-surface-variant mt-0.5 truncate">
+      4 light &amp; 4 dark curated palettes + custom studio
+     </p>
+    </div>
+   </div>
+   <div class="flex items-center gap-1.5 shrink-0">
+    <div class="flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full bg-primary-fixed text-primary text-[11px] font-bold shadow-xs max-w-[120px] sm:max-w-none">
+     <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shrink-0">
+     </span>
+     <span class="truncate" id="settings-active-theme-label">
+      Ruby &amp; Navy
+     </span>
+    </div>
+    <span class="material-symbols-outlined text-[20px] text-on-surface-variant transition-transform duration-200 shrink-0" id="settings-theme-chevron">
+     expand_more
+    </span>
+   </div>
+  </button>
+  <!-- Collapsible Accordion Body (Collapsed / Hidden by Default) -->
+  <div class="hidden flex flex-col space-y-3 pt-1" id="settings-theme-accordion-body">
+   <!-- 3-Tab Segmented Selector: Light / Dark / Custom -->
+   <div class="flex items-center p-1 bg-surface-container-low rounded-xl border border-outline-variant/60 gap-1" id="settings-theme-filter-bar">
+    <button class="flex-1 py-2 px-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer" id="theme-filter-light" onclick="filterThemesGallery('light')" type="button">
+     <span class="material-symbols-outlined text-[15px] text-amber-500">
+      light_mode
+     </span>
+     <span>
+      Light (4)
+     </span>
+    </button>
+    <button class="flex-1 py-2 px-2.5 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer text-on-surface-variant hover:text-on-surface" id="theme-filter-dark" onclick="filterThemesGallery('dark')" type="button">
+     <span class="material-symbols-outlined text-[15px] text-indigo-400">
+      dark_mode
+     </span>
+     <span>
+      Dark (4)
+     </span>
+    </button>
+    <button class="flex-1 py-2 px-2.5 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer text-on-surface-variant hover:text-on-surface" id="theme-filter-custom" onclick="filterThemesGallery('custom')" type="button">
+     <span class="material-symbols-outlined text-[15px] text-pink-500">
+      colorize
+     </span>
+     <span>
+      Custom Studio
+     </span>
+    </button>
+   </div>
+   <!-- Section A: Curated Presets Container (Visible on Light or Dark) -->
+   <div class="flex flex-col space-y-2.5" id="settings-curated-container">
+    <!-- Themes Grid (4 distinct cards for the active mode) -->
+    <div class="grid grid-cols-2 gap-2.5" id="settings-themes-grid">
+     <!-- Dynamically populated by renderThemeGallery() -->
+    </div>
+   </div>
+   <!-- Section B: Custom Theme Card (Compact, opens Studio modal) -->
+   <div class="hidden p-4 bg-surface-container-low rounded-2xl border border-surface-container-high/60 flex items-center justify-between gap-3 shadow-xs" id="settings-custom-theme-studio" style="box-shadow: var(--card-shadow);">
+    <div class="flex items-center gap-3 min-w-0">
+     <div class="w-10 h-10 rounded-2xl bg-primary-fixed text-primary flex items-center justify-center shrink-0 shadow-xs">
+      <span class="material-symbols-outlined text-[22px]">
+       palette
+      </span>
+     </div>
+     <div class="flex flex-col min-w-0">
+      <span class="text-xs font-bold text-on-surface truncate">
+       Custom Color Studio
+      </span>
+      <span class="text-[11px] text-on-surface-variant truncate">
+       Fine-tune primary, secondary &amp; canvas tones
+      </span>
+     </div>
+    </div>
+    <button class="px-3.5 py-1.5 rounded-xl bg-primary text-on-primary text-xs font-bold active:scale-95 shadow-xs transition-transform cursor-pointer shrink-0" onclick="openCustomColorPickerModal()" type="button">
+     Tune Colors
+    </button>
+   </div>
+  </div>
+ </section>
+ <!-- Section 3b: Floating Usage Bubble Overlay -->
+ <section class="flex flex-col space-y-2">
+  <div class="flex items-center justify-between px-1">
+   <h3 class="text-xs font-bold text-on-surface-variant uppercase tracking-wider">
+    Floating Bubble Overlay
+   </h3>
+   <span class="text-[11px] text-primary font-medium flex items-center gap-1.5" id="settings-bubble-status-badge">
+    <span class="w-2 h-2 rounded-full bg-outline inline-block" id="settings-bubble-dot">
+    </span>
+    <span id="settings-bubble-text">
+     Off
+    </span>
+   </span>
+  </div>
+  <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high/40 flex flex-col gap-3" style="box-shadow: var(--card-shadow);">
+   <div class="flex items-center justify-between gap-3">
+    <div class="flex items-start gap-3 flex-1 min-w-0">
+     <div class="w-10 h-10 rounded-2xl bg-primary-fixed text-primary flex items-center justify-center shrink-0 shadow-xs">
+      <span class="material-symbols-outlined text-[22px]">
+       bubble_chart
+      </span>
+     </div>
+     <div class="flex flex-col flex-1 min-w-0">
+      <h4 class="text-sm font-bold text-on-surface">
+       Screen Time Floating Bubble
+      </h4>
+      <p class="text-xs text-on-surface-variant mt-0.5 leading-relaxed">
+       Real-time active app usage and instant quick action menu floating across all apps.
+      </p>
+     </div>
+    </div>
+    <button class="px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 bg-surface-container-high text-on-surface-variant active:scale-95 shadow-xs shrink-0" id="settings-bubble-toggle-btn" onclick="toggleBubbleOverlay()" type="button">
+     <span class="w-2 h-2 rounded-full bg-outline inline-block" id="settings-bubble-btn-dot">
+     </span>
+     <span id="settings-bubble-btn-label">
+      Turn On
+     </span>
+    </button>
+   </div>
+   <div class="hidden p-2.5 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center justify-between" id="settings-bubble-perm-row">
+    <div class="flex items-center gap-2 text-xs text-amber-700 dark:text-amber-300 font-medium">
+     <span class="material-symbols-outlined text-[16px]">
+      warning
+     </span>
+     <span>
+      "Display over other apps" permission required
+     </span>
+    </div>
+    <button class="text-xs font-bold text-primary underline cursor-pointer" onclick="nativeInvoke('overlay:requestPermission')" type="button">
+     Grant
+    </button>
+   </div>
+  </div>
+ </section>
+ <!-- Section 3c: V07 Companion Cloud Sync & Login -->
+ <section class="flex flex-col space-y-2">
+  <div class="flex items-center justify-between px-1">
+   <h3 class="text-xs font-bold text-on-surface-variant uppercase tracking-wider">
+    V07 Companion Sync
+   </h3>
+   <span class="text-[11px] text-primary font-medium flex items-center gap-1" id="companion-sync-indicator">
+    <span class="w-1.5 h-1.5 rounded-full bg-primary inline-block animate-pulse">
+    </span>
+    Cloud Bridge Ready
+   </span>
+  </div>
+  <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high/40 flex flex-col gap-3.5" style="box-shadow: var(--card-shadow);">
+   <div class="flex items-start gap-3">
+    <div class="w-10 h-10 rounded-2xl bg-primary-fixed text-primary flex items-center justify-center shrink-0 shadow-xs">
+     <span class="material-symbols-outlined text-[22px]">
+      cloud_sync
+     </span>
+    </div>
+    <div class="flex flex-col flex-1 min-w-0">
+     <div class="flex items-center justify-between">
+      <h4 class="text-sm font-bold text-on-surface">
+       V07 Desktop &amp; Web Sync
+      </h4>
+      <span class="text-[10px] px-2 py-0.5 rounded-full bg-primary-fixed text-primary font-bold" id="companion-badge">
+       Local Sovereign
+      </span>
+     </div>
+     <p class="text-xs text-on-surface-variant mt-0.5 leading-relaxed">
+      Seamlessly bridge your reflections, focus sessions, and reading shelf with the V07 desktop companion.
+     </p>
+    </div>
+   </div>
+   <div class="p-3 bg-surface-container-low rounded-xl border border-surface-container-high/40 flex items-center justify-between">
+    <div class="flex flex-col">
+     <span class="text-[11px] text-on-surface-variant">
+      Connected Account
+     </span>
+     <span class="text-xs font-bold text-on-surface" id="companion-user-display">
+      Not connected (Local Vault)
+     </span>
+    </div>
+    <span class="text-[10px] text-primary font-semibold flex items-center gap-1">
+     <span class="material-symbols-outlined text-[13px]">
+      lock
+     </span>
+     Local Sovereign
+    </span>
+   </div>
+   <div class="grid grid-cols-2 gap-2 pt-1">
+    <button class="py-2.5 px-3 bg-primary text-on-primary rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-xs cursor-pointer" onclick="syncCompanionData()">
+     <span class="material-symbols-outlined text-[16px]" id="sync-spinner">
+      sync
+     </span>
+     <span>
+      Sync Now
+     </span>
+    </button>
+    <button class="py-2.5 px-3 bg-surface-container hover:bg-surface-container-high text-on-surface rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer border border-surface-container-high/40" onclick="openCompanionLoginModal()">
+     <span class="material-symbols-outlined text-[16px]">
+      account_circle
+     </span>
+     <span>
+      Account / Login
+     </span>
+    </button>
+   </div>
+   <button class="w-full py-2.5 px-3 bg-primary-fixed hover:bg-primary-fixed/80 text-primary rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-2xs cursor-pointer border border-primary/20" id="btn-migrate-companion" onclick="triggerCompanionMigrate()">
+    <span class="material-symbols-outlined text-[16px]">
+     cloud_download
+    </span>
+    <span id="migrate-btn-label">
+     Migrate Web Companion Data (v07-dashboard)
+    </span>
+   </button>
+  </div>
+ </section>
+ <!-- Section 3c: Comprehensive Dynamic Plugin Settings -->
+ <section class="flex flex-col space-y-2.5" id="settings-plugin-section">
+  <div class="flex items-center justify-between px-1">
+   <div class="flex items-center gap-2">
+    <h3 class="text-xs font-bold text-on-surface-variant uppercase tracking-wider">
+     Plugin Settings
+    </h3>
+    <span class="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-bold" id="settings-plugin-badge">
+     ...
+    </span>
+   </div>
+   <button class="text-[11px] font-semibold text-primary hover:underline cursor-pointer flex items-center gap-1" onclick="importPluginFromZip()" title="Sideload .zip plugin archive" type="button">
+    <span class="material-symbols-outlined text-[15px]">
+     add_circle
+    </span>
+    <span>
+     Sideload
+    </span>
+   </button>
+  </div>
+  <!-- Filter bar & search -->
+  <div class="flex flex-col gap-2 px-0.5">
+   <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5" id="settings-plugin-filter-bar">
+    <button class="settings-pfilter-btn active px-3 py-1 rounded-full text-xs font-bold transition-all bg-primary text-on-primary shadow-2xs cursor-pointer" id="spfilter-all" onclick="setSettingsPluginFilter('all')" type="button">
+     All (
+     <span id="spcount-all">
+      0
+     </span>
+     )
+    </button>
+    <button class="settings-pfilter-btn px-3 py-1 rounded-full text-xs font-bold transition-all bg-surface-container text-on-surface-variant hover:bg-surface-container-high cursor-pointer" id="spfilter-active" onclick="setSettingsPluginFilter('active')" type="button">
+     Active (
+     <span id="spcount-active">
+      0
+     </span>
+     )
+    </button>
+    <button class="settings-pfilter-btn px-3 py-1 rounded-full text-xs font-bold transition-all bg-surface-container text-on-surface-variant hover:bg-surface-container-high cursor-pointer" id="spfilter-core" onclick="setSettingsPluginFilter('core')" type="button">
+     Core (
+     <span id="spcount-core">
+      0
+     </span>
+     )
+    </button>
+    <button class="settings-pfilter-btn px-3 py-1 rounded-full text-xs font-bold transition-all bg-surface-container text-on-surface-variant hover:bg-surface-container-high cursor-pointer" id="spfilter-custom" onclick="setSettingsPluginFilter('custom')" type="button">
+     Sideloaded (
+     <span id="spcount-custom">
+      0
+     </span>
+     )
+    </button>
+   </div>
+   <div class="relative">
+    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[16px]">
+     search
+    </span>
+    <input class="w-full h-8 pl-8 pr-3 bg-surface-container-low rounded-xl text-xs text-on-surface border border-surface-container-high/60 focus:outline-none focus:border-primary transition-all placeholder:text-on-surface-variant/60" id="settings-plugin-search" oninput="handleSettingsPluginSearch(this.value)" placeholder="Search companion or plugin settings..." type="text"/>
+   </div>
+  </div>
+  <div class="bg-surface-container-lowest rounded-2xl shadow-sm border border-surface-container-high/40 divide-y divide-surface-container-low transition-all" id="settings-plugins-container" style="box-shadow: var(--card-shadow);">
+   <!-- Dynamically populated by renderSettingsPluginList() -->
+  </div>
+ </section>
+ <!-- Section 4: Storage & Vault (100% On-Device) -->
+ <section class="flex flex-col space-y-2">
+  <div class="flex items-center justify-between px-1">
+   <h3 class="text-xs font-bold text-on-surface-variant uppercase tracking-wider">
+    Storage &amp; vault
+   </h3>
+   <span class="text-[11px] text-primary font-medium flex items-center gap-1">
+    <span class="material-symbols-outlined text-[13px]">
+     lock
+    </span>
+    Local sovereignty
+   </span>
+  </div>
+  <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high/40 flex flex-col space-y-3" style="box-shadow: var(--card-shadow);">
+   <div class="flex items-start gap-3">
+    <div class="w-9 h-9 rounded-full bg-primary-container text-on-primary flex items-center justify-center shrink-0">
+     <span class="material-symbols-outlined text-[19px]">
+      folder_special
+     </span>
+    </div>
+    <div class="flex flex-col min-w-0">
+     <p class="text-xs font-bold text-on-surface">
+      Your words stay on your device.
+     </p>
+     <p class="text-[11px] text-on-surface-variant leading-relaxed mt-0.5">
+      V07 never parses, tracks, or shares your personal entries. Data is held in an open SQLite database you control completely.
+     </p>
+    </div>
+   </div>
+   <div class="bg-surface-container-low rounded-xl p-2.5 flex flex-col space-y-1">
+    <span class="text-[10px] text-on-surface-variant font-medium">
+     Vault directory path
+    </span>
+    <div class="flex items-center justify-between gap-2 overflow-hidden">
+     <span class="text-xs font-semibold text-primary truncate select-all min-w-0 flex-1">
+      /storage/emulated/0/V07Journal
+     </span>
+     <button class="text-on-surface-variant hover:text-primary transition-colors p-1 rounded-md shrink-0 flex items-center cursor-pointer" onclick="copyVaultPath(this)" title="Copy path">
+      <span class="material-symbols-outlined text-[16px]">
+       content_copy
+      </span>
+     </button>
+    </div>
+   </div>
+   <div class="grid grid-cols-2 gap-2 pt-1">
+    <button class="py-2.5 px-3 rounded-full bg-surface-container text-on-surface text-xs font-semibold hover:bg-surface-container-high transition-colors active:scale-[0.98] flex items-center justify-center gap-1.5 cursor-pointer" onclick="handleExportData()">
+     <span class="material-symbols-outlined text-[15px]">
+      file_download
+     </span>
+     <span>
+      Export JSON
+     </span>
+    </button>
+    <button class="py-2.5 px-3 rounded-full bg-primary text-on-primary text-xs font-semibold hover:bg-primary-container transition-colors active:scale-[0.98] flex items-center justify-center gap-1.5 shadow-xs cursor-pointer" onclick="handleBackupVault()">
+     <span class="material-symbols-outlined text-[15px]">
+      backup
+     </span>
+     <span>
+      Backup vault
+     </span>
+    </button>
+   </div>
+   <div class="h-[1px] bg-surface-container-low w-full my-1">
+   </div>
+   <!-- Legacy Data Migration Studio Entry -->
+   <div class="p-3.5 bg-surface-container-low/70 rounded-2xl border border-primary/25 flex flex-col gap-2.5">
+    <div class="flex items-center justify-between">
+     <div class="flex items-center gap-2.5">
+      <div class="w-8 h-8 rounded-xl bg-primary/15 text-primary flex items-center justify-center shrink-0">
+       <span class="material-symbols-outlined text-[19px]">
+        history_edu
+       </span>
+      </div>
+      <div>
+       <h4 class="text-xs font-bold text-on-surface">
+        Legacy Migration Studio
+       </h4>
+       <p class="text-[10px] text-on-surface-variant">
+        Review historical focus, tasks, runs &amp; habits
+       </p>
+      </div>
+     </div>
+     <span class="text-[10px] px-2 py-0.5 rounded-full bg-primary-fixed text-primary font-bold">
+      Bundle Ready
+     </span>
+    </div>
+    <p class="text-[11px] text-on-surface-variant leading-relaxed">
+     Review and selectively import 380+ historical records bundled directly from your legacy vault. Review every entry, edit notes or durations, and safely merge into SQLite.
+    </p>
+    <button class="w-full py-2.5 px-3 bg-primary text-on-primary rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 active:scale-98 transition-all shadow-xs cursor-pointer" onclick="openLegacyMigrationStudio()" type="button">
+     <span class="material-symbols-outlined text-[16px]">
+      rule
+     </span>
+     <span>
+      Open Migration Studio &amp; Review Data
+     </span>
+    </button>
+   </div>
+  </div>
+ </section>
+ <!-- Section 5: Android Device & Telemetry Access -->
+ <section class="flex flex-col space-y-2">
+  <div class="flex items-center justify-between px-1">
+   <h3 class="text-xs font-bold text-on-surface-variant uppercase tracking-wider">
+    Android Device &amp; System
+   </h3>
+   <span class="text-[11px] text-primary font-medium">
+    Native Bridge
+   </span>
+  </div>
+  <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high/40 flex flex-col space-y-3" style="box-shadow: var(--card-shadow);">
+   <div class="flex items-center justify-between py-0.5">
+    <div class="flex flex-col min-w-0">
+     <span class="text-xs font-bold text-on-surface">
+      Screen Time Usage Access
+     </span>
+     <span class="text-[11px] text-on-surface-variant">
+      Required to display real application telemetry
+     </span>
+    </div>
+    <button class="px-3 py-1.5 rounded-full bg-surface-container text-primary font-semibold text-xs hover:bg-surface-container-high transition-colors cursor-pointer shrink-0" onclick="requestUsagePermission()">
+     Settings
+    </button>
+   </div>
+   <div class="h-[1px] bg-surface-container-low w-full">
+   </div>
+   <div class="flex items-center justify-between py-0.5">
+    <div class="flex flex-col min-w-0">
+     <span class="text-xs font-bold text-on-surface">
+      Foreground Focus Service
+     </span>
+     <span class="text-[11px] text-on-surface-variant">
+      Prevents Android from killing timer in background
+     </span>
+    </div>
+    <span class="text-[11px] text-primary font-bold bg-primary-fixed px-2.5 py-0.5 rounded-full">
+     Active
+    </span>
+   </div>
+  </div>
+ </section>
+ <!-- Section 6: Advanced & Operational Engine -->
+ <section class="flex flex-col space-y-2 pt-1">
+  <div class="flex items-center justify-between px-1">
+   <h3 class="text-xs font-bold text-tertiary uppercase tracking-wider">
+    Advanced &amp; Database
+   </h3>
+   <span class="text-[11px] text-tertiary">
+    Sovereign SQLite Engine
+   </span>
+  </div>
+  <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high/40 flex flex-col space-y-3" style="box-shadow: var(--card-shadow);">
+   <!-- SQLite Live Diagnostic Row -->
+   <div class="flex items-center justify-between py-1">
+    <div class="flex items-start gap-2.5 min-w-0">
+     <div class="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+      <span class="material-symbols-outlined text-[18px]">
+       database
+      </span>
+     </div>
+     <div class="flex flex-col min-w-0">
+      <div class="flex items-center gap-1.5">
+       <span class="text-xs font-bold text-on-surface">
+        SQLite Database Inspector
+       </span>
+       <span class="text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold" id="adv-db-badge">
+        WAL Active
+       </span>
+      </div>
+      <span class="text-[11px] text-on-surface-variant mt-0.5 truncate" id="adv-db-sub">
+       View schema, live table rows &amp; run diagnostics
+      </span>
+     </div>
+    </div>
+    <button class="px-3.5 py-2 rounded-xl bg-primary text-on-primary font-bold text-xs hover:opacity-95 transition-all active:scale-95 cursor-pointer shadow-xs shrink-0 flex items-center gap-1" onclick="inspectDatabase()" type="button">
+     <span class="material-symbols-outlined text-[15px]">
+      query_stats
+     </span>
+     <span>
+      Inspect
+     </span>
+    </button>
+   </div>
+   <div class="h-[1px] bg-surface-container-low w-full">
+   </div>
+   <!-- Quick Actions Grid -->
+   <div class="grid grid-cols-2 gap-2 pt-0.5">
+    <button class="py-2.5 px-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-semibold transition-all active:scale-[0.98] flex items-center justify-between cursor-pointer border border-surface-container-high/30" onclick="clearCache()" type="button">
+     <div class="flex items-center gap-2">
+      <span class="material-symbols-outlined text-[16px] text-secondary">
+       cached
+      </span>
+      <span>
+       Clear Cache
+      </span>
+     </div>
+     <span class="text-[10px] text-on-surface-variant font-mono" id="adv-cache-size-label">
+      Purge
+     </span>
+    </button>
+    <button class="py-2.5 px-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-semibold transition-all active:scale-[0.98] flex items-center justify-between cursor-pointer border border-surface-container-high/30" onclick="vacuumDatabase()" type="button">
+     <div class="flex items-center gap-2">
+      <span class="material-symbols-outlined text-[16px] text-primary">
+       speed
+      </span>
+      <span>
+       Vacuum DB
+      </span>
+     </div>
+     <span class="text-[10px] text-on-surface-variant">
+      Optimize
+     </span>
+    </button>
+   </div>
+   <!-- App State Reset -->
+   <button class="w-full py-2.5 px-3 rounded-xl bg-error-container/30 hover:bg-error-container/50 text-error text-xs font-semibold transition-all active:scale-[0.98] flex items-center justify-between cursor-pointer border border-error/20" onclick="resetAppSetup()" type="button">
+    <div class="flex items-center gap-2">
+     <span class="material-symbols-outlined text-[16px]">
+      restart_alt
+     </span>
+     <span>
+      Reset Application State
+     </span>
+    </div>
+    <span class="text-[10px] font-bold uppercase tracking-wider text-error">
+     Re-seed
+    </span>
+   </button>
+  </div>
+ </section>
+ <!-- Sanctuary Sign-off Note -->
+ <div class="flex flex-col items-center justify-center text-center space-y-1 pt-2 pb-6 text-on-surface-variant">
+  <div class="flex items-center gap-1.5 text-primary">
+   <span class="material-symbols-outlined text-[16px] material-symbols-filled">
+    spa
+   </span>
+   <span class="text-xs font-bold">
+    V07 Calm Sanctuary
+   </span>
+  </div>
+  <p class="text-[11px] text-tertiary">
+   Crafted for mindful presence · Version 3.0.0 (Build 92)
+  </p>
+ </div>
+</div>

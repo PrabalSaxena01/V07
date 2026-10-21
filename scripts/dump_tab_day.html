@@ -1,0 +1,92 @@
+<div class="page-tab flex-col w-full space-y-4" id="tab-day">
+ <div class="pt-1">
+  <h2 class="text-2xl font-bold text-on-surface tracking-tight">
+   Your day
+  </h2>
+  <p class="text-sm text-on-surface-variant">
+   A quiet look at how your time unfolded.
+  </p>
+ </div>
+ <!-- Today Summary Card -->
+ <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high/40 flex flex-col gap-3" style="box-shadow: var(--card-shadow);">
+  <div class="flex items-center justify-between">
+   <span class="text-sm font-semibold text-primary" id="day-card-label">
+    Today
+   </span>
+   <span class="text-xs text-on-surface-variant bg-surface-container-low px-2.5 py-0.5 rounded-full font-medium">
+    Gentle rhythm
+   </span>
+  </div>
+  <div class="grid grid-cols-3 gap-2 text-center py-1">
+   <div class="flex flex-col items-center justify-center cursor-pointer active:opacity-75" onclick="navigateTo('screentime')">
+    <span class="text-lg font-bold text-on-surface" id="day-screen-time">
+     --
+    </span>
+    <span class="text-xs text-on-surface-variant mt-0.5">
+     screen time
+    </span>
+   </div>
+   <div class="flex flex-col items-center justify-center bg-surface-container-low/60 rounded-xl py-1 px-1 cursor-pointer active:opacity-75" onclick="navigateTo('focus')">
+    <span class="text-lg font-bold text-primary" id="day-focused-time">
+     0 min
+    </span>
+    <span class="text-xs text-on-surface-variant mt-0.5">
+     focused
+    </span>
+   </div>
+   <div class="flex flex-col items-center justify-center cursor-pointer active:opacity-75" onclick="navigateTo('habits')">
+    <span class="text-lg font-bold text-secondary" id="day-habits-count">
+     0
+    </span>
+    <span class="text-xs text-on-surface-variant mt-0.5">
+     habits met
+    </span>
+   </div>
+  </div>
+ </div>
+ <!-- Timeline Events -->
+ <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high/40 space-y-3" style="box-shadow: var(--card-shadow);">
+  <div class="flex items-center justify-between pb-2 border-b border-surface-container-low">
+   <h3 class="text-sm font-semibold text-on-surface" id="day-timeline-heading">
+    Timeline &amp; Events
+   </h3>
+   <span class="text-xs text-primary font-medium" id="day-timeline-count">
+    Live Vault
+   </span>
+  </div>
+  <div class="relative pl-5 space-y-4 pt-1" id="day-timeline-events">
+   <!-- Dynamically populated by loadDayTimeline() -->
+  </div>
+ </div>
+ <!-- Date Picker & Historical Day Navigation -->
+ <section class="bg-surface-container-lowest rounded-2xl p-3.5 shadow-sm border border-surface-container-high/40 flex items-center justify-between shadow-2xs" style="box-shadow: var(--card-shadow);">
+  <button class="w-10 h-10 rounded-xl bg-surface-container-low hover:bg-surface-container active:scale-95 text-on-surface flex items-center justify-center transition-all cursor-pointer border border-surface-container-high/30" onclick="navigateDayDate(-1)" title="Previous Day">
+   <span class="material-symbols-outlined text-[20px]">
+    chevron_left
+   </span>
+  </button>
+  <div class="flex flex-col items-center cursor-pointer px-2" onclick="promptPickDayDate()">
+   <span class="text-xs font-bold text-on-surface flex items-center gap-1.5" id="day-nav-label">
+    <span>
+     Today
+    </span>
+    <span class="material-symbols-outlined text-[15px] text-primary">
+     calendar_month
+    </span>
+   </span>
+   <span class="text-[11px] text-on-surface-variant font-medium mt-0.5" id="day-nav-sub">
+    Sep 26, 2026
+   </span>
+  </div>
+  <div class="flex items-center gap-1.5">
+   <button class="hidden px-2.5 py-1.5 rounded-xl bg-primary text-on-primary text-xs font-bold active:scale-95 transition-transform cursor-pointer shadow-xs" id="day-nav-today-btn" onclick="jumpDayToToday()">
+    Today
+   </button>
+   <button class="w-10 h-10 rounded-xl bg-surface-container-low hover:bg-surface-container active:scale-95 text-on-surface flex items-center justify-center transition-all cursor-pointer border border-surface-container-high/30" id="day-nav-next-btn" onclick="navigateDayDate(1)" title="Next Day">
+    <span class="material-symbols-outlined text-[20px]">
+     chevron_right
+    </span>
+   </button>
+  </div>
+ </section>
+</div>

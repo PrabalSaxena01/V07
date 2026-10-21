@@ -1,0 +1,269 @@
+<div class="tool-view hidden" id="view-screentime">
+ <header class="sticky top-0 z-10 h-16 px-4 bg-surface/95 backdrop-blur-md border-b border-surface-container-high/40 flex items-center justify-between shadow-xs">
+  <div class="flex items-center gap-2.5 min-w-0 flex-1 pr-2">
+   <button aria-label="Back" class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface hover:bg-surface-container active:scale-90 transition-transform cursor-pointer shrink-0" onclick="navigateBack()">
+    <span class="material-symbols-outlined text-[24px]">
+     arrow_back
+    </span>
+   </button>
+   <div class="min-w-0 flex-1">
+    <h2 class="text-base font-bold text-on-surface leading-tight truncate">
+     Digital Stillness
+    </h2>
+    <p class="text-[11px] text-on-surface-variant leading-none truncate">
+     Telemetry &amp; usage boundaries
+    </p>
+   </div>
+  </div>
+  <div class="flex items-center gap-1 shrink-0">
+   <button aria-label="Customize Digital Stillness" class="w-9 h-9 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container active:scale-95 transition-all cursor-pointer" onclick="openPluginSettingsModal('screentime')" title="Customize Digital Stillness">
+    <span class="material-symbols-outlined text-[20px]">
+     settings
+    </span>
+   </button>
+   <button aria-label="Refresh Screen Time" class="w-9 h-9 rounded-full flex items-center justify-center text-primary hover:bg-surface-container active:scale-95 transition-all cursor-pointer" onclick="refreshScreenTime()" title="Refresh">
+    <span class="material-symbols-outlined text-[20px]">
+     sync
+    </span>
+   </button>
+  </div>
+ </header>
+ <div class="flex-1 p-4 pb-14 max-w-[500px] mx-auto w-full space-y-4">
+  <!-- Daily vs Weekly Switcher Pill -->
+  <div class="flex justify-center">
+   <div class="inline-flex p-1 rounded-full bg-surface-container-low border border-surface-container-high shadow-xs items-center gap-1">
+    <button class="py-1 px-4 rounded-full bg-primary text-on-primary font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 cursor-pointer" id="btn-st-daily" onclick="switchRhythmView('daily')">
+     <span class="w-1.5 h-1.5 rounded-full bg-surface-container-lowest inline-block">
+     </span>
+     <span>
+      Daily
+     </span>
+    </button>
+    <button class="py-1 px-4 rounded-full text-on-surface-variant hover:text-on-surface font-semibold text-xs transition-all flex items-center gap-1.5 cursor-pointer" id="btn-st-weekly" onclick="switchRhythmView('weekly')">
+     <span>
+      Weekly
+     </span>
+    </button>
+   </div>
+  </div>
+  <!-- Permission Banner -->
+  <div class="hidden p-4 rounded-2xl bg-secondary-fixed text-on-secondary-fixed space-y-2 border border-secondary-fixed-dim" id="screentime-perm-banner">
+   <div class="flex items-center gap-2 font-bold text-xs">
+    <span class="material-symbols-outlined text-[18px]">
+     security
+    </span>
+    <span>
+     Usage Access Permission Required
+    </span>
+   </div>
+   <p class="text-[11px] leading-relaxed opacity-90">
+    To view detailed app telemetry from your device, please grant Android usage stats access.
+   </p>
+   <button class="mt-1 px-3 py-1.5 bg-on-secondary-fixed text-secondary-fixed rounded-xl text-xs font-bold active:scale-95 transition-all cursor-pointer" onclick="requestUsagePermission()">
+    Grant Permission in Settings
+   </button>
+  </div>
+  <!-- Stillness Date Navigation Bar -->
+  <div class="rounded-2xl bg-surface-container-lowest p-3 border border-surface-container-high/40 shadow-xs flex items-center justify-between" style="box-shadow: var(--card-shadow);">
+   <button class="w-9 h-9 rounded-xl flex items-center justify-center text-on-surface hover:bg-surface-container active:scale-90 transition-all cursor-pointer" onclick="navigateStillnessDate(-1)" title="Previous Day" type="button">
+    <span class="material-symbols-outlined text-[20px]">
+     chevron_left
+    </span>
+   </button>
+   <div class="relative flex items-center gap-1.5 cursor-pointer px-3 py-1.5 rounded-xl hover:bg-surface-container transition-colors" onclick="openStillnessDatePicker()">
+    <span class="material-symbols-outlined text-primary text-[18px]">
+     calendar_today
+    </span>
+    <div class="flex flex-col items-center">
+     <span class="text-xs font-bold text-on-surface" id="st-current-date-label">
+      Today
+     </span>
+     <span class="text-[10px] text-on-surface-variant" id="st-current-date-sub">
+      Daily Overview
+     </span>
+    </div>
+    <span class="material-symbols-outlined text-outline text-[16px]">
+     expand_more
+    </span>
+    <input class="absolute inset-0 opacity-0 pointer-events-auto cursor-pointer" id="st-date-picker-input" onchange="onStillnessDatePicked(this.value)" type="date"/>
+   </div>
+   <div class="flex items-center gap-1">
+    <button class="hidden px-2.5 py-1 rounded-lg text-[10px] font-bold bg-primary-fixed text-primary hover:bg-primary/20 cursor-pointer" id="btn-st-today-pill" onclick="resetStillnessDateToToday()" type="button">
+     Today
+    </button>
+    <button class="w-9 h-9 rounded-xl flex items-center justify-center text-on-surface hover:bg-surface-container active:scale-90 transition-all cursor-pointer opacity-30 pointer-events-none" id="btn-st-next" onclick="navigateStillnessDate(1)" title="Next Day" type="button">
+     <span class="material-symbols-outlined text-[20px]">
+      chevron_right
+     </span>
+    </button>
+   </div>
+  </div>
+  <!-- Total Screen Time Card with Delta -->
+  <div class="rounded-2xl bg-surface-container-lowest p-5 border border-surface-container-high/40 shadow-xs relative overflow-hidden" style="box-shadow: var(--card-shadow);">
+   <div class="flex items-center justify-between mb-1.5">
+    <span class="text-xs font-bold uppercase text-on-surface-variant flex items-center gap-1.5">
+     <span class="w-2 h-2 rounded-full bg-primary inline-block">
+     </span>
+     Active Presence
+    </span>
+    <span class="text-xs px-2.5 py-0.5 rounded-full bg-primary-fixed text-primary font-bold" id="screentime-limit-badge">
+     Active telemetry
+    </span>
+   </div>
+   <div class="flex items-baseline gap-2 mt-1">
+    <h3 class="text-3xl font-bold text-on-surface tracking-tight" id="screentime-modal-total">
+     --
+    </h3>
+    <span class="text-xs text-on-surface-variant font-medium" id="screentime-date-context-badge">
+     today
+    </span>
+   </div>
+   <!-- Delta & Progress Bar -->
+   <div class="mt-3">
+    <div class="flex items-center justify-between text-xs text-on-surface-variant mb-1">
+     <div class="flex items-center gap-1 text-primary font-semibold" id="st-pace-label">
+      <span class="material-symbols-outlined text-[15px]">
+       timer
+      </span>
+      <span id="st-pace-text">
+       Foreground screen time
+      </span>
+     </div>
+     <span class="text-[11px] font-bold" id="st-target-pct">
+      --
+     </span>
+    </div>
+    <div class="w-full h-2 rounded-full bg-surface-container overflow-hidden">
+     <div class="h-full bg-primary rounded-full transition-all duration-500" id="st-progress-bar" style="width: 0%;">
+     </div>
+    </div>
+   </div>
+  </div>
+  <!-- Hourly Rhythm Bar Chart (From Stitch screen_time_deep_midnight) -->
+  <section class="rounded-2xl bg-surface-container-lowest p-4 border border-surface-container-high/40 shadow-xs space-y-3" style="box-shadow: var(--card-shadow);">
+   <div class="flex items-start justify-between">
+    <div>
+     <h4 class="text-xs font-bold text-on-surface" id="st-chart-title">
+      Today's Rhythm
+     </h4>
+     <p class="text-[11px] text-on-surface-variant mt-0.5" id="st-chart-sub">
+      24-hour distribution from 12 AM to 11 PM
+     </p>
+    </div>
+    <div class="flex items-center gap-2 text-[10px] font-semibold text-on-surface-variant">
+     <span class="flex items-center gap-1">
+      <span class="w-2 h-2 rounded-full bg-primary">
+      </span>
+      Screen
+     </span>
+     <span class="flex items-center gap-1">
+      <span class="w-2 h-2 rounded-full bg-surface-container-high">
+      </span>
+      Rest
+     </span>
+    </div>
+   </div>
+   <!-- Daily Hourly View (Full 24-Hour Timeline) -->
+   <div class="overflow-x-auto no-scrollbar pt-2 pb-1" id="st-view-daily-bars">
+    <div class="flex items-end gap-1.5 px-1 min-w-[760px]" id="st-hourly-bars-container">
+     <!-- Dynamically populated with all 24 hours (00:00 to 23:00) by render24HourBars() -->
+    </div>
+   </div>
+   <!-- Weekly Days View -->
+   <div class="hidden" id="st-view-weekly-bars">
+    <div class="grid grid-cols-7 gap-2 pt-2 pb-1" id="st-weekly-bars-container">
+     <!-- Dynamically populated from real telemetry by renderWeeklyBars() -->
+    </div>
+    <div class="mt-2 p-2.5 rounded-xl bg-surface-container-low flex items-center justify-between text-xs" id="weekly-day-pill">
+     <span class="font-bold text-on-surface" id="weekly-pill-name">
+      Today
+     </span>
+     <span class="font-bold text-primary" id="weekly-pill-time">
+      --
+     </span>
+    </div>
+   </div>
+  </section>
+  <!-- Top Applications Breakdown (Real Native Telemetry) -->
+  <div class="space-y-2">
+   <div class="flex items-center justify-between px-1">
+    <span class="text-xs font-bold uppercase text-on-surface">
+     Top Application Activity
+    </span>
+    <span class="text-[11px] text-on-surface-variant">
+     Live from device
+    </span>
+   </div>
+   <div class="flex flex-col bg-surface-container-lowest rounded-2xl divide-y divide-surface-container-low border border-surface-container-high/40 overflow-hidden shadow-xs" id="screentime-apps-list">
+    <div class="p-6 text-center text-on-surface-variant flex flex-col items-center gap-1.5">
+     <span class="material-symbols-outlined text-[24px] text-outline">
+      hourglass_empty
+     </span>
+     <span class="text-xs font-semibold">
+      Reading device telemetry...
+     </span>
+    </div>
+   </div>
+  </div>
+  <!-- Phone Pickups & Awareness Metrics -->
+  <section class="space-y-2">
+   <span class="text-xs font-bold uppercase text-on-surface px-1">
+    Pickups &amp; Awareness
+   </span>
+   <div class="grid grid-cols-2 gap-3">
+    <div class="p-3.5 rounded-2xl bg-surface-container-lowest border border-surface-container-high/40 shadow-xs flex flex-col justify-between">
+     <div class="flex items-center justify-between text-on-surface-variant">
+      <span class="text-xs font-semibold">
+       App Launches
+      </span>
+      <span class="material-symbols-outlined text-[17px]">
+       touch_app
+      </span>
+     </div>
+     <div class="my-1.5">
+      <div class="text-2xl font-bold text-on-surface" id="st-pickups-count">
+       --
+      </div>
+      <div class="text-[11px] text-on-surface-variant" id="st-pickups-sub">
+       Today across apps
+      </div>
+     </div>
+     <div class="pt-1.5 border-t border-surface-container-low flex items-center text-primary text-[11px] font-semibold">
+      <span class="material-symbols-outlined text-[13px] mr-1">
+       trending_down
+      </span>
+      <span>
+       Mindful cadence
+      </span>
+     </div>
+    </div>
+    <div class="p-3.5 rounded-2xl bg-surface-container-lowest border border-surface-container-high/40 shadow-xs flex flex-col justify-between">
+     <div class="flex items-center justify-between text-on-surface-variant">
+      <span class="text-xs font-semibold">
+       Tracked Apps
+      </span>
+      <span class="material-symbols-outlined text-[17px]">
+       apps
+      </span>
+     </div>
+     <div class="my-1.5">
+      <div class="text-2xl font-bold text-on-surface" id="st-apps-count">
+       --
+      </div>
+      <div class="text-[11px] text-on-surface-variant">
+       Active today
+      </div>
+     </div>
+     <div class="pt-1.5 border-t border-surface-container-low flex items-center text-tertiary text-[11px] font-semibold">
+      <span class="material-symbols-outlined text-[13px] mr-1">
+       alarm_on
+      </span>
+      <span>
+       Passive collector active
+      </span>
+     </div>
+    </div>
+   </div>
+  </section>
+ </div>
+</div>

@@ -1,0 +1,77 @@
+<div class="page-tab flex-col w-full space-y-4" id="tab-tools">
+ <!-- Kit Header with Add & Manage Actions -->
+ <div class="flex flex-col gap-1 pt-1 pb-1">
+  <div class="flex items-center justify-between gap-2 w-full flex-wrap sm:flex-nowrap">
+   <div class="flex items-center gap-2 shrink-0">
+    <h2 class="text-2xl font-bold text-on-surface tracking-tight whitespace-nowrap">
+     Tool Kit
+    </h2>
+    <span class="px-2.5 py-0.5 rounded-full bg-primary-fixed text-primary text-xs font-bold whitespace-nowrap" id="kit-count-badge">
+     8 active
+    </span>
+   </div>
+   <div class="flex items-center gap-2 shrink-0">
+    <button class="h-9 px-3 rounded-xl bg-surface-container-low border border-surface-container-high/60 text-xs font-bold text-on-surface flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer shadow-2xs hover:bg-surface-container whitespace-nowrap" id="manage-kit-btn" onclick="toggleManageKitMode()" title="Manage Kit tools and ordering">
+     <span class="material-symbols-outlined text-[17px] text-primary" id="manage-kit-icon">
+      tune
+     </span>
+     <span id="manage-kit-label">
+      Manage
+     </span>
+    </button>
+    <button class="h-9 px-3.5 rounded-xl bg-primary text-on-primary text-xs font-bold flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer shadow-xs hover:opacity-95 whitespace-nowrap" id="add-kit-btn" onclick="importPluginFromZip()" title="Load plugin from .zip file">
+     <span class="material-symbols-outlined text-[17px]">
+      folder_zip
+     </span>
+     <span>
+      Add
+     </span>
+    </button>
+   </div>
+  </div>
+  <p class="text-xs text-on-surface-variant">
+   Calm modules for reflection, focus, and mindful presence.
+  </p>
+ </div>
+ <!-- Manage Kit Info Banner (Shown only when in Manage Mode) -->
+ <div class="hidden p-3.5 bg-primary-fixed/30 border border-primary/20 rounded-2xl flex items-center justify-between animate-fade-in" id="manage-kit-banner">
+  <div class="flex items-center gap-2.5">
+   <span class="material-symbols-outlined text-primary text-[20px]">
+    info
+   </span>
+   <span class="text-xs font-medium text-on-surface">
+    Toggle tools or drag
+    <span class="material-symbols-outlined text-[14px] align-text-bottom">
+     drag_indicator
+    </span>
+    to reorder.
+   </span>
+  </div>
+  <button class="px-3 py-1 bg-primary text-on-primary rounded-xl text-xs font-bold active:scale-95 cursor-pointer" onclick="toggleManageKitMode()">
+   Done
+  </button>
+ </div>
+ <!-- Dynamic Active Kit Tiles Container -->
+ <div class="flex flex-col space-y-3.5" id="kit-tiles-container">
+  <!-- Injected dynamically by renderKitTiles() -->
+ </div>
+ <!-- Inactive / Disabled Tools Section (Collapsible) -->
+ <div class="hidden pt-2 flex-col space-y-2.5" id="kit-inactive-section">
+  <div class="flex items-center justify-between px-1 cursor-pointer" onclick="toggleInactiveKitAccordion()">
+   <div class="flex items-center gap-2">
+    <span class="text-xs font-bold text-on-surface-variant uppercase tracking-wider">
+     Inactive Companions
+    </span>
+    <span class="px-1.5 py-0.2 rounded-full bg-surface-container text-on-surface-variant text-[10px] font-bold" id="kit-inactive-badge">
+     0
+    </span>
+   </div>
+   <span class="material-symbols-outlined text-on-surface-variant text-[18px] transition-transform" id="arrow-inactive-kit">
+    expand_more
+   </span>
+  </div>
+  <div class="hidden flex flex-col space-y-3" id="kit-inactive-tiles">
+   <!-- Inactive tiles injected dynamically -->
+  </div>
+ </div>
+</div>

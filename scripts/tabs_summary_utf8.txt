@@ -1,0 +1,115 @@
+==================================================
+TAB: tab-home
+==================================================
+  [h2] Good day
+  [h3] Take a little time for yourself
+  [h3] Gentle habits
+  [h3] Sovereign Tasks
+  Interactive Controls (16 total):
+    <button id='' onclick='requestUsagePermission()'> Enable
+    <button id='' onclick='setFocusPreset(15)'> 15m
+    <button id='' onclick='setFocusPreset(25)'> 25m
+    <button id='' onclick='setFocusPreset(45)'> 45m
+    <button id='' onclick='setFocusMode('timer')'> all_inclusiveOpen
+    <button id='home-timer-btn' onclick='toggleFocusTimer()'> play_arrowStart focus
+    <button id='home-timer-stop-btn' onclick='stopAndLogFocusSession()'> stop_circleStop & Log
+    <button id='' onclick='navigateTo('focus')'> fullscreen
+    <button id='' onclick='promptAddHabit()'> add
+    <button id='' onclick='navigateTo('habits')'> View allchevron_right
+    <input id='new-task-input' onclick=''> Define a quiet priority...
+    <button id='btn-toggle-task-deadline' onclick='toggleTaskDeadlineFields()'> event
+    <button id='' onclick=''> addAdd
+    <input id='new-task-date' onclick=''> 
+    <input id='new-task-time' onclick=''> 
+    <select id='new-task-priority' onclick=''> MedHigh (!)Low
+
+==================================================
+TAB: tab-tools
+==================================================
+  [h2] Tool Kit
+  Interactive Controls (3 total):
+    <button id='manage-kit-btn' onclick='toggleManageKitMode()'> tuneManage
+    <button id='add-kit-btn' onclick='importPluginFromZip()'> folder_zipAdd
+    <button id='' onclick='toggleManageKitMode()'> Done
+
+==================================================
+TAB: tab-journal
+==================================================
+  [h2] Sanctuary Ledger
+  Interactive Controls (12 total):
+    <button id='' onclick='navigateTo('datacenter')'> Data Center
+    <button id='' onclick='openLedgerCaptureModal()'> addWrite
+    <textarea id='ledger-inline-content' onclick=''> What's on your mind? Capture a thought, note or id
+    <button id='ledger-inline-cat-btn' onclick='toggleLedgerInlineCatDropdown(event)'> ⚡ Quickexpand_more
+    <button id='ledger-inline-submit-btn' onclick='saveLedgerInlineEntry()'> sendRecord
+    <input id='ledger-search-input' onclick=''> Search entries by keyword, note, or tag...
+    <button id='ledger-search-clear' onclick='clearLedgerSearch()'> close
+    <button id='ledger-cat-btn' onclick='toggleLedgerCatDropdown(event)'> Filter:⚡ Quickexpand_more
+    <button id='' onclick='selectLedgerDateRange('all', this)'> All
+    <button id='' onclick='selectLedgerDateRange('today', this)'> Today
+    <button id='' onclick='selectLedgerDateRange('yesterday', this)'> Yesterday
+    <button id='' onclick='selectLedgerDateRange('week', this)'> 7d
+
+==================================================
+TAB: tab-day
+==================================================
+  [h2] Your day
+  [h3] Timeline & Events
+  Interactive Controls (3 total):
+    <button id='' onclick='navigateDayDate(-1)'> chevron_left
+    <button id='day-nav-today-btn' onclick='jumpDayToToday()'> Today
+    <button id='day-nav-next-btn' onclick='navigateDayDate(1)'> chevron_right
+
+==================================================
+TAB: tab-settings
+==================================================
+  [h2] Your space
+  [h3] Your profile
+  [h3] Daily rhythm & notifications
+  [h3] Appearance & Themes
+  [h3] Floating Bubble Overlay
+  [h4] Screen Time Floating Bubble
+  [h3] V07 Companion Sync
+  [h4] V07 Desktop & Web Sync
+  [h3] Plugin Settings
+  [h3] Storage & vault
+  [h4] Legacy Migration Studio
+  [h3] Android Device & System
+  [h3] Advanced & Database
+  Interactive Controls (29 total):
+    <button id='' onclick='promptEditProfile()'> editEdit profile
+    <button id='' onclick='shareSanctuaryStatus()'> shareShare status
+    <button id='' onclick='toggleSettingSwitch(this, 'morning_promp'> check
+    <button id='' onclick='toggleSettingSwitch(this, 'evening_pause'> check
+    <button id='settings-theme-accordion-header' onclick='toggleThemeSettingsAccordion()'> paletteAppearance & Themes8 Distinct Styles4 light
+    <button id='theme-filter-light' onclick='filterThemesGallery('light')'> light_modeLight (4)
+    <button id='theme-filter-dark' onclick='filterThemesGallery('dark')'> dark_modeDark (4)
+    <button id='theme-filter-custom' onclick='filterThemesGallery('custom')'> colorizeCustom Studio
+    <button id='' onclick='openCustomColorPickerModal()'> Tune Colors
+    <button id='settings-bubble-toggle-btn' onclick='toggleBubbleOverlay()'> Turn On
+    <button id='' onclick='nativeInvoke('overlay:requestPermission''> Grant
+    <button id='' onclick='syncCompanionData()'> syncSync Now
+    <button id='' onclick='openCompanionLoginModal()'> account_circleAccount / Login
+    <button id='btn-migrate-companion' onclick='triggerCompanionMigrate()'> cloud_downloadMigrate Web Companion Data (v07-dash
+    <button id='' onclick='importPluginFromZip()'> add_circleSideload
+    <button id='spfilter-all' onclick='setSettingsPluginFilter('all')'> All (0)
+    <button id='spfilter-active' onclick='setSettingsPluginFilter('active')'> Active (0)
+    <button id='spfilter-core' onclick='setSettingsPluginFilter('core')'> Core (0)
+    <button id='spfilter-custom' onclick='setSettingsPluginFilter('custom')'> Sideloaded (0)
+    <input id='settings-plugin-search' onclick=''> Search companion or plugin settings...
+
+==================================================
+TOOL VIEWS (SUB-SCREENS)
+==================================================
+VIEW: view-focus | Headings: ['Focus Sanctuary'] | Key actions: ['arrow_back', 'notifications_active', 'settings', 'restart_alt', '-']
+VIEW: view-reading | Headings: ['Your Books', 'Currently reading', 'Atomic Habits'] | Key actions: ['arrow_back', 'settings', 'addAdd book', '-5 p', '+10 p']
+VIEW: view-habits | Headings: ['Habits', 'Today', 'Consistency'] | Key actions: ['arrow_back', 'settings', 'add', 'addAdd habit']
+VIEW: view-screentime | Headings: ['Digital Stillness', '--', "Today's Rhythm"] | Key actions: ['arrow_back', 'settings', 'sync', 'Daily', 'Weekly']
+VIEW: view-mood | Headings: ['Mood & Energy', 'Emotional State', '7-Day Equilibrium Trends'] | Key actions: ['arrow_back', 'settings', 'close', 'spaMood & Energy', 'lockPanic Vault']
+VIEW: view-gita | Headings: ['Bhagavad Gita'] | Key actions: ['arrow_back', 'play_arrowContinue', 'menu_book', 'bookmarks0', 'ChapterCh 2: Sankhyaexpand_more']
+VIEW: view-weekly | Headings: ['Weekly Digest', 'Daily Focus & Cadence', 'Weekly Synthesis'] | Key actions: ['arrow_back', 'settings', 'close', 'Summary', 'Patterns']
+VIEW: view-write | Headings: ['Write Reflection'] | Key actions: ['arrow_back', 'Done', '#gratitude', '#quiet', '#focus']
+VIEW: view-datacenter | Headings: ['Data Center'] | Key actions: ['arrow_back', 'checklistSelect', 'download', 'delete_sweep', 'check_box_outline_blankSelect All']
+VIEW: view-running | Headings: ['Runtime Tracker'] | Key actions: ['arrow_back', 'addLog Run', 'close', 'Cancel', 'checkSave Run']
+VIEW: view-timetracker | Headings: ['Time Horizon'] | Key actions: ['arrow_back', 'addMilestone', 'All', 'Future', 'Past']
+VIEW: view-tasks | Headings: ['Sovereign Tasks'] | Key actions: ['arrow_back', 'addNew Task', 'All', 'Pending', 'High (!)']

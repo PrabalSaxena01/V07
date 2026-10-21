@@ -1,0 +1,133 @@
+<div class="page-tab flex-col w-full max-w-[680px] mx-auto space-y-4" id="tab-journal">
+ <!-- Ledger Header -->
+ <div class="flex flex-wrap items-end justify-between gap-3 pt-1">
+  <div class="flex flex-col gap-0.5 min-w-0 flex-1">
+   <div class="flex items-center gap-1.5">
+    <span class="text-xs font-semibold text-primary tracking-wide">
+     Sovereign Journal
+    </span>
+   </div>
+   <h2 class="text-2xl font-bold text-on-surface tracking-tight truncate">
+    Sanctuary Ledger
+   </h2>
+   <p class="text-xs text-on-surface-variant truncate">
+    Your personal log of thoughts, reflections, notes &amp; entries.
+   </p>
+  </div>
+  <div class="flex items-center gap-1.5 shrink-0">
+   <button class="flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-high text-on-surface rounded-xl shadow-xs active:scale-[0.98] transition-transform cursor-pointer text-xs font-bold hover:bg-surface-container-highest" onclick="navigateTo('datacenter')" title="Open Data Center">
+    <span>
+     Data Center
+    </span>
+   </button>
+   <button class="flex items-center gap-1 px-3 py-1.5 bg-primary text-on-primary rounded-xl shadow-xs active:scale-[0.98] transition-transform cursor-pointer text-xs font-bold hover:opacity-95" onclick="openLedgerCaptureModal()" title="New Detailed Entry">
+    <span class="material-symbols-outlined text-[16px]">
+     add
+    </span>
+    <span>
+     Write
+    </span>
+   </button>
+  </div>
+ </div>
+ <!-- In-Stream Quick Capture Card -->
+ <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high/60 flex flex-col gap-3 transition-all focus-within:border-primary/50" style="box-shadow: var(--card-shadow);">
+  <textarea class="w-full bg-transparent text-xs text-on-surface placeholder:text-outline focus:outline-none resize-none leading-relaxed" id="ledger-inline-content" onkeydown="handleLedgerInlineKeydown(event)" placeholder="What's on your mind? Capture a thought, note or idea..." rows="2"></textarea>
+  <div class="flex items-center justify-between pt-2 border-t border-surface-container-high/30 gap-2">
+   <!-- Inline Category Selector Dropdown -->
+   <div class="relative inline-block" id="ledger-inline-cat-wrap">
+    <button class="h-7 px-2.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-[11px] font-bold text-on-surface flex items-center gap-1.5 cursor-pointer border border-surface-container-high/40 transition-colors" id="ledger-inline-cat-btn" onclick="toggleLedgerInlineCatDropdown(event)" type="button">
+     <span class="w-1.5 h-1.5 rounded-full bg-primary" id="ledger-inline-cat-dot">
+     </span>
+     <span id="ledger-inline-cat-label">
+      ⚡ Quick
+     </span>
+     <span class="material-symbols-outlined text-[14px] text-outline">
+      expand_more
+     </span>
+    </button>
+    <div class="hidden absolute left-0 bottom-full mb-1.5 w-52 rounded-xl bg-surface-container border border-surface-container-high shadow-2xl z-50 py-1 max-h-56 overflow-y-auto no-scrollbar backdrop-blur-md animate-fade-in" id="ledger-inline-cat-menu">
+     <!-- Dynamically populated -->
+    </div>
+   </div>
+   <div class="flex items-center gap-2">
+    <span class="text-[10px] text-outline hidden sm:inline">
+     Ctrl + Enter to record
+    </span>
+    <button class="flex items-center gap-1 px-3.5 py-1.5 rounded-xl bg-primary text-on-primary text-xs font-bold active:scale-95 transition-transform cursor-pointer shadow-xs hover:opacity-95" id="ledger-inline-submit-btn" onclick="saveLedgerInlineEntry()">
+     <span class="material-symbols-outlined text-[14px]">
+      send
+     </span>
+     <span>
+      Record
+     </span>
+    </button>
+   </div>
+  </div>
+ </div>
+ <!-- Filter, Search & Categories Controls -->
+ <section class="flex flex-col gap-2.5">
+  <!-- Search Bar -->
+  <div class="relative flex items-center w-full">
+   <span class="material-symbols-outlined text-outline text-[18px] absolute left-3.5 pointer-events-none">
+    search
+   </span>
+   <input class="w-full bg-surface-container-lowest border border-surface-container-high/60 rounded-xl pl-10 pr-9 py-2.5 text-xs text-on-surface placeholder:text-outline focus:outline-none focus:border-primary shadow-xs transition-colors" id="ledger-search-input" oninput="handleLedgerSearch(this.value)" placeholder="Search entries by keyword, note, or tag..." type="text"/>
+   <button aria-label="Clear ledger search" class="absolute right-3 text-on-surface-variant hover:text-on-surface hidden cursor-pointer p-1 rounded-full active:scale-95" id="ledger-search-clear" onclick="clearLedgerSearch()" title="Clear">
+    <span class="material-symbols-outlined text-[16px]">
+     close
+    </span>
+   </button>
+  </div>
+  <!-- Category & Date Filters Row -->
+  <div class="flex items-center justify-between gap-2 pt-0.5">
+   <!-- Filter Category Dropdown -->
+   <div class="relative inline-block text-left" id="ledger-cat-dropdown-wrap">
+    <button class="h-9 px-3 rounded-xl bg-surface-container-low border border-surface-container-high/60 text-xs font-bold text-on-surface shadow-2xs hover:bg-surface-container cursor-pointer transition-all inline-flex items-center gap-1.5 active:scale-95 whitespace-nowrap flex-nowrap shrink-0" id="ledger-cat-btn" onclick="toggleLedgerCatDropdown(event)" type="button">
+     <span class="w-2 h-2 rounded-full bg-primary shrink-0" id="ledger-cat-dot">
+     </span>
+     <span class="text-on-surface-variant text-[11px] font-medium shrink-0">
+      Filter:
+     </span>
+     <span class="text-primary font-bold inline-flex items-center gap-1 whitespace-nowrap shrink-0" id="ledger-cat-selected-label">
+      ⚡ Quick
+     </span>
+     <span class="material-symbols-outlined text-[16px] text-outline transition-transform duration-200 shrink-0" id="ledger-cat-chevron">
+      expand_more
+     </span>
+    </button>
+    <!-- Floating In-App Dropdown Menu -->
+    <div class="hidden absolute left-0 mt-1.5 w-60 rounded-xl bg-surface-container border border-surface-container-high shadow-2xl z-50 py-1.5 max-h-72 overflow-y-auto no-scrollbar backdrop-blur-md animate-fade-in" id="ledger-cat-dropdown-menu">
+     <!-- Dynamically populated by renderLedgerCatDropdownMenu() -->
+    </div>
+   </div>
+   <!-- Date Range Filter Row -->
+   <div class="flex items-center gap-1.5 text-[11px] text-on-surface-variant" id="ledger-date-chips">
+    <button class="ledger-date-chip font-bold text-primary cursor-pointer px-2 py-1 rounded-lg hover:bg-surface-container-low" data-range="all" onclick="selectLedgerDateRange('all', this)">
+     All
+    </button>
+    <button class="ledger-date-chip text-on-surface-variant hover:text-on-surface cursor-pointer px-2 py-1 rounded-lg hover:bg-surface-container-low" data-range="today" onclick="selectLedgerDateRange('today', this)">
+     Today
+    </button>
+    <button class="ledger-date-chip text-on-surface-variant hover:text-on-surface cursor-pointer px-2 py-1 rounded-lg hover:bg-surface-container-low" data-range="yesterday" onclick="selectLedgerDateRange('yesterday', this)">
+     Yesterday
+    </button>
+    <button class="ledger-date-chip text-on-surface-variant hover:text-on-surface cursor-pointer px-2 py-1 rounded-lg hover:bg-surface-container-low" data-range="week" onclick="selectLedgerDateRange('week', this)">
+     7d
+    </button>
+   </div>
+  </div>
+  <div class="flex items-center justify-between px-1 text-[11px] text-on-surface-variant">
+   <span class="font-medium text-outline" id="ledger-category-hint">
+    Viewing: Quick
+   </span>
+   <span class="font-medium text-outline" id="ledger-entry-count">
+    Loading...
+   </span>
+  </div>
+ </section>
+ <!-- Unified Entries Stream Container -->
+ <div class="flex flex-col space-y-3" id="journal-entries-stream">
+  <!-- Injected dynamically by renderLedgerStream() -->
+ </div>
+</div>
