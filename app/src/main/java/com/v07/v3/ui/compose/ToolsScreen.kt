@@ -120,6 +120,19 @@ fun ToolsScreen(
                 type = SanctuaryToolType.CORE
             ),
             SanctuaryTool(
+                id = "tasks",
+                pluginId = null,
+                title = "Sovereign Tasks",
+                category = "Action Items",
+                description = "Daily directives, quiet priorities & deadlines",
+                icon = Icons.Outlined.Checklist,
+                accentColor = SanctuaryPalette.AccentTasks,
+                accentBg = SanctuaryPalette.AccentTasksBg,
+                statusPreview = "Directives & focus list",
+                subView = SanctuarySubView.TASKS,
+                type = SanctuaryToolType.CORE
+            ),
+            SanctuaryTool(
                 id = "ledger",
                 pluginId = null,
                 title = "Sanctuary Ledger",
@@ -131,19 +144,6 @@ fun ToolsScreen(
                 statusPreview = "Live reflections & notes",
                 subView = SanctuarySubView.NONE,
                 type = SanctuaryToolType.CORE
-            ),
-            SanctuaryTool(
-                id = "gita",
-                pluginId = "com.v07.gita",
-                title = "Bhagavad Gita",
-                category = "Wisdom & Philosophy",
-                description = "Sacred verses, Sanskrit, Hindi commentary & translations",
-                icon = Icons.Outlined.MenuBook,
-                accentColor = Color(0xFFEAB308),
-                accentBg = Color(0x1AEAB308),
-                statusPreview = "Chapter 2, Verse 47",
-                subView = SanctuarySubView.GITA,
-                type = SanctuaryToolType.PLUGIN
             ),
             SanctuaryTool(
                 id = "datacenter",
@@ -163,15 +163,16 @@ fun ToolsScreen(
             // 2. MODULAR PLUGINS & EXTENSIONS (Sandboxed Extensible Platform)
             // =================================================================
             SanctuaryTool(
-                id = "tasks",
-                pluginId = "com.v07.tasks",
-                title = "Sovereign Tasks",
-                category = "Action Items",
-                description = "Daily directives, quiet priorities & deadlines",
-                icon = Icons.Outlined.Checklist,
-                accentColor = SanctuaryPalette.AccentTasks,
-                accentBg = SanctuaryPalette.AccentTasksBg,
-                statusPreview = "Directives & focus list",
+                id = "gita",
+                pluginId = "com.v07.gita",
+                title = "Bhagavad Gita",
+                category = "Wisdom & Philosophy",
+                description = "Sacred verses, Sanskrit, Hindi commentary & translations",
+                icon = Icons.Outlined.MenuBook,
+                accentColor = Color(0xFFEAB308),
+                accentBg = Color(0x1AEAB308),
+                statusPreview = "Chapter 2, Verse 47",
+                subView = SanctuarySubView.GITA,
                 type = SanctuaryToolType.PLUGIN
             ),
             SanctuaryTool(
@@ -284,6 +285,7 @@ fun ToolsScreen(
             tool.id == "focus" -> onNavigateToSubView(SanctuarySubView.FOCUS)
             tool.id == "screentime" -> onNavigateToSubView(SanctuarySubView.SCREENTIME)
             tool.id == "habits" -> onNavigateToSubView(SanctuarySubView.HABITS)
+            tool.id == "tasks" -> onNavigateToSubView(SanctuarySubView.TASKS)
             tool.id == "ledger" -> onNavigateToTab(SanctuaryTab.LEDGER)
             tool.id == "datacenter" -> onNavigateToSubView(SanctuarySubView.DATACENTER)
             tool.id == "gita" -> onNavigateToSubView(SanctuarySubView.GITA)

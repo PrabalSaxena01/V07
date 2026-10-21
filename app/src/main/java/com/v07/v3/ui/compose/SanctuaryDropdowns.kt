@@ -271,12 +271,14 @@ fun SanctuaryProfileDropdownMenu(
 ) {
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences("v07_profiles", Context.MODE_PRIVATE) }
-    var activeProfileId by remember {
+    var activeProfileId by remember(expanded) {
         mutableStateOf(prefs.getString("active_profile_id", "guest") ?: "guest")
     }
 
-    // Default profiles available in Sanctuary
-    val profiles = listOf("guest", "Work", "Deep Study", "Monk Routine")
+    // Dynamic profiles available in Sanctuary SQLite
+    val profiles = remember(expanded) {
+        (listOf("guest", "Work", "Deep Study", "Monk Routine") + V07Database.listProfiles(context)).distinct()
+    }
 
     DropdownMenu(
         expanded = expanded,

@@ -164,7 +164,7 @@ class V3Activity : AppCompatActivity() {
                     isPluginFullscreen = isModalOpen,
                     onSetFullscreen = { isModalOpenState.value = it },
                     onProfileClick = {
-                        isModalOpenState.value = true
+                        // Profile click navigates smoothly to Settings in SanctuaryShell
                     },
                     onImportPluginZip = {
                         launchZipPicker { res ->

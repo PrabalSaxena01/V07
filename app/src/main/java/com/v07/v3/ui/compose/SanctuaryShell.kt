@@ -131,7 +131,11 @@ fun SanctuaryShell(
                             )
                         }
                         SanctuarySubView.GITA -> {
-                            GitaWisdomScreen(
+                            PluginHostScreen(
+                                pluginId = "com.v07.gita",
+                                pluginTitle = "Bhagavad Gita",
+                                pluginSubtitle = "Sacred verses, Sanskrit, Hindi commentary & translations",
+                                isLight = isLight,
                                 onBack = { activeSubView = SanctuarySubView.NONE },
                                 modifier = Modifier.fillMaxSize()
                             )
@@ -143,11 +147,7 @@ fun SanctuaryShell(
                             )
                         }
                         SanctuarySubView.TASKS -> {
-                            PluginHostScreen(
-                                pluginId = "com.v07.tasks",
-                                pluginTitle = "Sovereign Tasks",
-                                pluginSubtitle = "Daily directives, quiet priorities & deadlines",
-                                isLight = isLight,
+                            SovereignTasksScreen(
                                 onBack = { activeSubView = SanctuarySubView.NONE },
                                 modifier = Modifier.fillMaxSize()
                             )

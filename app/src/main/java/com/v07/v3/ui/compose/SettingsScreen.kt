@@ -60,7 +60,12 @@ fun SettingsScreen(
     }
 
     var notificationsEnabled by remember { mutableStateOf(true) }
-    var syncStatusText by remember { mutableStateOf("Ready to sync") }
+    var isCloudSyncEnabled by remember { mutableStateOf(syncManager.isCloudSyncEnabled()) }
+    var companionUidInput by remember { mutableStateOf(syncManager.getCustomCompanionUid() ?: com.v07.v3.core.sync.V3CompanionSyncManager.DEFAULT_COMPANION_UID) }
+    var isSyncingNow by remember { mutableStateOf(false) }
+    var isMigratingNow by remember { mutableStateOf(false) }
+    var lastSyncFormatted by remember { mutableStateOf(syncManager.getSyncStatus().optString("last_synced_formatted", "Never")) }
+    var syncStatusText by remember { mutableStateOf(if (syncManager.isCloudSyncEnabled()) "Ready to sync with cloud" else "Offline Guest Mode") }
 
     val profilePrefs = remember { context.getSharedPreferences("v07_profiles", Context.MODE_PRIVATE) }
     var activeProfileId by remember { mutableStateOf(profilePrefs.getString("active_profile_id", "guest") ?: "guest") }
@@ -131,23 +136,50 @@ fun SettingsScreen(
     }
 
     fun triggerSync() {
-        syncStatusText = "Syncing..."
+        isSyncingNow = true
+        syncStatusText = "Syncing with cloud..."
+        if (!isCloudSyncEnabled) {
+            syncManager.enableCloudSync(companionUidInput)
+            isCloudSyncEnabled = true
+        }
         scope.launch(Dispatchers.IO) {
             try {
                 syncManager.syncNow { success, msg ->
                     scope.launch(Dispatchers.Main) {
-                        syncStatusText = msg ?: if (success) "Synchronized just now" else "Sync completed locally"
+                        isSyncingNow = false
+                        lastSyncFormatted = syncManager.getSyncStatus().optString("last_synced_formatted", "Just now")
+                        syncStatusText = msg ?: if (success) "Synchronized just now" else "Sync failed"
                         Toast.makeText(context, syncStatusText, Toast.LENGTH_SHORT).show()
                     }
                 }
+            } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    syncStatusText = "Synchronized just now"
-                    Toast.makeText(context, "Vault synchronized", Toast.LENGTH_SHORT).show()
+                    isSyncingNow = false
+                    syncStatusText = "Sync error: ${e.message}"
+                    Toast.makeText(context, syncStatusText, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    fun pullCompanionData() {
+        isMigratingNow = true
+        syncStatusText = "Pulling remote companion data..."
+        scope.launch(Dispatchers.IO) {
+            try {
+                syncManager.migrateWebCompanionData(companionUidInput) { success, msg, _ ->
+                    scope.launch(Dispatchers.Main) {
+                        isMigratingNow = false
+                        lastSyncFormatted = syncManager.getSyncStatus().optString("last_synced_formatted", "Just now")
+                        syncStatusText = msg ?: if (success) "Companion data pulled successfully" else "Pull completed"
+                        Toast.makeText(context, syncStatusText, Toast.LENGTH_SHORT).show()
+                    }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    syncStatusText = "Sync completed locally"
-                    Toast.makeText(context, "Local vault active", Toast.LENGTH_SHORT).show()
+                    isMigratingNow = false
+                    syncStatusText = "Pull error: ${e.message}"
+                    Toast.makeText(context, syncStatusText, Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -582,15 +614,34 @@ fun SettingsScreen(
         // --- Section 5: V07 Companion Sync ---
         item {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = "V07 COMPANION SYNC",
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        letterSpacing = 1.sp
-                    ),
-                    modifier = Modifier.padding(horizontal = 2.dp)
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "V07 COMPANION SYNC",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            letterSpacing = 1.sp
+                        )
+                    )
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = if (isCloudSyncEnabled) Color(0xFF10B981).copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant
+                    ) {
+                        Text(
+                            text = if (isCloudSyncEnabled) "ONLINE SYNC" else "OFFLINE GUEST",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = if (isCloudSyncEnabled) Color(0xFF10B981) else MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 10.sp
+                            ),
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                    }
+                }
 
                 Surface(
                     shape = cardShape,
@@ -603,8 +654,9 @@ fun SettingsScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
+                        // Toggle Cloud Sync Row
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -612,32 +664,159 @@ fun SettingsScreen(
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "Companion Sync Hub",
+                                    text = "Enable Firestore Cloud Sync",
                                     style = MaterialTheme.typography.bodyMedium.copy(
                                         fontWeight = FontWeight.SemiBold,
                                         color = MaterialTheme.colorScheme.onSurface
                                     )
                                 )
                                 Text(
-                                    text = syncStatusText,
+                                    text = if (isCloudSyncEnabled) "Realtime bidirectional sync with web companion active" else "Running in offline sovereign isolation",
                                     style = MaterialTheme.typography.bodySmall.copy(
-                                        color = MaterialTheme.colorScheme.primary
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 )
                             }
+                            Switch(
+                                checked = isCloudSyncEnabled,
+                                onCheckedChange = { enable ->
+                                    if (enable) {
+                                        syncManager.enableCloudSync(companionUidInput)
+                                        isCloudSyncEnabled = true
+                                        triggerSync()
+                                    } else {
+                                        syncManager.disableCloudSync()
+                                        isCloudSyncEnabled = false
+                                        syncStatusText = "Offline Guest Mode"
+                                        Toast.makeText(context, "Cloud sync disabled · Offline mode active", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            )
+                        }
+
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f), thickness = 1.dp)
+
+                        // Target Firestore Companion UID input
+                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Text(
+                                text = "Firestore Companion Target UID:",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                OutlinedTextField(
+                                    value = companionUidInput,
+                                    onValueChange = { companionUidInput = it.trim() },
+                                    singleLine = true,
+                                    shape = RoundedCornerShape(10.dp),
+                                    modifier = Modifier.weight(1f),
+                                    textStyle = MaterialTheme.typography.bodySmall.copy(fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace, fontSize = 11.5.sp),
+                                    placeholder = { Text("e.g. 5fwVgpra4pRzB1QqMWb9LSZSqrp2", fontSize = 11.sp) }
+                                )
+                                Button(
+                                    onClick = {
+                                        syncManager.setTargetUid(companionUidInput)
+                                        isCloudSyncEnabled = true
+                                        Toast.makeText(context, "Target UID saved: $companionUidInput", Toast.LENGTH_SHORT).show()
+                                        triggerSync()
+                                    },
+                                    shape = RoundedCornerShape(10.dp),
+                                    modifier = Modifier.height(48.dp),
+                                    contentPadding = PaddingValues(horizontal = 12.dp)
+                                ) {
+                                    Text("Save", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                }
+                            }
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                TextButton(
+                                    onClick = {
+                                        companionUidInput = com.v07.v3.core.sync.V3CompanionSyncManager.DEFAULT_COMPANION_UID
+                                        syncManager.setTargetUid(companionUidInput)
+                                        isCloudSyncEnabled = true
+                                        triggerSync()
+                                    },
+                                    contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp)
+                                ) {
+                                    Icon(Icons.Outlined.Restore, null, modifier = Modifier.size(13.dp))
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text("Restore Default UID (5fwV...)", fontSize = 10.5.sp)
+                                }
+
+                                Text(
+                                    text = "Last: $lastSyncFormatted",
+                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                )
+                            }
+                        }
+
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f), thickness = 1.dp)
+
+                        // Action Buttons: Sync Now & Pull Web Companion
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
                             Button(
                                 onClick = { triggerSync() },
                                 shape = RoundedCornerShape(12.dp),
+                                enabled = !isSyncingNow,
+                                modifier = Modifier.weight(1f).height(42.dp),
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = MaterialTheme.colorScheme.primary,
                                     contentColor = MaterialTheme.colorScheme.onPrimary
                                 )
                             ) {
-                                Icon(imageVector = Icons.Outlined.Sync, contentDescription = null, modifier = Modifier.size(16.dp))
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(text = "Sync now", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+                                if (isSyncingNow) {
+                                    CircularProgressIndicator(modifier = Modifier.size(16.dp), color = MaterialTheme.colorScheme.onPrimary, strokeWidth = 2.dp)
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text("Syncing...", fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                                } else {
+                                    Icon(imageVector = Icons.Outlined.Sync, contentDescription = null, modifier = Modifier.size(16.dp))
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text("Sync now", fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                                }
+                            }
+
+                            FilledTonalButton(
+                                onClick = { pullCompanionData() },
+                                shape = RoundedCornerShape(12.dp),
+                                enabled = !isMigratingNow,
+                                modifier = Modifier.weight(1f).height(42.dp),
+                                colors = ButtonDefaults.filledTonalButtonColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                    contentColor = MaterialTheme.colorScheme.primary
+                                )
+                            ) {
+                                if (isMigratingNow) {
+                                    CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text("Pulling...", fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                                } else {
+                                    Icon(imageVector = Icons.Outlined.CloudDownload, contentDescription = null, modifier = Modifier.size(16.dp))
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text("Pull cloud", fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                                }
                             }
                         }
+
+                        Text(
+                            text = "Status: $syncStatusText",
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        )
                     }
                 }
             }
@@ -921,8 +1100,11 @@ fun SettingsScreen(
         var bioInput by remember { mutableStateOf(profileBio) }
         var selectedGlyph by remember { mutableStateOf(profileAvatarSymbol) }
         var selectedProfile by remember { mutableStateOf(activeProfileId) }
-        val availableProfiles = remember { listOf("guest", "Work", "Deep Study", "Monk Routine") }
-        val glyphs = listOf("S", "P", "A", "V", "🧘", "⚡", "⚔️", "🌿", "📚", "💎", "🎯", "🛡️")
+        val existingDbProfiles = remember { com.v07.v3.core.data.V07Database.listProfiles(context) }
+        var availableProfiles by remember { mutableStateOf((listOf("guest", "Work", "Deep Study", "Monk Routine") + existingDbProfiles).distinct()) }
+        var newProfileNameInput by remember { mutableStateOf("") }
+        var isAddingNewProfile by remember { mutableStateOf(false) }
+        val glyphs = listOf("S", "P", "A", "V", "🪔", "🧘", "⚡", "⚔️", "🌿", "📚", "💎", "🎯", "🛡️")
 
         AlertDialog(
             onDismissRequest = { showEditProfileDialog = false },

@@ -40,6 +40,7 @@ class V3CompanionSyncManager private constructor(
         private const val TAG = "V3CompanionSync"
         private const val PREFS_NAME = "v07_v3_sync_prefs"
         private const val KEY_LAST_SYNCED = "last_synced_timestamp"
+        const val DEFAULT_COMPANION_UID = "5fwVgpra4pRzB1QqMWb9LSZSqrp2"
 
         @Volatile
         private var instance: V3CompanionSyncManager? = null
@@ -87,6 +88,24 @@ class V3CompanionSyncManager private constructor(
             startRealtimeSync()
             syncNow { _, _ -> }
         }
+    }
+
+    fun getCustomCompanionUid(): String? {
+        return prefs.getString("custom_companion_uid", null)?.trim()?.ifBlank { null }
+    }
+
+    fun enableCloudSync(uid: String? = null) {
+        val target = uid?.trim()?.ifBlank { null }
+            ?: getCustomCompanionUid()
+            ?: DEFAULT_COMPANION_UID
+        prefs.edit().putString("custom_companion_uid", target).apply()
+        startRealtimeSync()
+        syncNow { _, _ -> }
+    }
+
+    fun disableCloudSync() {
+        prefs.edit().remove("custom_companion_uid").apply()
+        stopRealtimeSync()
     }
 
     private fun ensureFirebaseInitialized(): Boolean {

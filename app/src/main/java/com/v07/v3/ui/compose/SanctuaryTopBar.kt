@@ -41,7 +41,20 @@ fun SanctuaryTopBar(
     val context = LocalContext.current
     var profileDropdownExpanded by remember { mutableStateOf(false) }
 
-    val profileInitial = remember(profileDropdownExpanded) {
+    var profileChangeCounter by remember { mutableStateOf(0) }
+
+    DisposableEffect(context) {
+        val prefs = context.getSharedPreferences("v07_profiles", Context.MODE_PRIVATE)
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
+            profileChangeCounter++
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose {
+            prefs.unregisterOnSharedPreferenceChangeListener(listener)
+        }
+    }
+
+    val profileInitial = remember(profileDropdownExpanded, profileChangeCounter) {
         val prefs = context.getSharedPreferences("v07_profiles", Context.MODE_PRIVATE)
         prefs.getString("profile_avatar_symbol", null)?.ifBlank { null }
             ?: prefs.getString("profile_display_name", null)?.trim()?.firstOrNull()?.uppercase()
@@ -53,7 +66,7 @@ fun SanctuaryTopBar(
             }
     }
 
-    var activeProfileName by remember {
+    var activeProfileName by remember(profileDropdownExpanded, profileChangeCounter) {
         val prefs = context.getSharedPreferences("v07_profiles", Context.MODE_PRIVATE)
         mutableStateOf(prefs.getString("active_profile_id", "guest") ?: "guest")
     }
