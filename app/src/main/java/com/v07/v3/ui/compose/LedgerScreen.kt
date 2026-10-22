@@ -8,6 +8,8 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -76,6 +78,7 @@ fun LedgerScreen(
     var captureCategory by remember { mutableStateOf("quick") }
     var showCategoryDropdown by remember { mutableStateOf(false) }
     var showFilterDropdown by remember { mutableStateOf(false) }
+    var editingThought by remember { mutableStateOf<V3Thought?>(null) }
 
     val sdfDate = remember { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()) }
     val sdfTime = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
@@ -128,6 +131,21 @@ fun LedgerScreen(
             withContext(Dispatchers.Main) {
                 loadThoughts()
                 Toast.makeText(context, "Entry deleted", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    fun handleUpdate(updated: V3Thought) {
+        scope.launch(Dispatchers.IO) {
+            val ok = repository.updateThought(updated)
+            withContext(Dispatchers.Main) {
+                if (ok) {
+                    editingThought = null
+                    loadThoughts()
+                    Toast.makeText(context, "Entry updated", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(context, "Failed to update entry", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
@@ -649,6 +667,17 @@ fun LedgerScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 IconButton(
+                                    onClick = { editingThought = item },
+                                    modifier = Modifier.size(28.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Edit,
+                                        contentDescription = "Edit Entry",
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(15.dp)
+                                    )
+                                }
+                                IconButton(
                                     onClick = { copyToClipboard(item.content) },
                                     modifier = Modifier.size(28.dp)
                                 ) {
@@ -686,11 +715,100 @@ fun LedgerScreen(
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 lineHeight = 20.sp
-                            )
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { editingThought = item }
                         )
                     }
                 }
             }
         }
     }
+
+    // Direct Edit Entry Dialog
+    if (editingThought != null) {
+        EditEntryDialog(
+            thought = editingThought!!,
+            onDismiss = { editingThought = null },
+            onSave = { updated -> handleUpdate(updated) }
+        )
+    }
+}
+
+@Composable
+fun EditEntryDialog(
+    thought: V3Thought,
+    onDismiss: () -> Unit,
+    onSave: (V3Thought) -> Unit
+) {
+    var contentText by remember { mutableStateOf(thought.content) }
+    var selectedCategory by remember { mutableStateOf((thought.tags ?: thought.topic ?: "quick").lowercase()) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Edit Entry",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // Category Selector chips
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    LEDGER_CATEGORIES.forEach { cat ->
+                        val isSelected = cat.id == selectedCategory
+                        FilterChip(
+                            selected = isSelected,
+                            onClick = { selectedCategory = cat.id },
+                            label = { Text("${cat.icon} ${cat.label}", fontSize = 11.sp) }
+                        )
+                    }
+                }
+
+                OutlinedTextField(
+                    value = contentText,
+                    onValueChange = { contentText = it },
+                    label = { Text("Entry Content") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .defaultMinSize(minHeight = 120.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    maxLines = 8
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    val trimmed = contentText.trim()
+                    if (trimmed.isNotEmpty()) {
+                        val updated = thought.copy(
+                            content = trimmed,
+                            topic = selectedCategory.replaceFirstChar { it.uppercase() },
+                            tags = selectedCategory
+                        )
+                        onSave(updated)
+                    }
+                },
+                enabled = contentText.isNotBlank()
+            ) {
+                Text("Save Changes")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
 }
