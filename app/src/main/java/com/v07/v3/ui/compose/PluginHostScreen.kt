@@ -60,6 +60,7 @@ fun PluginHostScreen(
             (function() {
                 try {
                     var t = '$themeName';
+                    try { localStorage.setItem('v07_theme', t); localStorage.setItem('v07_app_theme', t); } catch(e){}
                     document.documentElement.setAttribute('data-theme', t);
                     if (t === 'light') {
                         document.documentElement.classList.add('light');
@@ -76,10 +77,7 @@ fun PluginHostScreen(
                             document.body.classList.remove('light');
                         }
                     }
-                    localStorage.setItem('v07_theme', t);
-                    localStorage.setItem('v07_app_theme', t);
                     window.dispatchEvent(new CustomEvent('v07-theme-changed', { detail: { theme: t } }));
-                    window.dispatchEvent(new Event('storage'));
                 } catch(e){}
             })();
         """.trimIndent()
@@ -109,8 +107,8 @@ fun PluginHostScreen(
                     .fillMaxWidth()
                     .statusBarsPadding()
                     .height(56.dp)
-                    .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)),
-                color = MaterialTheme.colorScheme.surface,
+                    .border(1.dp, if (pluginIsLight) Color(0xFFDDD6DD) else MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)),
+                color = if (pluginIsLight) Color(0xFFFAF6F9) else MaterialTheme.colorScheme.surface,
                 tonalElevation = 2.dp
             ) {
                 Row(
@@ -132,7 +130,7 @@ fun PluginHostScreen(
                             Icon(
                                 imageVector = Icons.Outlined.ArrowBack,
                                 contentDescription = "Back to Tool Kit",
-                                tint = MaterialTheme.colorScheme.onSurface
+                                tint = if (pluginIsLight) Color(0xFF182230) else MaterialTheme.colorScheme.onSurface
                             )
                         }
 
@@ -146,7 +144,7 @@ fun PluginHostScreen(
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 15.sp
                                 ),
-                                color = MaterialTheme.colorScheme.onSurface,
+                                color = if (pluginIsLight) Color(0xFF182230) else MaterialTheme.colorScheme.onSurface,
                                 maxLines = 1,
                                 overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                             )
@@ -154,7 +152,7 @@ fun PluginHostScreen(
                                 text = pluginSubtitle,
                                 style = MaterialTheme.typography.bodySmall.copy(
                                     fontSize = 11.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = if (pluginIsLight) Color(0xFF64748B) else MaterialTheme.colorScheme.onSurfaceVariant
                                 ),
                                 maxLines = 1,
                                 overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
@@ -173,7 +171,7 @@ fun PluginHostScreen(
                             Icon(
                                 imageVector = if (pluginIsLight) Icons.Outlined.DarkMode else Icons.Outlined.LightMode,
                                 contentDescription = "Toggle Daylight Warm Paper / Night Ink",
-                                tint = if (pluginIsLight) Color(0xFFF59E0B) else Color(0xFF60A5FA),
+                                tint = if (pluginIsLight) Color(0xFFD97706) else Color(0xFF60A5FA),
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -185,7 +183,7 @@ fun PluginHostScreen(
                             Icon(
                                 imageVector = Icons.Outlined.Refresh,
                                 contentDescription = "Reload",
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                tint = if (pluginIsLight) Color(0xFF475569) else MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -197,7 +195,7 @@ fun PluginHostScreen(
                             Icon(
                                 imageVector = Icons.Outlined.Tune,
                                 contentDescription = "Plugin Settings",
-                                tint = MaterialTheme.colorScheme.primary,
+                                tint = if (pluginIsLight) Color(0xFF0D9488) else MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(20.dp)
                             )
                         }

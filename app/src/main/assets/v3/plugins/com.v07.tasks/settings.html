@@ -55,21 +55,21 @@
 <script>
 (function(){
   function resolveTheme(){
-    try {
-      var params = new URLSearchParams(window.location.search);
-      var qTheme = params.get('theme');
-      if (qTheme === 'light' || qTheme === 'dark') return qTheme;
-      if (window.AndroidTheme && typeof window.AndroidTheme.isDark === 'function') {
-        return window.AndroidTheme.isDark() ? 'dark' : 'light';
-      }
-      var local = localStorage.getItem('v07_theme') || localStorage.getItem('v07_app_theme');
-      if (local === 'light' || local === 'dark') return local;
-      if (window.parent && window.parent !== window && window.parent.document && window.parent.document.documentElement.dataset.theme) {
-        return window.parent.document.documentElement.dataset.theme;
-      }
-    } catch(e){}
-    return 'dark';
-  }
+      try {
+        var local = localStorage.getItem('v07_theme') || localStorage.getItem('v07_app_theme');
+        if (local === 'light' || local === 'dark') return local;
+        var params = new URLSearchParams(window.location.search);
+        var qTheme = params.get('theme');
+        if (qTheme === 'light' || qTheme === 'dark') return qTheme;
+        if (window.AndroidTheme && typeof window.AndroidTheme.isDark === 'function') {
+          return window.AndroidTheme.isDark() ? 'dark' : 'light';
+        }
+        if (window.parent && window.parent !== window && window.parent.document && window.parent.document.documentElement.dataset.theme) {
+          return window.parent.document.documentElement.dataset.theme;
+        }
+      } catch(e){}
+      return 'dark';
+    }
   function apply(t){
     document.documentElement.setAttribute('data-theme', t);
     if (t === 'light') {
@@ -83,8 +83,13 @@
     }
   }
   apply(resolveTheme());
-  window.addEventListener('storage', function(){ apply(resolveTheme()); });
-  window.addEventListener('v07-theme-changed', function(e){ if(e.detail && e.detail.theme) apply(e.detail.theme); });
+  window.addEventListener('storage', function(e){ if(!e || !e.key || e.key === 'v07_theme' || e.key === 'v07_app_theme') apply(resolveTheme()); });
+  window.addEventListener('v07-theme-changed', function(e){
+      if(e.detail && (e.detail.theme === 'light' || e.detail.theme === 'dark')) {
+        try { localStorage.setItem('v07_theme', e.detail.theme); } catch(ex){}
+        apply(e.detail.theme);
+      }
+    });
   document.addEventListener('DOMContentLoaded', function(){ apply(resolveTheme()); });
 })();
 </script>

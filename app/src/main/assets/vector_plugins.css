@@ -27,7 +27,7 @@
 /* ==========================================================================
    1. DARK MODE (High Contrast Night Ink)
    ========================================================================== */
-:root, .dark {
+:root:not([data-theme="light"]):not(.light), :root[data-theme="dark"], html.dark, body.dark, .dark, [data-theme="dark"] {
   --bg: #090A0F !important;
   --surface: #121622 !important;
   --surface-low: #0D1019 !important;
@@ -75,7 +75,7 @@
 }
 
 /* Dark Mode Inputs & Controls */
-:root, .dark, body {
+:root:not([data-theme="light"]):not(.light), .dark, body:not(.light) {
   color-scheme: dark;
 }
 input, select, textarea {
@@ -103,7 +103,7 @@ input::placeholder, textarea::placeholder {
 /* ==========================================================================
    2. LIGHT MODE (Warm High-Contrast Daylight Paper)
    ========================================================================== */
-:root[data-theme="light"], .light {
+:root[data-theme="light"], html.light, body.light, .light, [data-theme="light"] {
   color-scheme: light;
   --bg: #FAF6F9 !important;
   --surface: #FFFFFF !important;
@@ -222,12 +222,34 @@ h1, h2, h3, h4,
   letter-spacing: 0.04em !important;
 }
 
+/* Button High Contrast Adaptations */
+:root[data-theme="light"] .btn-primary,
+:root[data-theme="light"] .btn-submit,
+:root[data-theme="light"] .btn-save,
+:root[data-theme="light"] .h-btn-accent,
+:root[data-theme="light"] .btn-action,
+:root[data-theme="light"] .g-btn,
+.light .btn-primary,
+.light .btn-submit,
+.light .btn-save,
+.light .h-btn-accent,
+.light .btn-action,
+.light .g-btn {
+  color: #FFFFFF !important;
+}
+
 /* Sharp Vector Borders & Geometry */
-.card, .h-card, .gw-wrap, .vw-wrap, .widget-container, .box {
+.card, .h-card, .gw-wrap, .vw-wrap, .widget-container, .box,
+.verse-card, .reflection-box, .controls, .log-form, .run-card, .event-card, .add-box {
   background: var(--surface) !important;
   border: 1px solid var(--border) !important;
   border-radius: var(--radius) !important;
   box-shadow: none !important;
+}
+
+.sanskrit {
+  background: var(--surface-alt) !important;
+  color: var(--gold) !important;
 }
 
 /* Tactile Micro-Interactions */

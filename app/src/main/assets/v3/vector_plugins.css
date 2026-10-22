@@ -27,7 +27,7 @@
 /* ==========================================================================
    1. DARK MODE (High Contrast Night Ink)
    ========================================================================== */
-:root, :root[data-theme="dark"], html.dark, body.dark, .dark, [data-theme="dark"] {
+:root:not([data-theme="light"]):not(.light), :root[data-theme="dark"], html.dark, body.dark, .dark, [data-theme="dark"] {
   --bg: #090A0F !important;
   --surface: #121622 !important;
   --surface-low: #0D1019 !important;
@@ -75,7 +75,7 @@
 }
 
 /* Dark Mode Inputs & Controls */
-:root, .dark, body {
+:root:not([data-theme="light"]):not(.light), .dark, body:not(.light) {
   color-scheme: dark;
 }
 input, select, textarea {
