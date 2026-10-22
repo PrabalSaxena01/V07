@@ -295,7 +295,7 @@ fun SanctuaryProfileDropdownMenu(
                 .padding(horizontal = 14.dp, vertical = 8.dp)
         ) {
             Text(
-                text = "LOCAL SANCTUARY PROFILES",
+                text = "SANCTUARY PROFILE",
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
@@ -303,7 +303,7 @@ fun SanctuaryProfileDropdownMenu(
                 )
             )
             Text(
-                text = "Local SQLite First",
+                text = "Encrypted Local Space",
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontSize = 11.sp,
                     color = SanctuaryPalette.AccentHabits
@@ -314,7 +314,7 @@ fun SanctuaryProfileDropdownMenu(
         HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
         // Profiles list
-        profiles.forEach { profile ->
+        if (false) profiles.forEach { profile ->
             val isSelected = profile.equals(activeProfileId, ignoreCase = true)
             DropdownMenuItem(
                 text = {

@@ -54,6 +54,14 @@ class PluginConfigManager(private val context: Context, private val pluginId: St
         get() = prefs.getString("theme_accent", "Default") ?: "Default"
         set(value) = prefs.edit().putString("theme_accent", value).apply()
 
+    var specificApiKey: String
+        get() = prefs.getString("specific_api_key", "") ?: ""
+        set(value) = prefs.edit().putString("specific_api_key", value.trim()).apply()
+
+    var specificApiEndpoint: String
+        get() = prefs.getString("specific_api_endpoint", "") ?: ""
+        set(value) = prefs.edit().putString("specific_api_endpoint", value.trim()).apply()
+
     fun isPermissionGranted(permission: String, defaultVal: Boolean = true): Boolean {
         return prefs.getBoolean("perm_$permission", defaultVal)
     }
@@ -464,6 +472,78 @@ fun PluginSettingsSheet(
                                         checkedTrackColor = MaterialTheme.colorScheme.primary
                                     )
                                 )
+                            }
+                        }
+                    }
+                }
+            }
+
+            // --- Specific API Key for this Widget / Plugin ---
+            item {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = "SPECIFIC API KEY & ENDPOINT",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            letterSpacing = 1.sp
+                        )
+                    )
+
+                    Surface(
+                        shape = cardShape,
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(14.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Text(
+                                text = "Configure a custom API key and endpoint specifically for this plugin or widget (leave blank to inherit app default).",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    fontSize = 11.5.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            )
+
+                            var pluginApiKeyInput by remember(pluginId) { mutableStateOf(config.specificApiKey) }
+                            var pluginApiEndpointInput by remember(pluginId) { mutableStateOf(config.specificApiEndpoint) }
+
+                            OutlinedTextField(
+                                value = pluginApiEndpointInput,
+                                onValueChange = { pluginApiEndpointInput = it },
+                                label = { Text("Specific Endpoint / Point") },
+                                placeholder = { Text("https://generativelanguage.googleapis.com...") },
+                                singleLine = true,
+                                textStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+
+                            OutlinedTextField(
+                                value = pluginApiKeyInput,
+                                onValueChange = { pluginApiKeyInput = it },
+                                label = { Text("Specific API Key") },
+                                placeholder = { Text("Leave blank to inherit global app key") },
+                                visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                                singleLine = true,
+                                textStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+
+                            Button(
+                                onClick = {
+                                    config.specificApiKey = pluginApiKeyInput
+                                    config.specificApiEndpoint = pluginApiEndpointInput
+                                    com.v07.v3.app.feedback.SanctuaryFeedbackHelper.performSuccess(context)
+                                    Toast.makeText(context, "Saved specific API key for ${manifest.name}", Toast.LENGTH_SHORT).show()
+                                },
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Save Specific Key", fontWeight = FontWeight.Bold)
                             }
                         }
                     }

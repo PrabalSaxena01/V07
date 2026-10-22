@@ -99,6 +99,38 @@ class DayTrackerWidgetService : RemoteViewsService() {
             } catch (e: Exception) {
                 Log.e("V07DTService", "onDataSetChanged failed: ${e.message}", e)
             }
+
+            if (items.isEmpty()) {
+                try {
+                    val repo = com.v07.v3.core.data.EventRepository.getInstance(context)
+                    val dbItems = repo.getAllDayTrackerItems().filter { it.pinned }
+                    val nowDateTime = LocalDateTime.now()
+                    for (item in dbItems) {
+                        val dateStr = item.targetDate
+                        val targetDate = try { LocalDate.parse(dateStr) } catch (_: Exception) { continue }
+                        val hourVal = item.hour
+                        val targetDateTime = LocalDateTime.of(targetDate, LocalTime.of(hourVal.coerceIn(0, 23), 0))
+                        val totalSecs = Duration.between(nowDateTime, targetDateTime).seconds
+                        val absSecs = Math.abs(totalSecs)
+                        val sign = if (totalSecs >= 0) 1 else -1
+                        val diffDays = (absSecs / 86400).toInt()
+                        val remHours = ((absSecs % 86400) / 3600).toInt()
+                        val totalHours = diffDays * 24 + remHours
+                        val hourStr = if (hourVal > 0) String.format("%02d:00", hourVal) else "00:00"
+                        val dateTimeStr = "$dateStr  $hourStr"
+                        val label = when {
+                            sign > 0 && diffDays > 0 -> "${diffDays}d ${remHours}h left"
+                            sign > 0 && totalHours > 0 -> "${totalHours}h left"
+                            sign > 0 -> "Now"
+                            sign < 0 && diffDays > 0 -> "${diffDays}d ${remHours}h ago"
+                            sign < 0 && totalHours > 0 -> "${totalHours}h ago"
+                            else -> "Today"
+                        }
+                        items.add(mapOf("title" to item.title, "label" to label, "date" to dateStr, "dateTime" to dateTimeStr))
+                    }
+                    items.sortBy { it["date"] as? String ?: "" }
+                } catch (_: Exception) {}
+            }
         }
 
         override fun getViewAt(position: Int): RemoteViews {

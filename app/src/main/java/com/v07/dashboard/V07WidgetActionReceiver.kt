@@ -59,7 +59,10 @@ class V07WidgetActionReceiver : BroadcastReceiver() {
                 } catch (_: Exception) {}
             }
             if (!found) {
-                Log.w("V07Widget", "Item $itemId not found in ${file.absolutePath}")
+                Log.i("V07Widget", "Item $itemId not found in legacy file, attempting EventRepository toggle")
+                try {
+                    com.v07.v3.core.data.EventRepository.getInstance(context).toggleTaskStatus(itemId)
+                } catch (_: Exception) {}
                 return
             }
             file.writeText(lines.joinToString("\n") + "\n")

@@ -68,6 +68,24 @@ class ChecklistWidgetService : RemoteViewsService() {
             } catch (e: Exception) {
                 Log.e("V07CLService", "onDataSetChanged failed: ${e.message}", e)
             }
+
+            if (items.isEmpty()) {
+                try {
+                    val repo = com.v07.v3.core.data.EventRepository.getInstance(context)
+                    val tasks = repo.getTasks()
+                    val today = LocalDate.now().toString()
+                    tasks.take(15).forEach { task ->
+                        items.add(
+                            mapOf(
+                                "id" to task.id,
+                                "label" to task.title,
+                                "done" to (task.status.lowercase() == "completed" || task.status.lowercase() == "done"),
+                                "date" to today
+                            )
+                        )
+                    }
+                } catch (_: Exception) {}
+            }
         }
 
         override fun getViewAt(position: Int): RemoteViews {

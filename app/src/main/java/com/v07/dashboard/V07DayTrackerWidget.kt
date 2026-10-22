@@ -40,7 +40,10 @@ class V07DayTrackerWidget : AppWidgetProvider() {
                 android.util.Log.e("V07DTWidget", "setRemoteAdapter failed: ${e.message}")
             }
 
-            val launchIntent = Intent(context, MainActivity::class.java)
+            val launchIntent = Intent(context, com.v07.v3.app.V3Activity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                putExtra("openPlugin", "com.v07.daytracker")
+            }
             val launchPending = PendingIntent.getActivity(
                 context, 0, launchIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE

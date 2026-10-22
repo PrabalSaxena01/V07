@@ -5,13 +5,196 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@drawable/widget_bg"
-    android:gravity="center">
+    android:padding="12dp">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <!-- Header Row -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="🏃"
-        android:textSize="32sp"
-        android:gravity="center" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="8dp">
+
+        <TextView
+            android:id="@+id/widgetRunIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🏃"
+            android:textSize="14sp"
+            android:layout_marginEnd="6dp" />
+
+        <TextView
+            android:id="@+id/widgetRunTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="RUN &amp; ATHLETICS"
+            android:textColor="@color/ink_text"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:fontFamily="monospace"
+            android:letterSpacing="0.04"
+            android:singleLine="true" />
+
+        <TextView
+            android:id="@+id/widgetRunSubtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="V07 · CADENCE"
+            android:textColor="@color/crayon_muted"
+            android:textSize="10sp"
+            android:fontFamily="monospace"
+            android:letterSpacing="0.03" />
+    </LinearLayout>
+
+    <!-- 4-Stat Grid -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="6dp">
+
+        <!-- Tile 1: Total Km -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="@drawable/widget_item_bg"
+            android:padding="4dp"
+            android:layout_marginEnd="4dp">
+            <TextView
+                android:id="@+id/widgetRunDistance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0.0k"
+                android:textColor="@color/crayon_green"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:fontFamily="monospace"
+                android:singleLine="true" />
+            <TextView
+                android:id="@+id/widgetRunDistanceLbl"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="DISTANCE"
+                android:textColor="@color/crayon_muted"
+                android:textSize="8sp"
+                android:fontFamily="monospace"
+                android:letterSpacing="0.06"
+                android:singleLine="true" />
+        </LinearLayout>
+
+        <!-- Tile 2: Pushups -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="@drawable/widget_item_bg"
+            android:padding="4dp"
+            android:layout_marginEnd="4dp">
+            <TextView
+                android:id="@+id/widgetRunPushups"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textColor="@color/crayon_orange"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:fontFamily="monospace"
+                android:singleLine="true" />
+            <TextView
+                android:id="@+id/widgetRunPushupsLbl"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="PUSHUPS"
+                android:textColor="@color/crayon_muted"
+                android:textSize="8sp"
+                android:fontFamily="monospace"
+                android:letterSpacing="0.06"
+                android:singleLine="true" />
+        </LinearLayout>
+
+        <!-- Tile 3: Workouts -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="@drawable/widget_item_bg"
+            android:padding="4dp"
+            android:layout_marginEnd="4dp">
+            <TextView
+                android:id="@+id/widgetRunSessions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textColor="@color/crayon_blue"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:fontFamily="monospace"
+                android:singleLine="true" />
+            <TextView
+                android:id="@+id/widgetRunSessionsLbl"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="WORKOUTS"
+                android:textColor="@color/crayon_muted"
+                android:textSize="8sp"
+                android:fontFamily="monospace"
+                android:letterSpacing="0.06"
+                android:singleLine="true" />
+        </LinearLayout>
+
+        <!-- Tile 4: Last Run -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="@drawable/widget_item_bg"
+            android:padding="4dp">
+            <TextView
+                android:id="@+id/widgetRunLast"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0.0k"
+                android:textColor="#2DD4BF"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:fontFamily="monospace"
+                android:singleLine="true" />
+            <TextView
+                android:id="@+id/widgetRunLastLbl"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="LAST RUN"
+                android:textColor="@color/crayon_muted"
+                android:textSize="8sp"
+                android:fontFamily="monospace"
+                android:letterSpacing="0.06"
+                android:singleLine="true" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Status Line -->
+    <TextView
+        android:id="@+id/widgetRunStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tap to log run or record workout cadence"
+        android:textColor="@color/crayon_muted"
+        android:textSize="9sp"
+        android:fontFamily="monospace"
+        android:singleLine="true"
+        android:ellipsize="end" />
 
 </LinearLayout>

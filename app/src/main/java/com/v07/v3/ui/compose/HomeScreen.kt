@@ -43,6 +43,9 @@ import com.v07.v3.core.data.V3Task
 import org.json.JSONArray
 import org.json.JSONObject
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import com.v07.v3.app.feedback.SanctuaryFeedbackHelper
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
@@ -59,6 +62,16 @@ fun HomeScreen(
     val timerManager = remember { TimerManager.getInstance(context, repository) }
     val screenTimeTracker = remember { ScreenTimeTracker(context, repository) }
     val timerState by timerManager.timerState.collectAsState()
+    var currentTickMs by remember { mutableLongStateOf(System.currentTimeMillis()) }
+
+    LaunchedEffect(timerState.status) {
+        if (timerState.status == TimerStatus.RUNNING) {
+            while (isActive) {
+                currentTickMs = System.currentTimeMillis()
+                delay(500L)
+            }
+        }
+    }
 
     // Screen Time permission
     var hasUsagePermission by remember { mutableStateOf(screenTimeTracker.hasUsageStatsPermission()) }
@@ -165,6 +178,7 @@ fun HomeScreen(
     }
 
     fun toggleHabitOnHome(habit: HabitItem) {
+        SanctuaryFeedbackHelper.performSuccess(context)
         val newStatus = !habit.completed
         habitsList = habitsList.map { if (it.id == habit.id) it.copy(completed = newStatus) else it }
         coroutineScope.launch(Dispatchers.IO) {
@@ -566,7 +580,7 @@ fun HomeScreen(
             val isIdle = timerState.status == TimerStatus.IDLE
 
             val timeDisplay = if (!isIdle) {
-                timerState.getFormattedTime()
+                timerState.getFormattedTime(currentTickMs)
             } else if (isOpenStopwatchMode) {
                 "00:00"
             } else {
@@ -627,7 +641,7 @@ fun HomeScreen(
                     Spacer(modifier = Modifier.height(14.dp))
 
                     // Circular Focus Sanctuary Timer Ring
-                    val elapsedSeconds = timerState.getElapsedMs() / 1000f
+                    val elapsedSeconds = timerState.getElapsedMs(currentTickMs) / 1000f
                     val targetSec = if (isOpenStopwatchMode || timerState.mode == TimerMode.STOPWATCH) 3600f else if (timerState.targetDurationMs > 0) (timerState.targetDurationMs / 1000f) else (selectedPresetMinutes * 60f).coerceAtLeast(1f)
                     val progressFraction = if (isOpenStopwatchMode || timerState.mode == TimerMode.STOPWATCH) {
                         ((elapsedSeconds % 60) / 60f)
@@ -840,6 +854,7 @@ fun HomeScreen(
                     ) {
                         Button(
                             onClick = {
+                                SanctuaryFeedbackHelper.performClick(context)
                                 if (isRunning) {
                                     timerManager.pauseSession()
                                 } else if (isPaused) {
@@ -884,6 +899,7 @@ fun HomeScreen(
                                     coroutineScope.launch {
                                         withContext(Dispatchers.IO) {
                                             timerManager.finishSession()
+                                            SanctuaryFeedbackHelper.performSuccess(context)
                                         }
                                         refreshData()
                                     }
@@ -1266,6 +1282,7 @@ fun HomeScreen(
                                         coroutineScope.launch {
                                             withContext(Dispatchers.IO) {
                                                 repository.toggleTaskStatus(task.id)
+                                                SanctuaryFeedbackHelper.performSuccess(context)
                                             }
                                             refreshData()
                                         }

@@ -23,6 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.v07.v3.app.feedback.SanctuaryFeedbackHelper
 import com.v07.v3.core.data.V07Database
 
 /**
@@ -142,7 +143,10 @@ fun SanctuaryTopBar(
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.surfaceVariant)
                         .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
-                        .clickable { onNotificationClick() },
+                        .clickable {
+                            SanctuaryFeedbackHelper.performClick(context)
+                            onNotificationClick()
+                        },
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -169,7 +173,10 @@ fun SanctuaryTopBar(
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.surfaceVariant)
                         .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
-                        .clickable { onToggleTheme() },
+                        .clickable {
+                            SanctuaryFeedbackHelper.performClick(context)
+                            onToggleTheme()
+                        },
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -187,7 +194,10 @@ fun SanctuaryTopBar(
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.surfaceVariant)
                             .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), CircleShape)
-                            .clickable { profileDropdownExpanded = true },
+                            .clickable {
+                                SanctuaryFeedbackHelper.performClick(context)
+                                onProfileClick()
+                            },
                         contentAlignment = Alignment.Center
                     ) {
                         if (profileInitial != null) {
@@ -218,7 +228,8 @@ fun SanctuaryTopBar(
                         )
                     }
 
-                    SanctuaryProfileDropdownMenu(
+                    /* Single profile: direct navigation to settings */
+                    if (false) SanctuaryProfileDropdownMenu(
                         expanded = profileDropdownExpanded,
                         onDismissRequest = { profileDropdownExpanded = false },
                         onNavigateToSettings = {
