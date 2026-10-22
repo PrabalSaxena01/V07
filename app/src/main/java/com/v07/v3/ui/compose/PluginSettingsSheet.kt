@@ -478,17 +478,38 @@ fun PluginSettingsSheet(
                 }
             }
 
-            // --- Specific API Key for this Widget / Plugin ---
+            // --- AI Endpoint & API Key Configuration for this Plugin ---
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        text = "SPECIFIC API KEY & ENDPOINT",
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            letterSpacing = 1.sp
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "AI GATEWAY & ENDPOINT (OPTIONAL)",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                letterSpacing = 1.sp
+                            )
                         )
-                    )
+                        Surface(
+                            shape = RoundedCornerShape(4.dp),
+                            color = if (config.specificApiKey.isNotBlank()) Color(0xFF10B981).copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant
+                        ) {
+                            Text(
+                                text = if (config.specificApiKey.isNotBlank()) "Dedicated Key" else "Inheriting Global",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (config.specificApiKey.isNotBlank()) Color(0xFF10B981) else MaterialTheme.colorScheme.onSurfaceVariant
+                                ),
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
 
                     Surface(
                         shape = cardShape,
@@ -500,7 +521,7 @@ fun PluginSettingsSheet(
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             Text(
-                                text = "Configure a custom API key and endpoint specifically for this plugin or widget (leave blank to inherit app default).",
+                                text = "Configure a dedicated AI base URL endpoint and API key specifically for this plugin. Leave blank to inherit the global app gateway. Model selection is handled directly on the server.",
                                 style = MaterialTheme.typography.bodySmall.copy(
                                     fontSize = 11.5.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -509,11 +530,12 @@ fun PluginSettingsSheet(
 
                             var pluginApiKeyInput by remember(pluginId) { mutableStateOf(config.specificApiKey) }
                             var pluginApiEndpointInput by remember(pluginId) { mutableStateOf(config.specificApiEndpoint) }
+                            var isPluginKeyVisible by remember { mutableStateOf(false) }
 
                             OutlinedTextField(
                                 value = pluginApiEndpointInput,
                                 onValueChange = { pluginApiEndpointInput = it },
-                                label = { Text("Specific Endpoint / Point") },
+                                label = { Text("Base URL / Endpoint (Point)") },
                                 placeholder = { Text("https://generativelanguage.googleapis.com...") },
                                 singleLine = true,
                                 textStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
@@ -526,7 +548,16 @@ fun PluginSettingsSheet(
                                 onValueChange = { pluginApiKeyInput = it },
                                 label = { Text("Specific API Key") },
                                 placeholder = { Text("Leave blank to inherit global app key") },
-                                visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                                visualTransformation = if (isPluginKeyVisible) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                                trailingIcon = {
+                                    IconButton(onClick = { isPluginKeyVisible = !isPluginKeyVisible }) {
+                                        Icon(
+                                            imageVector = if (isPluginKeyVisible) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
+                                            contentDescription = "Toggle Visibility",
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
+                                },
                                 singleLine = true,
                                 textStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
                                 modifier = Modifier.fillMaxWidth(),
@@ -538,12 +569,12 @@ fun PluginSettingsSheet(
                                     config.specificApiKey = pluginApiKeyInput
                                     config.specificApiEndpoint = pluginApiEndpointInput
                                     com.v07.v3.app.feedback.SanctuaryFeedbackHelper.performSuccess(context)
-                                    Toast.makeText(context, "Saved specific API key for ${manifest.name}", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "Saved AI gateway for ${manifest.name}", Toast.LENGTH_SHORT).show()
                                 },
                                 shape = RoundedCornerShape(8.dp),
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                Text("Save Specific Key", fontWeight = FontWeight.Bold)
+                                Text("Save Plugin Gateway", fontWeight = FontWeight.Bold)
                             }
                         }
                     }

@@ -97,7 +97,6 @@ fun SettingsScreen(
     var apiEndpointInput by remember { mutableStateOf(GeminiConfig.baseUrl) }
     var apiKeyInput by remember { mutableStateOf(GeminiConfig.apiKey) }
     var isApiKeyVisible by remember { mutableStateOf(false) }
-    var selectedModel by remember { mutableStateOf(GeminiConfig.defaultModel) }
 
     var isHapticEnabled by remember { mutableStateOf(SanctuaryFeedbackHelper.isHapticEnabled(context)) }
     var isSoundEnabled by remember { mutableStateOf(SanctuaryFeedbackHelper.isSoundEnabled(context)) }
@@ -709,7 +708,7 @@ fun SettingsScreen(
                         verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
                         Text(
-                            text = "Configure API key & custom endpoints for AI synthesis, chat, and plugin reflections.",
+                            text = "Configure base URL endpoint and API key. Model selection is handled directly on the server.",
                             style = MaterialTheme.typography.bodySmall.copy(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -750,87 +749,11 @@ fun SettingsScreen(
                             shape = RoundedCornerShape(10.dp)
                         )
 
-                        // Model Selection
-                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Text(
-                                text = "Default Intelligence Model",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                            )
-                            val quickModels = listOf(
-                                GeminiConfig.MODEL_GEMINI_1_5_FLASH to "Gemini 1.5 Flash (Free)",
-                                GeminiConfig.MODEL_GEMINI_2_0_FLASH to "Gemini 2.0 Flash",
-                                GeminiConfig.MODEL_GROQ_LLAMA_3_3 to "Llama 3.3 70B (Groq Free)",
-                                GeminiConfig.MODEL_CLAUDE_3_5_SONNET to "Claude 3.5 Sonnet"
-                            )
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                quickModels.take(2).forEach { (id, label) ->
-                                    val isSel = selectedModel == id
-                                    Surface(
-                                        shape = RoundedCornerShape(6.dp),
-                                        color = if (isSel) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                                        border = if (isSel) BorderStroke(1.dp, MaterialTheme.colorScheme.primary) else null,
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .clickable {
-                                                selectedModel = id
-                                                SanctuaryFeedbackHelper.performClick(context)
-                                            }
-                                    ) {
-                                        Text(
-                                            text = label,
-                                            style = MaterialTheme.typography.labelSmall.copy(
-                                                fontSize = 10.sp,
-                                                fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal,
-                                                color = if (isSel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                                            ),
-                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
-                                        )
-                                    }
-                                }
-                            }
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                quickModels.drop(2).forEach { (id, label) ->
-                                    val isSel = selectedModel == id
-                                    Surface(
-                                        shape = RoundedCornerShape(6.dp),
-                                        color = if (isSel) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                                        border = if (isSel) BorderStroke(1.dp, MaterialTheme.colorScheme.primary) else null,
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .clickable {
-                                                selectedModel = id
-                                                SanctuaryFeedbackHelper.performClick(context)
-                                            }
-                                    ) {
-                                        Text(
-                                            text = label,
-                                            style = MaterialTheme.typography.labelSmall.copy(
-                                                fontSize = 10.sp,
-                                                fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal,
-                                                color = if (isSel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                                            ),
-                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-
                         // Save Button
                         Button(
                             onClick = {
                                 GeminiConfig.baseUrl = apiEndpointInput.trim()
                                 GeminiConfig.apiKey = apiKeyInput.trim()
-                                GeminiConfig.defaultModel = selectedModel
                                 SanctuaryFeedbackHelper.performSuccess(context)
                                 Toast.makeText(context, "AI Gateway configuration saved successfully", Toast.LENGTH_SHORT).show()
                             },
@@ -1627,11 +1550,6 @@ fun SettingsScreen(
         var nameInput by remember { mutableStateOf(profileDisplayName) }
         var bioInput by remember { mutableStateOf(profileBio) }
         var selectedGlyph by remember { mutableStateOf(profileAvatarSymbol) }
-        var selectedProfile by remember { mutableStateOf(activeProfileId) }
-        val existingDbProfiles = remember { com.v07.v3.core.data.V07Database.listProfiles(context) }
-        var availableProfiles by remember { mutableStateOf((listOf(com.v07.v3.core.data.V07Database.DEFAULT_PROFILE_ID) + existingDbProfiles).distinct()) }
-        var newProfileNameInput by remember { mutableStateOf("") }
-        var isAddingNewProfile by remember { mutableStateOf(false) }
         val glyphs = listOf("S", "P", "A", "V", "🪔", "🧘", "⚡", "⚔️", "🌿", "📚", "💎", "🎯", "🛡️")
 
         AlertDialog(
@@ -1731,32 +1649,6 @@ fun SettingsScreen(
                         }
                     }
 
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 2.dp))
-
-                    Text(text = "Active Database Profile:", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        availableProfiles.forEach { prof ->
-                            val isSel = selectedProfile.equals(prof, ignoreCase = true)
-                            Surface(
-                                shape = PillShape,
-                                color = if (isSel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                                border = if (isSel) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
-                                modifier = Modifier.clickable { selectedProfile = prof }
-                            ) {
-                                Text(
-                                    text = prof,
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal,
-                                        color = if (isSel) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
-                                    ),
-                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
-                                )
-                            }
-                        }
-                    }
                 }
             },
             confirmButton = {
@@ -1768,12 +1660,7 @@ fun SettingsScreen(
                             .putString("profile_display_name", trimmedName)
                             .putString("profile_bio", trimmedBio)
                             .putString("profile_avatar_symbol", selectedGlyph)
-                            .putString("active_profile_id", selectedProfile)
                             .apply()
-
-                        if (!selectedProfile.equals(activeProfileId, ignoreCase = true)) {
-                            com.v07.v3.core.data.V07Database.switchProfile(context, selectedProfile)
-                        }
 
                         refreshProfile()
                         showEditProfileDialog = false

@@ -67,6 +67,12 @@ class V07DashboardWidget : AppWidgetProvider() {
         val edit = prefs.edit()
         for (id in appWidgetIds) {
             edit.remove("widget_type_$id")
+            edit.remove("widget_accent_$id")
+            edit.remove("widget_bg_alpha_$id")
+            edit.remove("widget_show_footer_$id")
+            edit.remove("widget_show_sub_$id")
+            edit.remove("widget_show_icon_$id")
+            edit.remove("widget_tap_action_$id")
             edit.remove("widget_api_key_$id")
             edit.remove("widget_api_endpoint_$id")
         }
@@ -77,45 +83,69 @@ class V07DashboardWidget : AppWidgetProvider() {
         fun updateWidget(context: Context, appWidgetManager: AppWidgetManager, widgetId: Int) {
             val prefs = context.getSharedPreferences("v07_prefs", Context.MODE_PRIVATE)
             val type = prefs.getString("widget_type_$widgetId", null)
-                ?: prefs.getString("default_widget_type", null)
+                ?: prefs.getString("default_widget_type", "weekly")
                 ?: "weekly"
 
+            val accentHex = prefs.getString("widget_accent_$widgetId", null)
+                ?: prefs.getString("default_widget_accent", "#2DD4BF")
+                ?: "#2DD4BF"
+
+            val bgAlpha = prefs.getInt(
+                "widget_bg_alpha_$widgetId",
+                prefs.getInt("default_widget_bg_alpha", 255)
+            )
+
+            val showFooter = prefs.getBoolean(
+                "widget_show_footer_$widgetId",
+                prefs.getBoolean("default_widget_show_footer", true)
+            )
+
+            val showSub = prefs.getBoolean(
+                "widget_show_sub_$widgetId",
+                prefs.getBoolean("default_widget_show_sub", true)
+            )
+
+            val showIcon = prefs.getBoolean(
+                "widget_show_icon_$widgetId",
+                prefs.getBoolean("default_widget_show_icon", true)
+            )
+
+            val tapAction = prefs.getString("widget_tap_action_$widgetId", null)
+                ?: prefs.getString("default_widget_tap_action", "OPEN_MODULE")
+                ?: "OPEN_MODULE"
+
+            val accentColor = try {
+                Color.parseColor(accentHex)
+            } catch (_: Exception) {
+                Color.parseColor("#2DD4BF")
+            }
+
             val views = RemoteViews(context.packageName, R.layout.widget_dashboard)
-            val targetPlugin = when (type.lowercase().removePrefix("com.v07.")) {
-                "tasks", "task" -> "com.v07.tasks"
-                "timetracker", "focus", "time_tracker" -> "com.v07.chronosynth"
-                "habits", "habit" -> "com.v07.habits"
-                "run", "running" -> "com.v07.running"
-                "reader", "book" -> "com.v07.reader"
-                "gita" -> "com.v07.gita"
-                "vitals", "mood" -> "com.v07.vitals"
-                "screentime" -> "com.v07.timetracker"
-                else -> "com.v07.chronosynth"
+
+            // Dynamic Background Surface based on chosen Opacity
+            if (bgAlpha == 0) {
+                // Pure Transparent - see-through floating text on home wallpaper
+                views.setInt(R.id.widgetDashboardRoot, "setBackgroundColor", Color.TRANSPARENT)
+            } else if (bgAlpha < 255) {
+                // Frosted Glass / Subtle Tint with dark canvas (#0E1217)
+                views.setInt(R.id.widgetDashboardRoot, "setBackgroundColor", Color.argb(bgAlpha, 14, 18, 23))
+            } else {
+                views.setInt(R.id.widgetDashboardRoot, "setBackgroundResource", R.drawable.widget_bg)
             }
 
-            // Launch V3Activity on widget body tap
-            val launchIntent = Intent(context, V3Activity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                putExtra("openPlugin", targetPlugin)
-                putExtra("v07_widget_type", type)
-            }
-            val pendingIntent = PendingIntent.getActivity(
-                context, widgetId, launchIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            // Element Visibility Toggles
+            views.setViewVisibility(
+                R.id.widgetDashboardStatus,
+                if (showFooter) android.view.View.VISIBLE else android.view.View.GONE
             )
-            views.setOnClickPendingIntent(R.id.widgetDashboardRoot, pendingIntent)
-
-            // Allow tapping widget subtitle or icon to switch widget module directly
-            val configIntent = Intent(context, V07WidgetConfigActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
-            }
-            val configPending = PendingIntent.getActivity(
-                context, widgetId + 80000, configIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            views.setViewVisibility(
+                R.id.widgetDashboardSubtitle,
+                if (showSub) android.view.View.VISIBLE else android.view.View.GONE
             )
-            views.setOnClickPendingIntent(R.id.widgetDashboardSubtitle, configPending)
-            views.setOnClickPendingIntent(R.id.widgetDashboardIcon, configPending)
+            views.setViewVisibility(
+                R.id.widgetDashboardIcon,
+                if (showIcon) android.view.View.VISIBLE else android.view.View.GONE
+            )
 
             val normType = when (type.lowercase().removePrefix("com.v07.")) {
                 "tasks", "task" -> "tasks"
@@ -132,26 +162,81 @@ class V07DashboardWidget : AppWidgetProvider() {
                 else -> type.lowercase().removePrefix("com.v07.")
             }
 
+            val targetPlugin = when (normType) {
+                "tasks" -> "com.v07.tasks"
+                "timetracker" -> "com.v07.chronosynth"
+                "habits" -> "com.v07.habits"
+                "run" -> "com.v07.running"
+                "reader" -> "com.v07.reader"
+                "gita" -> "com.v07.gita"
+                "vitals" -> "com.v07.vitals"
+                "daytracker" -> "com.v07.daytracker"
+                "checklist" -> "com.v07.tasks"
+                "gamify" -> "com.v07.gamify"
+                else -> "com.v07.chronosynth"
+            }
+
+            // Launch action based on user preference
+            val launchIntent = when (tapAction) {
+                "OPEN_CONFIG" -> {
+                    Intent(context, V07WidgetConfigActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
+                    }
+                }
+                "OPEN_HOME" -> {
+                    Intent(context, V3Activity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        putExtra("openPlugin", "com.v07.chronosynth")
+                        putExtra("v07_widget_type", "weekly")
+                    }
+                }
+                else -> { // "OPEN_MODULE"
+                    Intent(context, V3Activity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        putExtra("openPlugin", targetPlugin)
+                        putExtra("v07_widget_type", type)
+                    }
+                }
+            }
+            val pendingIntent = PendingIntent.getActivity(
+                context, widgetId, launchIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            views.setOnClickPendingIntent(R.id.widgetDashboardRoot, pendingIntent)
+
+            // Direct tap on Subtitle or Icon opens Widget Customization Studio
+            val configIntent = Intent(context, V07WidgetConfigActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
+            }
+            val configPending = PendingIntent.getActivity(
+                context, widgetId + 80000, configIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            views.setOnClickPendingIntent(R.id.widgetDashboardSubtitle, configPending)
+            views.setOnClickPendingIntent(R.id.widgetDashboardIcon, configPending)
+
             val repository = EventRepository.getInstance(context)
 
             when (normType) {
-                "tasks" -> renderTasks(views, repository)
-                "timetracker" -> renderTimeTracker(views, context, repository)
-                "daytracker" -> renderDayTracker(views)
-                "checklist" -> renderChecklist(views, repository)
-                "run" -> renderRun(views, repository)
-                "habits" -> renderHabits(views, repository)
-                "gamify" -> renderGamify(views, repository)
-                "vitals" -> renderVitals(views, repository)
-                "reader" -> renderReader(views)
-                "gita" -> renderGita(views)
-                else -> renderWeeklyDigest(views, repository)
+                "tasks" -> renderTasks(views, repository, accentColor)
+                "timetracker" -> renderTimeTracker(views, context, repository, accentColor)
+                "daytracker" -> renderDayTracker(views, accentColor)
+                "checklist" -> renderChecklist(views, repository, accentColor)
+                "run" -> renderRun(views, repository, accentColor)
+                "habits" -> renderHabits(views, repository, accentColor)
+                "gamify" -> renderGamify(views, repository, accentColor)
+                "vitals" -> renderVitals(views, repository, accentColor)
+                "reader" -> renderReader(views, accentColor)
+                "gita" -> renderGita(views, accentColor)
+                else -> renderWeeklyDigest(views, repository, accentColor)
             }
 
             appWidgetManager.updateAppWidget(widgetId, views)
         }
 
-        private fun renderWeeklyDigest(views: RemoteViews, repository: EventRepository) {
+        private fun renderWeeklyDigest(views: RemoteViews, repository: EventRepository, accentColor: Int) {
             views.setTextViewText(R.id.widgetDashboardIcon, "⚡")
             views.setTextViewText(R.id.widgetDashboardTitle, "SANCTUARY DIGEST")
             views.setTextViewText(R.id.widgetDashboardSubtitle, "V07 · SYNTHESIS")
@@ -191,7 +276,7 @@ class V07DashboardWidget : AppWidgetProvider() {
 
                 views.setTextViewText(R.id.widgetTile1Val, focusH)
                 views.setTextViewText(R.id.widgetTile1Lbl, "FOCUS")
-                views.setTextColor(R.id.widgetTile1Val, Color.parseColor("#2DD4BF"))
+                views.setTextColor(R.id.widgetTile1Val, accentColor)
 
                 views.setTextViewText(R.id.widgetTile2Val, "${completedTasks.size}")
                 views.setTextViewText(R.id.widgetTile2Lbl, "DONE")
@@ -211,7 +296,7 @@ class V07DashboardWidget : AppWidgetProvider() {
             }
         }
 
-        private fun renderTasks(views: RemoteViews, repository: EventRepository) {
+        private fun renderTasks(views: RemoteViews, repository: EventRepository, accentColor: Int) {
             views.setTextViewText(R.id.widgetDashboardIcon, "📋")
             views.setTextViewText(R.id.widgetDashboardTitle, "DIRECTIVES & TASKS")
             views.setTextViewText(R.id.widgetDashboardSubtitle, "V07 · EXECUTION")
@@ -224,7 +309,7 @@ class V07DashboardWidget : AppWidgetProvider() {
 
                 views.setTextViewText(R.id.widgetTile1Val, "${pending.size}")
                 views.setTextViewText(R.id.widgetTile1Lbl, "PENDING")
-                views.setTextColor(R.id.widgetTile1Val, Color.parseColor("#68A6FF"))
+                views.setTextColor(R.id.widgetTile1Val, accentColor)
 
                 views.setTextViewText(R.id.widgetTile2Val, "${high.size}")
                 views.setTextViewText(R.id.widgetTile2Lbl, "HIGH PRIO")
@@ -247,7 +332,7 @@ class V07DashboardWidget : AppWidgetProvider() {
             }
         }
 
-        private fun renderTimeTracker(views: RemoteViews, context: Context, repository: EventRepository) {
+        private fun renderTimeTracker(views: RemoteViews, context: Context, repository: EventRepository, accentColor: Int) {
             views.setTextViewText(R.id.widgetDashboardIcon, "⏱️")
             views.setTextViewText(R.id.widgetDashboardTitle, "FOCUS SANCTUARY")
             views.setTextViewText(R.id.widgetDashboardSubtitle, "V07 · CHRONOS")
@@ -268,7 +353,7 @@ class V07DashboardWidget : AppWidgetProvider() {
 
                 views.setTextViewText(R.id.widgetTile1Val, totalH)
                 views.setTextViewText(R.id.widgetTile1Lbl, "TODAY")
-                views.setTextColor(R.id.widgetTile1Val, Color.parseColor("#2DD4BF"))
+                views.setTextColor(R.id.widgetTile1Val, accentColor)
 
                 views.setTextViewText(R.id.widgetTile2Val, "${todaySessions.size}")
                 views.setTextViewText(R.id.widgetTile2Lbl, "INTERVALS")
@@ -289,7 +374,7 @@ class V07DashboardWidget : AppWidgetProvider() {
             }
         }
 
-        private fun renderHabits(views: RemoteViews, repository: EventRepository) {
+        private fun renderHabits(views: RemoteViews, repository: EventRepository, accentColor: Int) {
             views.setTextViewText(R.id.widgetDashboardIcon, "🔥")
             views.setTextViewText(R.id.widgetDashboardTitle, "DAILY RITUALS")
             views.setTextViewText(R.id.widgetDashboardSubtitle, "V07 · DISCIPLINE")
@@ -316,7 +401,7 @@ class V07DashboardWidget : AppWidgetProvider() {
 
                 views.setTextViewText(R.id.widgetTile1Val, "$completedCount/$totalHabits")
                 views.setTextViewText(R.id.widgetTile1Lbl, "TODAY")
-                views.setTextColor(R.id.widgetTile1Val, Color.parseColor("#FFB84D"))
+                views.setTextColor(R.id.widgetTile1Val, accentColor)
 
                 val streak = if (completedCount > 0) 5 else 0
                 views.setTextViewText(R.id.widgetTile2Val, "${streak}d")
@@ -338,7 +423,7 @@ class V07DashboardWidget : AppWidgetProvider() {
             }
         }
 
-        private fun renderRun(views: RemoteViews, repository: EventRepository) {
+        private fun renderRun(views: RemoteViews, repository: EventRepository, accentColor: Int) {
             views.setTextViewText(R.id.widgetDashboardIcon, "🏃")
             views.setTextViewText(R.id.widgetDashboardTitle, "CADENCE & RUN")
             views.setTextViewText(R.id.widgetDashboardSubtitle, "FITNESS · TELEMETRY")
@@ -390,7 +475,7 @@ class V07DashboardWidget : AppWidgetProvider() {
 
                 views.setTextViewText(R.id.widgetTile1Val, roundedKm)
                 views.setTextViewText(R.id.widgetTile1Lbl, "TOTAL KM")
-                views.setTextColor(R.id.widgetTile1Val, Color.parseColor("#4DE086"))
+                views.setTextColor(R.id.widgetTile1Val, accentColor)
 
                 views.setTextViewText(R.id.widgetTile2Val, "$totalPushups")
                 views.setTextViewText(R.id.widgetTile2Lbl, "PUSHUPS")
@@ -410,9 +495,9 @@ class V07DashboardWidget : AppWidgetProvider() {
             }
         }
 
-        private fun renderGamify(views: RemoteViews, repository: EventRepository) {
+        private fun renderGamify(views: RemoteViews, repository: EventRepository, accentColor: Int) {
             views.setTextViewText(R.id.widgetDashboardIcon, "🎮")
-            views.setTextViewText(R.id.widgetDashboardTitle, "GAMIFY QUESTS")
+            views.setTextViewText(R.id.widgetDashboardTitle, "MASTERY & RANKS")
             views.setTextViewText(R.id.widgetDashboardSubtitle, "V07 · LEVEL & XP")
 
             try {
@@ -429,7 +514,7 @@ class V07DashboardWidget : AppWidgetProvider() {
 
                 views.setTextViewText(R.id.widgetTile1Val, "LVL $level")
                 views.setTextViewText(R.id.widgetTile1Lbl, "LEVEL")
-                views.setTextColor(R.id.widgetTile1Val, Color.parseColor("#4DE086"))
+                views.setTextColor(R.id.widgetTile1Val, accentColor)
 
                 views.setTextViewText(R.id.widgetTile2Val, "$calculatedXp")
                 views.setTextViewText(R.id.widgetTile2Lbl, "TOTAL XP")
@@ -441,7 +526,7 @@ class V07DashboardWidget : AppWidgetProvider() {
 
                 views.setTextViewText(R.id.widgetTile4Val, "SEASON")
                 views.setTextViewText(R.id.widgetTile4Lbl, "ACTIVE")
-                views.setTextColor(R.id.widgetTile4Val, Color.parseColor("#2DD4BF"))
+                views.setTextColor(R.id.widgetTile4Val, Color.parseColor("#4DE086"))
 
                 views.setTextViewText(R.id.widgetDashboardStatus, "Rank: $rankTitle · $calculatedXp XP earned")
             } catch (_: Exception) {
@@ -449,14 +534,14 @@ class V07DashboardWidget : AppWidgetProvider() {
             }
         }
 
-        private fun renderVitals(views: RemoteViews, repository: EventRepository) {
+        private fun renderVitals(views: RemoteViews, repository: EventRepository, accentColor: Int) {
             views.setTextViewText(R.id.widgetDashboardIcon, "🧠")
-            views.setTextViewText(R.id.widgetDashboardTitle, "VITALS & SPECTRUM")
-            views.setTextViewText(R.id.widgetDashboardSubtitle, "V07 · EQUILIBRIUM")
+            views.setTextViewText(R.id.widgetDashboardTitle, "MOOD & ENERGY")
+            views.setTextViewText(R.id.widgetDashboardSubtitle, "SANCTUARY WELLNESS")
 
-            views.setTextViewText(R.id.widgetTile1Val, "CALM")
-            views.setTextViewText(R.id.widgetTile1Lbl, "STATE")
-            views.setTextColor(R.id.widgetTile1Val, Color.parseColor("#2DD4BF"))
+            views.setTextViewText(R.id.widgetTile1Val, "4/5")
+            views.setTextViewText(R.id.widgetTile1Lbl, "MOOD")
+            views.setTextColor(R.id.widgetTile1Val, accentColor)
 
             views.setTextViewText(R.id.widgetTile2Val, "4/5")
             views.setTextViewText(R.id.widgetTile2Lbl, "ENERGY")
@@ -466,87 +551,116 @@ class V07DashboardWidget : AppWidgetProvider() {
             views.setTextViewText(R.id.widgetTile3Lbl, "FOCUS")
             views.setTextColor(R.id.widgetTile3Val, Color.parseColor("#68A6FF"))
 
-            views.setTextViewText(R.id.widgetTile4Val, "STEADY")
-            views.setTextViewText(R.id.widgetTile4Lbl, "PULSE")
+            views.setTextViewText(R.id.widgetTile4Val, "88%")
+            views.setTextViewText(R.id.widgetTile4Lbl, "EQUIL.")
             views.setTextColor(R.id.widgetTile4Val, Color.parseColor("#4DE086"))
 
             views.setTextViewText(R.id.widgetDashboardStatus, "Mindful Equilibrium: Calm presence & high clarity")
         }
 
-        private fun renderReader(views: RemoteViews) {
+        private fun renderReader(views: RemoteViews, accentColor: Int) {
             views.setTextViewText(R.id.widgetDashboardIcon, "📖")
-            views.setTextViewText(R.id.widgetDashboardTitle, "MINDFUL READER")
-            views.setTextViewText(R.id.widgetDashboardSubtitle, "V07 · LIBRARY")
+            views.setTextViewText(R.id.widgetDashboardTitle, "SANCTUARY LIBRARY")
+            views.setTextViewText(R.id.widgetDashboardSubtitle, "KNOWLEDGE & BOOKS")
 
             views.setTextViewText(R.id.widgetTile1Val, "ACTIVE")
-            views.setTextViewText(R.id.widgetTile1Lbl, "STATUS")
-            views.setTextColor(R.id.widgetTile1Val, Color.parseColor("#2DD4BF"))
+            views.setTextViewText(R.id.widgetTile1Lbl, "READING")
+            views.setTextColor(R.id.widgetTile1Val, accentColor)
 
-            views.setTextViewText(R.id.widgetTile2Val, "15p")
-            views.setTextViewText(R.id.widgetTile2Lbl, "READ TODAY")
+            views.setTextViewText(R.id.widgetTile2Val, "12")
+            views.setTextViewText(R.id.widgetTile2Lbl, "SHELVES")
+            views.setTextColor(R.id.widgetTile2Val, Color.parseColor("#FFB84D"))
+
+            views.setTextViewText(R.id.widgetTile3Val, "24p")
+            views.setTextViewText(R.id.widgetTile3Lbl, "TODAY")
+            views.setTextColor(R.id.widgetTile3Val, Color.parseColor("#68A6FF"))
+
+            views.setTextViewText(R.id.widgetTile4Val, "5")
+            views.setTextViewText(R.id.widgetTile4Lbl, "FINISHED")
+            views.setTextColor(R.id.widgetTile4Val, Color.parseColor("#4DE086"))
+
+            views.setTextViewText(R.id.widgetDashboardStatus, "Active: Clean Architecture · 24 pages read today")
+        }
+
+        private fun renderGita(views: RemoteViews, accentColor: Int) {
+            views.setTextViewText(R.id.widgetDashboardIcon, "🕉️")
+            views.setTextViewText(R.id.widgetDashboardTitle, "BHAGAVAD GITA")
+            views.setTextViewText(R.id.widgetDashboardSubtitle, "SACRED INSIGHT")
+
+            views.setTextViewText(R.id.widgetTile1Val, "2.47")
+            views.setTextViewText(R.id.widgetTile1Lbl, "VERSE")
+            views.setTextColor(R.id.widgetTile1Val, accentColor)
+
+            views.setTextViewText(R.id.widgetTile2Val, "KARMA")
+            views.setTextViewText(R.id.widgetTile2Lbl, "PATH")
+            views.setTextColor(R.id.widgetTile2Val, Color.parseColor("#2DD4BF"))
+
+            views.setTextViewText(R.id.widgetTile3Val, "ACTIVE")
+            views.setTextViewText(R.id.widgetTile3Lbl, "INSIGHT")
+            views.setTextColor(R.id.widgetTile3Val, Color.parseColor("#68A6FF"))
+
+            views.setTextViewText(R.id.widgetTile4Val, "DEEP")
+            views.setTextViewText(R.id.widgetTile4Lbl, "PEACE")
+            views.setTextColor(R.id.widgetTile4Val, Color.parseColor("#4DE086"))
+
+            views.setTextViewText(R.id.widgetDashboardStatus, "Karmanye Vadhikaraste Ma Phaleshu Kadachana")
+        }
+
+        private fun renderDayTracker(views: RemoteViews, accentColor: Int) {
+            views.setTextViewText(R.id.widgetDashboardIcon, "📅")
+            views.setTextViewText(R.id.widgetDashboardTitle, "DAY MILESTONES")
+            views.setTextViewText(R.id.widgetDashboardSubtitle, "TIMELINE & DATES")
+
+            views.setTextViewText(R.id.widgetTile1Val, LocalDate.now().toString().takeLast(5))
+            views.setTextViewText(R.id.widgetTile1Lbl, "DATE")
+            views.setTextColor(R.id.widgetTile1Val, accentColor)
+
+            views.setTextViewText(R.id.widgetTile2Val, "4")
+            views.setTextViewText(R.id.widgetTile2Lbl, "PINNED")
             views.setTextColor(R.id.widgetTile2Val, Color.parseColor("#FFB84D"))
 
             views.setTextViewText(R.id.widgetTile3Val, "3")
-            views.setTextViewText(R.id.widgetTile3Lbl, "BOOKS")
+            views.setTextViewText(R.id.widgetTile3Lbl, "UPCOMING")
             views.setTextColor(R.id.widgetTile3Val, Color.parseColor("#68A6FF"))
 
-            views.setTextViewText(R.id.widgetTile4Val, "82%")
-            views.setTextViewText(R.id.widgetTile4Lbl, "TARGET")
-            views.setTextColor(R.id.widgetTile4Val, Color.parseColor("#4DE086"))
-
-            views.setTextViewText(R.id.widgetDashboardStatus, "Mindful reading: 15 pages digested today")
-        }
-
-        private fun renderGita(views: RemoteViews) {
-            views.setTextViewText(R.id.widgetDashboardIcon, "🪔")
-            views.setTextViewText(R.id.widgetDashboardTitle, "BHAGAVAD GITA")
-            views.setTextViewText(R.id.widgetDashboardSubtitle, "DAILY WISDOM")
-
-            views.setTextViewText(R.id.widgetTile1Val, "CH 2")
-            views.setTextViewText(R.id.widgetTile1Lbl, "CHAPTER")
-            views.setTextColor(R.id.widgetTile1Val, Color.parseColor("#FFB84D"))
-
-            views.setTextViewText(R.id.widgetTile2Val, "V 47")
-            views.setTextViewText(R.id.widgetTile2Lbl, "VERSE")
-            views.setTextColor(R.id.widgetTile2Val, Color.parseColor("#2DD4BF"))
-
-            views.setTextViewText(R.id.widgetTile3Val, "KARMA")
-            views.setTextViewText(R.id.widgetTile3Lbl, "YOGA")
-            views.setTextColor(R.id.widgetTile3Val, Color.parseColor("#68A6FF"))
-
-            views.setTextViewText(R.id.widgetTile4Val, "STEADY")
-            views.setTextViewText(R.id.widgetTile4Lbl, "INTENT")
-            views.setTextColor(R.id.widgetTile4Val, Color.parseColor("#4DE086"))
-
-            views.setTextViewText(R.id.widgetDashboardStatus, "Karmanye vadikaraste ma phaleshu kadachana")
-        }
-
-        private fun renderDayTracker(views: RemoteViews) {
-            views.setTextViewText(R.id.widgetDashboardIcon, "📅")
-            views.setTextViewText(R.id.widgetDashboardTitle, "DAY TRACKER")
-            views.setTextViewText(R.id.widgetDashboardSubtitle, "TIMELINE · DATES")
-
-            views.setTextViewText(R.id.widgetTile1Val, LocalDate.now().toString())
-            views.setTextViewText(R.id.widgetTile1Lbl, "TODAY")
-            views.setTextColor(R.id.widgetTile1Val, Color.parseColor("#2DD4BF"))
-
-            views.setTextViewText(R.id.widgetTile2Val, "DAY 1")
-            views.setTextViewText(R.id.widgetTile2Lbl, "TIMELINE")
-            views.setTextColor(R.id.widgetTile2Val, Color.parseColor("#FFB84D"))
-
-            views.setTextViewText(R.id.widgetTile3Val, "NEXT")
-            views.setTextViewText(R.id.widgetTile3Lbl, "MILESTONE")
-            views.setTextColor(R.id.widgetTile3Val, Color.parseColor("#68A6FF"))
-
-            views.setTextViewText(R.id.widgetTile4Val, "ACTIVE")
-            views.setTextViewText(R.id.widgetTile4Lbl, "COUNTDOWN")
+            views.setTextViewText(R.id.widgetTile4Val, "12d")
+            views.setTextViewText(R.id.widgetTile4Lbl, "COUNT")
             views.setTextColor(R.id.widgetTile4Val, Color.parseColor("#4DE086"))
 
             views.setTextViewText(R.id.widgetDashboardStatus, "Milestones & countdowns active · Tap to open")
         }
 
-        private fun renderChecklist(views: RemoteViews, repository: EventRepository) {
-            renderTasks(views, repository)
+        private fun renderChecklist(views: RemoteViews, repository: EventRepository, accentColor: Int) {
+            views.setTextViewText(R.id.widgetDashboardIcon, "📝")
+            views.setTextViewText(R.id.widgetDashboardTitle, "DAILY CHECKLIST")
+            views.setTextViewText(R.id.widgetDashboardSubtitle, "ACTION CHECKS")
+
+            try {
+                val pending = repository.getTasks("pending")
+                val done = repository.getTasks("completed")
+                val total = pending.size + done.size
+                val rate = if (total > 0) (done.size * 100) / total else 0
+
+                views.setTextViewText(R.id.widgetTile1Val, "${done.size}/$total")
+                views.setTextViewText(R.id.widgetTile1Lbl, "DONE")
+                views.setTextColor(R.id.widgetTile1Val, accentColor)
+
+                views.setTextViewText(R.id.widgetTile2Val, "${pending.size}")
+                views.setTextViewText(R.id.widgetTile2Lbl, "REMAINING")
+                views.setTextColor(R.id.widgetTile2Val, Color.parseColor("#FF5370"))
+
+                views.setTextViewText(R.id.widgetTile3Val, "$rate%")
+                views.setTextViewText(R.id.widgetTile3Lbl, "RATE")
+                views.setTextColor(R.id.widgetTile3Val, Color.parseColor("#68A6FF"))
+
+                views.setTextViewText(R.id.widgetTile4Val, "TODAY")
+                views.setTextViewText(R.id.widgetTile4Lbl, "TARGET")
+                views.setTextColor(R.id.widgetTile4Val, Color.parseColor("#FFB84D"))
+
+                views.setTextViewText(R.id.widgetDashboardStatus, "${done.size} of $total items checked · Tap to open checklist")
+            } catch (_: Exception) {
+                views.setTextViewText(R.id.widgetDashboardStatus, "Tap to open Checklist")
+            }
         }
     }
 }
