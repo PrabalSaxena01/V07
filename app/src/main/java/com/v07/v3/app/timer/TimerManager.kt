@@ -206,6 +206,10 @@ class TimerManager private constructor(
 
         repository.insertSession(sessionRecord)
         Log.i(TAG, "Committed completed session ${sessionRecord.id} ($durationSec seconds) to repository")
+        try {
+            val syncManager = com.v07.v3.core.sync.V3CompanionSyncManager.getInstance(context, repository)
+            syncManager.syncNow { _, _ -> }
+        } catch (_: Exception) {}
 
         val resetState = ActiveSessionState(status = TimerStatus.IDLE)
         _timerState.value = resetState

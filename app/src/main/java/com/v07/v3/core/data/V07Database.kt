@@ -1,5 +1,6 @@
 package com.v07.v3.core.data
 
+import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
@@ -304,54 +305,167 @@ class V07Database private constructor(context: Context, dbPath: String) :
                 }
             }
 
+            if (cleanId == DEFAULT_PROFILE_ID && profileFile.exists()) {
+                mergeUserProfilesIntoGuest(context, dir, profileFile)
+            }
             return profileFile
         }
 
-        fun listProfiles(context: Context): List<String> {
-            val dir = resolveDatabaseDir(context)
-            val profiles = mutableSetOf(DEFAULT_PROFILE_ID, currentProfileId)
+        private fun mergeUserProfilesIntoGuest(context: Context, dir: File, guestFile: File) {
             try {
-                val files = dir.listFiles { _, name -> name.startsWith("v07_profile_") && name.endsWith(".db") }
-                if (files != null) {
-                    for (f in files) {
-                        val name = f.name.removePrefix("v07_profile_").removeSuffix(".db")
-                        // Ensure legacy sample profiles are omitted
-                        val isLegacySample = name.equals("Work", ignoreCase = true) || 
-                            name.equals("Deep Study", ignoreCase = true) || 
-                            name.equals("Monk Routine", ignoreCase = true)
-                        if (name.isNotBlank() && !isLegacySample) {
-                            profiles.add(name)
-                        }
+                val userFiles = dir.listFiles { _, name ->
+                    name.startsWith("v07_profile_") && name.endsWith(".db") && name != "v07_profile_guest.db" && !name.endsWith(".merged")
+                }
+                if (userFiles.isNullOrEmpty()) return
+                val guestDb = SQLiteDatabase.openOrCreateDatabase(guestFile, null)
+                guestDb.enableWriteAheadLogging()
+                ensureAllTables(guestDb)
+
+                for (uFile in userFiles) {
+                    try {
+                        Log.i(TAG, "Consolidating user profile db into single sovereign vault: ${uFile.name}")
+                        val uDb = SQLiteDatabase.openDatabase(uFile.absolutePath, null, SQLiteDatabase.OPEN_READONLY)
+
+                        // Copy sessions
+                        try {
+                            val c = uDb.rawQuery("SELECT id, activity, start_time, end_time, duration_sec, notes FROM sessions", null)
+                            c.use {
+                                while (it.moveToNext()) {
+                                    val cv = ContentValues().apply {
+                                        put("id", it.getString(0))
+                                        put("activity", it.getString(1))
+                                        put("start_time", it.getLong(2))
+                                        if (!it.isNull(3)) put("end_time", it.getLong(3))
+                                        put("duration_sec", it.getInt(4))
+                                        put("notes", it.getString(5))
+                                    }
+                                    guestDb.insertWithOnConflict("sessions", null, cv, SQLiteDatabase.CONFLICT_IGNORE)
+                                }
+                            }
+                        } catch (_: Exception) {}
+
+                        // Copy tasks
+                        try {
+                            val c = uDb.rawQuery("SELECT id, title, priority, status, created_at, completed_at, deadline FROM tasks", null)
+                            c.use {
+                                while (it.moveToNext()) {
+                                    val cv = ContentValues().apply {
+                                        put("id", it.getString(0))
+                                        put("title", it.getString(1))
+                                        put("priority", it.getString(2))
+                                        put("status", it.getString(3))
+                                        put("created_at", it.getLong(4))
+                                        if (!it.isNull(5)) put("completed_at", it.getLong(5))
+                                        put("deadline", it.getString(6))
+                                    }
+                                    guestDb.insertWithOnConflict("tasks", null, cv, SQLiteDatabase.CONFLICT_IGNORE)
+                                }
+                            }
+                        } catch (_: Exception) {}
+
+                        // Copy thoughts
+                        try {
+                            val c = uDb.rawQuery("SELECT id, timestamp, date, topic, content, pinned, tags FROM thoughts", null)
+                            c.use {
+                                while (it.moveToNext()) {
+                                    val cv = ContentValues().apply {
+                                        put("id", it.getString(0))
+                                        put("timestamp", it.getLong(1))
+                                        put("date", it.getString(2))
+                                        put("topic", it.getString(3))
+                                        put("content", it.getString(4))
+                                        put("pinned", it.getInt(5))
+                                        put("tags", it.getString(6))
+                                    }
+                                    guestDb.insertWithOnConflict("thoughts", null, cv, SQLiteDatabase.CONFLICT_IGNORE)
+                                }
+                            }
+                        } catch (_: Exception) {}
+
+                        // Copy events
+                        try {
+                            val c = uDb.rawQuery("SELECT id, category, date, ts, timestamp, title, content, score, metadata_json FROM events", null)
+                            c.use {
+                                while (it.moveToNext()) {
+                                    val cv = ContentValues().apply {
+                                        put("id", it.getString(0))
+                                        put("category", it.getString(1))
+                                        put("date", it.getString(2))
+                                        put("ts", it.getString(3))
+                                        put("timestamp", it.getLong(4))
+                                        put("title", it.getString(5))
+                                        put("content", it.getString(6))
+                                        put("score", it.getInt(7))
+                                        put("metadata_json", it.getString(8))
+                                    }
+                                    guestDb.insertWithOnConflict("events", null, cv, SQLiteDatabase.CONFLICT_IGNORE)
+                                }
+                            }
+                        } catch (_: Exception) {}
+
+                        // Copy day_tracker
+                        try {
+                            val c = uDb.rawQuery("SELECT id, title, target_date, hour, pinned, created_at FROM day_tracker", null)
+                            c.use {
+                                while (it.moveToNext()) {
+                                    val cv = ContentValues().apply {
+                                        put("id", it.getString(0))
+                                        put("title", it.getString(1))
+                                        put("target_date", it.getString(2))
+                                        put("hour", it.getInt(3))
+                                        put("pinned", it.getInt(4))
+                                        put("created_at", it.getLong(5))
+                                    }
+                                    guestDb.insertWithOnConflict("day_tracker", null, cv, SQLiteDatabase.CONFLICT_IGNORE)
+                                }
+                            }
+                        } catch (_: Exception) {}
+
+                        // Copy plugin_storage
+                        try {
+                            val c = uDb.rawQuery("SELECT plugin_id, key, value_json, updated_at FROM plugin_storage", null)
+                            c.use {
+                                while (it.moveToNext()) {
+                                    val cv = ContentValues().apply {
+                                        put("plugin_id", it.getString(0))
+                                        put("key", it.getString(1))
+                                        put("value_json", it.getString(2))
+                                        put("updated_at", it.getLong(3))
+                                    }
+                                    guestDb.insertWithOnConflict("plugin_storage", null, cv, SQLiteDatabase.CONFLICT_IGNORE)
+                                }
+                            }
+                        } catch (_: Exception) {}
+
+                        uDb.close()
+
+                        // Mark as merged so it is never re-processed
+                        val targetMerged = File(dir, "${uFile.name}.merged")
+                        uFile.renameTo(targetMerged)
+                        File(dir, "${uFile.name}-wal").delete()
+                        File(dir, "${uFile.name}-shm").delete()
+                        File(dir, "${uFile.name}-journal").delete()
+                        Log.i(TAG, "Successfully consolidated and archived ${uFile.name} into guest vault")
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Error consolidating ${uFile.name}: ${e.message}")
                     }
                 }
+                guestDb.close()
             } catch (e: Exception) {
-                Log.w(TAG, "Error listing profiles: ${e.message}")
+                Log.w(TAG, "Error in mergeUserProfilesIntoGuest: ${e.message}")
             }
-            return profiles.sorted()
+        }
+
+        fun listProfiles(context: Context): List<String> {
+            return listOf(DEFAULT_PROFILE_ID)
         }
 
         @Synchronized
         fun switchProfile(context: Context, newProfileId: String): Boolean {
-            val cleanId = sanitizeProfileId(newProfileId)
-            if (currentProfileId == cleanId && instance != null) {
-                return true
-            }
-
-            Log.i(TAG, "Switching profile from '$currentProfileId' to '$cleanId'...")
-            try {
-                instance?.close()
-            } catch (e: Exception) {
-                Log.w(TAG, "Error closing previous profile DB: ${e.message}")
-            }
-            instance = null
-            currentProfileId = cleanId
-
+            // Strictly single-profile operational model: Always maintain DEFAULT_PROFILE_ID
+            currentProfileId = DEFAULT_PROFILE_ID
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            prefs.edit().putString(KEY_ACTIVE_PROFILE, cleanId).apply()
-
-            // Initialize new profile database
-            getInstance(context)
-            Log.i(TAG, "Successfully switched active database to profile '$cleanId'")
+            prefs.edit().putString(KEY_ACTIVE_PROFILE, DEFAULT_PROFILE_ID).apply()
             return true
         }
 
@@ -425,10 +539,8 @@ class V07Database private constructor(context: Context, dbPath: String) :
             return instance ?: synchronized(this) {
                 instance ?: run {
                     val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-                    val savedProfile = prefs.getString(KEY_ACTIVE_PROFILE, null)
-                    if (!savedProfile.isNullOrBlank()) {
-                        currentProfileId = sanitizeProfileId(savedProfile)
-                    }
+                    prefs.edit().putString(KEY_ACTIVE_PROFILE, DEFAULT_PROFILE_ID).apply()
+                    currentProfileId = DEFAULT_PROFILE_ID
                     val dbFile = resolveDatabaseFile(context, currentProfileId)
                     Log.i(TAG, "Initializing V3 operational database for profile '$currentProfileId' at: ${dbFile.absolutePath}")
                     V07Database(context.applicationContext, dbFile.absolutePath).also {

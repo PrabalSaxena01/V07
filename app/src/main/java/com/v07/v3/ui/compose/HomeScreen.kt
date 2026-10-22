@@ -222,6 +222,16 @@ fun HomeScreen(
                 }
                 repository.setPluginValue("com.v07.habits", "logs", newArr.toString())
             } catch (_: Exception) {}
+
+            try {
+                val syncManager = com.v07.v3.core.sync.V3CompanionSyncManager.getInstance(
+                    context,
+                    repository,
+                    screenTimeTracker
+                )
+                syncManager.pushHabitLog(habit.id, todayStr, newStatus)
+                syncManager.syncNow { _, _ -> }
+            } catch (_: Exception) {}
         }
     }
 
@@ -241,6 +251,14 @@ fun HomeScreen(
                     put("color", "#10B981")
                 })
                 repository.setPluginValue("com.v07.habits", "definitions", arr.toString())
+            } catch (_: Exception) {}
+            try {
+                val syncManager = com.v07.v3.core.sync.V3CompanionSyncManager.getInstance(
+                    context,
+                    repository,
+                    screenTimeTracker
+                )
+                syncManager.syncNow { _, _ -> }
             } catch (_: Exception) {}
         }
     }
@@ -299,6 +317,17 @@ fun HomeScreen(
 
     LaunchedEffect(Unit) {
         refreshData()
+        try {
+            val syncManager = com.v07.v3.core.sync.V3CompanionSyncManager.getInstance(
+                context,
+                repository,
+                screenTimeTracker
+            )
+            if (syncManager.isCloudSyncEnabled()) {
+                syncManager.startRealtimeSync()
+                syncManager.syncNow { _, _ -> }
+            }
+        } catch (_: Exception) {}
     }
 
     val greetingTime = remember {
@@ -1225,6 +1254,13 @@ fun HomeScreen(
                                                 createdAt = System.currentTimeMillis()
                                             )
                                             repository.insertTask(t)
+                                            try {
+                                                com.v07.v3.core.sync.V3CompanionSyncManager.getInstance(
+                                                    context,
+                                                    repository,
+                                                    screenTimeTracker
+                                                ).syncNow { _, _ -> }
+                                            } catch (_: Exception) {}
                                         }
                                         newTaskTitle = ""
                                         refreshData()
@@ -1283,6 +1319,13 @@ fun HomeScreen(
                                             withContext(Dispatchers.IO) {
                                                 repository.toggleTaskStatus(task.id)
                                                 SanctuaryFeedbackHelper.performSuccess(context)
+                                                try {
+                                                    com.v07.v3.core.sync.V3CompanionSyncManager.getInstance(
+                                                        context,
+                                                        repository,
+                                                        screenTimeTracker
+                                                    ).syncNow { _, _ -> }
+                                                } catch (_: Exception) {}
                                             }
                                             refreshData()
                                         }
@@ -1334,6 +1377,15 @@ fun HomeScreen(
                                             coroutineScope.launch {
                                                 withContext(Dispatchers.IO) {
                                                     repository.deleteTask(task.id)
+                                                    try {
+                                                        val sm = com.v07.v3.core.sync.V3CompanionSyncManager.getInstance(
+                                                            context,
+                                                            repository,
+                                                            screenTimeTracker
+                                                        )
+                                                        sm.deleteRemoteEvent(task.id)
+                                                        sm.syncNow { _, _ -> }
+                                                    } catch (_: Exception) {}
                                                 }
                                                 refreshData()
                                             }

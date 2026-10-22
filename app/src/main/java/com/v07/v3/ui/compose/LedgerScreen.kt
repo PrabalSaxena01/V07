@@ -117,6 +117,10 @@ fun LedgerScreen(
                 tags = captureCategory
             )
             repository.insertThought(thought)
+            try {
+                val syncManager = com.v07.v3.core.sync.V3CompanionSyncManager.getInstance(context, repository)
+                syncManager.syncNow { _, _ -> }
+            } catch (_: Exception) {}
             withContext(Dispatchers.Main) {
                 captureText = ""
                 loadThoughts()
@@ -128,6 +132,11 @@ fun LedgerScreen(
     fun handleDelete(id: String) {
         scope.launch(Dispatchers.IO) {
             repository.deleteThought(id)
+            try {
+                val syncManager = com.v07.v3.core.sync.V3CompanionSyncManager.getInstance(context, repository)
+                syncManager.deleteRemoteEvent(id)
+                syncManager.syncNow { _, _ -> }
+            } catch (_: Exception) {}
             withContext(Dispatchers.Main) {
                 loadThoughts()
                 Toast.makeText(context, "Entry deleted", Toast.LENGTH_SHORT).show()

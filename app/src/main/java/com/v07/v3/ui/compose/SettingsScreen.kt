@@ -84,6 +84,7 @@ fun SettingsScreen(
     var showCloudAuthDialog by remember { mutableStateOf(false) }
     var authEmail by remember { mutableStateOf("") }
     var authPassword by remember { mutableStateOf("") }
+    var authPasswordVisible by remember { mutableStateOf(false) }
     var authCreateMode by remember { mutableStateOf(false) }
     var authErrorMsg by remember { mutableStateOf<String?>(null) }
     var isAuthLoading by remember { mutableStateOf(false) }
@@ -1011,6 +1012,110 @@ fun SettingsScreen(
 
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f), thickness = 1.dp)
 
+                        // Companion Web App Integration Card
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f))
+                                .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f), RoundedCornerShape(12.dp))
+                                .padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(Icons.Outlined.Language, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                                    Text(
+                                        text = "Companion Web Dashboard",
+                                        style = MaterialTheme.typography.labelMedium.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    )
+                                }
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
+                                ) {
+                                    Text(
+                                        text = "LIVE HOSTED",
+                                        fontSize = 9.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
+
+                            Text(
+                                text = "https://v07-dashboard.web.app",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 11.5.sp,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            )
+
+                            Text(
+                                text = "Sign in with the same email and password on both this device and the companion web app for instantaneous bidirectional real-time synchronization.",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    fontSize = 10.5.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            )
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Button(
+                                    onClick = {
+                                        try {
+                                            val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://v07-dashboard.web.app"))
+                                            context.startActivity(intent)
+                                        } catch (e: Exception) {
+                                            Toast.makeText(context, "Could not open browser: ${e.message}", Toast.LENGTH_SHORT).show()
+                                        }
+                                    },
+                                    shape = RoundedCornerShape(10.dp),
+                                    modifier = Modifier.weight(1f).height(36.dp),
+                                    contentPadding = PaddingValues(horizontal = 10.dp)
+                                ) {
+                                    Icon(Icons.Outlined.OpenInBrowser, null, modifier = Modifier.size(14.dp))
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text("Open Web App", fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                                }
+
+                                OutlinedButton(
+                                    onClick = {
+                                        try {
+                                            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                                            val clip = android.content.ClipData.newPlainText("V07 Companion URL", "https://v07-dashboard.web.app")
+                                            clipboard.setPrimaryClip(clip)
+                                            Toast.makeText(context, "Copied https://v07-dashboard.web.app", Toast.LENGTH_SHORT).show()
+                                        } catch (_: Exception) {}
+                                    },
+                                    shape = RoundedCornerShape(10.dp),
+                                    modifier = Modifier.height(36.dp),
+                                    contentPadding = PaddingValues(horizontal = 10.dp)
+                                ) {
+                                    Icon(Icons.Outlined.ContentCopy, null, modifier = Modifier.size(13.dp))
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text("Copy URL", fontSize = 11.sp)
+                                }
+                            }
+                        }
+
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f), thickness = 1.dp)
+
                         // Cloud Account Identity Section
                         Column(
                             modifier = Modifier
@@ -1047,9 +1152,11 @@ fun SettingsScreen(
                                 if (isAuthed) {
                                     TextButton(
                                         onClick = {
-                                            syncManager.signOut()
+                                            syncManager.signOut {
+                                                refreshProfile()
+                                            }
                                             refreshProfile()
-                                            Toast.makeText(context, "Signed out of Cloud Account", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(context, "Signed out to Offline Sanctuary Mode", Toast.LENGTH_SHORT).show()
                                         },
                                         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
                                     ) {
@@ -1062,7 +1169,7 @@ fun SettingsScreen(
 
                             if (isAuthed) {
                                 Text(
-                                    text = "User: ${authenticatedUser?.email ?: "Anonymous Cloud Session"}",
+                                    text = "User: ${authenticatedUser?.email ?: "Authenticated User"}",
                                     style = MaterialTheme.typography.bodySmall.copy(
                                         fontWeight = FontWeight.SemiBold,
                                         color = MaterialTheme.colorScheme.onSurface
@@ -1078,55 +1185,24 @@ fun SettingsScreen(
                                 )
                             } else {
                                 Text(
-                                    text = "Firestore security rules require authentication to sync data. Sign in with your web dashboard account or connect anonymously.",
+                                    text = "Sign in with your companion account to seamlessly synchronize tasks, habits, reflections, and focus sessions with https://v07-dashboard.web.app.",
                                     style = MaterialTheme.typography.bodySmall.copy(
                                         fontSize = 11.sp,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 )
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                Button(
+                                    onClick = {
+                                        authErrorMsg = null
+                                        showCloudAuthDialog = true
+                                    },
+                                    shape = RoundedCornerShape(10.dp),
+                                    modifier = Modifier.fillMaxWidth().height(38.dp),
+                                    contentPadding = PaddingValues(horizontal = 10.dp)
                                 ) {
-                                    Button(
-                                        onClick = {
-                                            authErrorMsg = null
-                                            showCloudAuthDialog = true
-                                        },
-                                        shape = RoundedCornerShape(10.dp),
-                                        modifier = Modifier.weight(1f).height(38.dp),
-                                        contentPadding = PaddingValues(horizontal = 10.dp)
-                                    ) {
-                                        Icon(Icons.Outlined.Login, null, modifier = Modifier.size(14.dp))
-                                        Spacer(modifier = Modifier.width(6.dp))
-                                        Text("Sign In / Register", fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
-                                    }
-                                    OutlinedButton(
-                                        onClick = {
-                                            isAuthLoading = true
-                                            syncManager.signInAnonymously { success, err ->
-                                                isAuthLoading = false
-                                                if (success) {
-                                                    refreshProfile()
-                                                    Toast.makeText(context, "Connected anonymously to cloud", Toast.LENGTH_SHORT).show()
-                                                    triggerSync()
-                                                } else {
-                                                    Toast.makeText(context, err ?: "Anonymous connection failed", Toast.LENGTH_LONG).show()
-                                                }
-                                            }
-                                        },
-                                        shape = RoundedCornerShape(10.dp),
-                                        modifier = Modifier.height(38.dp),
-                                        contentPadding = PaddingValues(horizontal = 10.dp)
-                                    ) {
-                                        if (isAuthLoading) {
-                                            CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp)
-                                        } else {
-                                            Icon(Icons.Outlined.PersonOutline, null, modifier = Modifier.size(14.dp))
-                                            Spacer(modifier = Modifier.width(4.dp))
-                                            Text("Guest Connect", fontSize = 11.sp)
-                                        }
-                                    }
+                                    Icon(Icons.Outlined.Login, null, modifier = Modifier.size(14.dp))
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text("Sign In or Register", fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -1714,11 +1790,25 @@ fun SettingsScreen(
                         style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                     )
 
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Account:", style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
+                        TextButton(
+                            onClick = { authEmail = "prabal.pks@gmail.com" },
+                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp)
+                        ) {
+                            Text("Fill prabal.pks@gmail.com", fontSize = 10.5.sp, color = MaterialTheme.colorScheme.primary)
+                        }
+                    }
+
                     OutlinedTextField(
                         value = authEmail,
                         onValueChange = { authEmail = it },
                         label = { Text("Email Address") },
-                        placeholder = { Text("user@example.com") },
+                        placeholder = { Text("prabal.pks@gmail.com") },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                         shape = RoundedCornerShape(10.dp),
@@ -1730,8 +1820,17 @@ fun SettingsScreen(
                         onValueChange = { authPassword = it },
                         label = { Text("Password (6+ chars)") },
                         singleLine = true,
-                        visualTransformation = PasswordVisualTransformation(),
+                        visualTransformation = if (authPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        trailingIcon = {
+                            IconButton(onClick = { authPasswordVisible = !authPasswordVisible }) {
+                                Icon(
+                                    imageVector = if (authPasswordVisible) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
+                                    contentDescription = "Toggle password visibility",
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
                         shape = RoundedCornerShape(10.dp),
                         modifier = Modifier.fillMaxWidth()
                     )

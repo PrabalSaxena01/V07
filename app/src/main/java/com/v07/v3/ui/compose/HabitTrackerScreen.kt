@@ -276,6 +276,12 @@ fun HabitTrackerScreen(
                 }
                 repository.setPluginValue("com.v07.habits", "logs", newArr.toString())
             } catch (_: Exception) {}
+
+            try {
+                val syncManager = com.v07.v3.core.sync.V3CompanionSyncManager.getInstance(context, repository)
+                syncManager.pushHabitLog(habitId, dateStr, newStatus)
+                syncManager.syncNow { _, _ -> }
+            } catch (_: Exception) {}
         }
     }
 
@@ -332,6 +338,14 @@ fun HabitTrackerScreen(
                     }
                 }
                 repository.setPluginValue("com.v07.habits", "logs", newArr.toString())
+            } catch (_: Exception) {}
+
+            try {
+                val syncManager = com.v07.v3.core.sync.V3CompanionSyncManager.getInstance(context, repository)
+                habits.forEach { habit ->
+                    syncManager.pushHabitLog(habit.id, todayDateStr, true)
+                }
+                syncManager.syncNow { _, _ -> }
             } catch (_: Exception) {}
 
             withContext(Dispatchers.Main) {

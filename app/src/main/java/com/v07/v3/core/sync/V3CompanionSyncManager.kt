@@ -7,6 +7,7 @@ import com.google.android.gms.tasks.Tasks
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.SetOptions
 import com.v07.v3.app.telemetry.ScreenTimeTracker
@@ -54,6 +55,33 @@ class V3CompanionSyncManager private constructor(
                 ).also { instance = it }
             }
         }
+
+        fun getInstance(context: Context, repository: EventRepository): V3CompanionSyncManager {
+            return instance ?: synchronized(this) {
+                instance ?: run {
+                    val tracker = ScreenTimeTracker(context.applicationContext, repository)
+                    V3CompanionSyncManager(
+                        context.applicationContext,
+                        repository,
+                        tracker
+                    ).also { instance = it }
+                }
+            }
+        }
+
+        fun getInstance(context: Context): V3CompanionSyncManager {
+            return instance ?: synchronized(this) {
+                instance ?: run {
+                    val repo = EventRepository.getInstance(context.applicationContext)
+                    val tracker = ScreenTimeTracker(context.applicationContext, repo)
+                    V3CompanionSyncManager(
+                        context.applicationContext,
+                        repo,
+                        tracker
+                    ).also { instance = it }
+                }
+            }
+        }
     }
 
     private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -63,9 +91,7 @@ class V3CompanionSyncManager private constructor(
     private var heartbeatJob: kotlinx.coroutines.Job? = null
 
     fun isCloudSyncEnabled(): Boolean {
-        val user = getSafeAuth()?.currentUser
-        val custom = prefs.getString("custom_companion_uid", null)?.trim()
-        return user != null || !custom.isNullOrBlank()
+        return getSafeAuth()?.currentUser != null
     }
 
     fun getAuthenticatedUser(): com.google.firebase.auth.FirebaseUser? = getSafeAuth()?.currentUser
@@ -169,23 +195,12 @@ class V3CompanionSyncManager private constructor(
     }
 
     fun switchProfile(profileId: String): Boolean {
-        val success = V07Database.switchProfile(context, profileId)
-        if (success) {
-            val active = V07Database.getCurrentProfileId()
-            if (active.startsWith("user_")) {
-                val uid = active.removePrefix("user_")
-                prefs.edit().putString("custom_companion_uid", uid).apply()
-                startRealtimeSync()
-                syncNow { _, _ -> }
-            } else {
-                stopRealtimeSync()
-            }
-        }
-        return success
+        // Enforce strictly single-profile sovereign vault
+        return true
     }
 
-    fun listProfiles(): List<String> = V07Database.listProfiles(context)
-    fun getActiveProfileId(): String = V07Database.getCurrentProfileId()
+    fun listProfiles(): List<String> = listOf(V07Database.DEFAULT_PROFILE_ID)
+    fun getActiveProfileId(): String = V07Database.DEFAULT_PROFILE_ID
 
     fun signIn(email: String, pass: String, createMode: Boolean, callback: (Boolean, String?) -> Unit) {
         val auth = getSafeAuth()
@@ -194,18 +209,17 @@ class V3CompanionSyncManager private constructor(
             return
         }
         val task = if (createMode) {
-            auth.createUserWithEmailAndPassword(email, pass)
+            auth.createUserWithEmailAndPassword(email.trim(), pass)
         } else {
-            auth.signInWithEmailAndPassword(email, pass)
+            auth.signInWithEmailAndPassword(email.trim(), pass)
         }
 
         task.addOnCompleteListener { t ->
             if (t.isSuccessful) {
                 val user = auth.currentUser
                 if (user != null) {
-                    val profileId = "user_${user.uid}"
                     prefs.edit().putString("custom_companion_uid", user.uid).apply()
-                    V07Database.switchProfile(context, profileId)
+                    // Retain single default SQLite vault; zero profile switching
                     startRealtimeSync()
                     syncNow { _, _ -> }
                 }
@@ -226,9 +240,8 @@ class V3CompanionSyncManager private constructor(
             if (t.isSuccessful) {
                 val user = auth.currentUser
                 if (user != null) {
-                    val profileId = "user_${user.uid}"
                     prefs.edit().putString("custom_companion_uid", user.uid).apply()
-                    V07Database.switchProfile(context, profileId)
+                    // Retain single default SQLite vault; zero profile switching
                     startRealtimeSync()
                     syncNow { _, _ -> }
                 }
@@ -239,13 +252,219 @@ class V3CompanionSyncManager private constructor(
         }
     }
 
-    fun signOut() {
+    fun signOut(onComplete: (() -> Unit)? = null) {
         stopRealtimeSync()
         try {
             getSafeAuth()?.signOut()
         } catch (_: Exception) {}
         prefs.edit().remove("custom_companion_uid").apply()
-        V07Database.switchProfile(context, V07Database.DEFAULT_PROFILE_ID)
+        try {
+            val fs = getSafeFirestore()
+            fs?.terminate()?.addOnCompleteListener {
+                try {
+                    fs.clearPersistence()
+                } catch (_: Exception) {}
+                onComplete?.invoke()
+            } ?: run { onComplete?.invoke() }
+        } catch (_: Exception) {
+            onComplete?.invoke()
+        }
+        // Single local vault remains intact; zero data wiped or hidden
+    }
+
+    private val canonicalHabitsMap = mapOf(
+        "hbt_ssb" to "⚔️ SSB Practice",
+        "hbt_running" to "🏃 Running",
+        "hbt_dsa" to "💻 DSA Problem Solving",
+        "hbt_chess" to "♟️ Chess Training",
+        "hbt_content_creation" to "✍️ Content Creation",
+        "hbt_development" to "⚡ Development",
+        "hbt_meditation" to "🧘 Meditation",
+        "hmudx8p39" to "💪 Pushups",
+        "hmud3qf88" to "🌿 Mindfulness",
+        "hmud3qz2i" to "📚 Deep Study",
+        "hmudmiwt3" to "✨ Daily Routine"
+    )
+
+    fun getHabitName(habitId: String): String {
+        return canonicalHabitsMap[habitId] ?: habitId.replace("_", " ").replaceFirstChar { it.uppercase() }
+    }
+
+    /**
+     * Pushes a single habit check-in/out to Firestore companion collection:
+     * users/{uid}/plugins/com.v07.habits/events/hlog_{habitId}_{compactDate}
+     */
+    fun pushHabitLog(habitId: String, dateStr: String, isCompleted: Boolean) {
+        if (!isCloudSyncEnabled()) return
+        val compactDate = dateStr.replace("-", "")
+        val docId = "hlog_${habitId}_$compactDate"
+        val hbtEventId = "hbt_${habitId}_$dateStr"
+        val now = System.currentTimeMillis()
+        val habitName = getHabitName(habitId)
+
+        syncScope.launch {
+            try {
+                val db = getSafeFirestore() ?: return@launch
+                val uid = getTargetUid()
+                val habitsCol = db.collection("users").document(uid)
+                    .collection("plugins").document("com.v07.habits").collection("events")
+
+                if (isCompleted) {
+                    val map = hashMapOf<String, Any>(
+                        "id" to docId,
+                        "habit_id" to habitId,
+                        "habit_name" to habitName,
+                        "date" to dateStr,
+                        "completed" to true,
+                        "ts" to now,
+                        "category" to "habits",
+                        "updated_at" to now,
+                        "_syncedAt" to Timestamp.now()
+                    )
+                    habitsCol.document(docId).set(map, SetOptions.merge())
+                    Log.d(TAG, "Pushed habit check-in to Firestore: $docId")
+                } else {
+                    habitsCol.document(docId).delete()
+                    deleteRemoteEvent(hbtEventId)
+                    deleteRemoteEvent(docId)
+                    Log.d(TAG, "Removed habit check-in from Firestore: $docId")
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Failed to push habit log $docId: ${e.message}")
+            }
+        }
+    }
+
+    /**
+     * Reconciles a habit document from Firestore into SQLite plugin_storage and events table.
+     */
+    fun reconcileHabitDoc(docId: String, data: Map<String, Any?>) {
+        try {
+            val habitId = data["habit_id"] as? String
+                ?: data["habit"] as? String
+                ?: (if (docId.startsWith("hlog_")) {
+                    val rest = docId.removePrefix("hlog_")
+                    val idx = rest.lastIndexOf('_')
+                    if (idx > 0) rest.substring(0, idx) else rest
+                } else null)
+                ?: return
+
+            val dateStr = data["date"] as? String
+                ?: (if (docId.startsWith("hlog_")) {
+                    val rest = docId.removePrefix("hlog_")
+                    val idx = rest.lastIndexOf('_')
+                    if (idx > 0 && rest.length - idx - 1 == 8) {
+                        val raw = rest.substring(idx + 1)
+                        "${raw.substring(0, 4)}-${raw.substring(4, 6)}-${raw.substring(6, 8)}"
+                    } else null
+                } else null)
+                ?: return
+
+            val isDone = data["completed"] as? Boolean
+                ?: (data["on"] as? Boolean
+                ?: (data["completed"]?.toString()?.equals("true", ignoreCase = true) ?: true))
+
+            val (epoch, _) = parseTimestamp(data["ts"] ?: data["timestamp"] ?: data["updated_at"], dateStr)
+            val habitName = data["habit_name"] as? String
+                ?: data["title"] as? String
+                ?: getHabitName(habitId)
+
+            val currentLogsStr = repository.getPluginValue("com.v07.habits", "logs")
+            val logsArr = if (!currentLogsStr.isNullOrBlank()) JSONArray(currentLogsStr) else JSONArray()
+            val newArr = JSONArray()
+
+            for (i in 0 until logsArr.length()) {
+                val item = logsArr.getJSONObject(i)
+                val hid = item.optString("habit", item.optString("habit_id", ""))
+                val d = item.optString("date", "")
+                if (!(hid == habitId && d == dateStr)) {
+                    newArr.put(item)
+                }
+            }
+
+            val hbtEventId = "hbt_${habitId}_$dateStr"
+            if (isDone) {
+                newArr.put(JSONObject().apply {
+                    put("habit", habitId)
+                    put("date", dateStr)
+                    put("on", true)
+                    put("created", epoch)
+                })
+                repository.setPluginValue("com.v07.habits", "logs", newArr.toString())
+
+                // Insert into V3Event
+                val event = V3Event(
+                    id = hbtEventId,
+                    category = "habit",
+                    date = dateStr,
+                    ts = "${dateStr}T12:00:00Z",
+                    timestamp = epoch,
+                    title = habitName,
+                    content = "Completed $habitName",
+                    score = 10,
+                    metadataJson = JSONObject().put("habit_id", habitId).put("completed", true).toString()
+                )
+                repository.insertEvent(event)
+
+                // Insert into V3PluginEvent
+                repository.insertPluginEvent(
+                    V3PluginEvent(
+                        id = docId,
+                        pluginId = "com.v07.habits",
+                        category = "habits",
+                        payloadJson = JSONObject(data).toString(),
+                        timestamp = epoch,
+                        date = dateStr
+                    )
+                )
+            } else {
+                repository.setPluginValue("com.v07.habits", "logs", newArr.toString())
+                repository.deleteEntityEverywhere(hbtEventId)
+                repository.deleteEntityEverywhere(docId)
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to reconcile habit doc $docId: ${e.message}")
+        }
+    }
+
+    /**
+     * Deletes a habit document locally when removed remotely.
+     */
+    fun deleteHabitDocLocally(docId: String) {
+        try {
+            repository.deleteEntityEverywhere(docId)
+            if (docId.startsWith("hlog_")) {
+                val rest = docId.removePrefix("hlog_")
+                val idx = rest.lastIndexOf('_')
+                if (idx > 0) {
+                    val habitId = rest.substring(0, idx)
+                    val rawDate = rest.substring(idx + 1)
+                    val dateStr = if (rawDate.length == 8) {
+                        "${rawDate.substring(0, 4)}-${rawDate.substring(4, 6)}-${rawDate.substring(6, 8)}"
+                    } else rawDate
+
+                    val hbtEventId = "hbt_${habitId}_$dateStr"
+                    repository.deleteEntityEverywhere(hbtEventId)
+
+                    val currentLogsStr = repository.getPluginValue("com.v07.habits", "logs")
+                    if (!currentLogsStr.isNullOrBlank()) {
+                        val logsArr = JSONArray(currentLogsStr)
+                        val newArr = JSONArray()
+                        for (i in 0 until logsArr.length()) {
+                            val item = logsArr.getJSONObject(i)
+                            val hid = item.optString("habit", item.optString("habit_id", ""))
+                            val d = item.optString("date", "")
+                            if (!(hid == habitId && (d == dateStr || d.replace("-", "") == rawDate))) {
+                                newArr.put(item)
+                            }
+                        }
+                        repository.setPluginValue("com.v07.habits", "logs", newArr.toString())
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to delete habit doc locally: ${e.message}")
+        }
     }
 
     /**
@@ -268,6 +487,17 @@ class V3CompanionSyncManager private constructor(
                 for (pid in knownPlugins) {
                     try { userDoc.collection("plugins").document(pid).collection("events").document(id).delete() } catch (_: Exception) {}
                 }
+                if (id.startsWith("hbt_")) {
+                    val parts = id.removePrefix("hbt_")
+                    val lastUnderscore = parts.lastIndexOf('_')
+                    if (lastUnderscore > 0) {
+                        val hId = parts.substring(0, lastUnderscore)
+                        val dStr = parts.substring(lastUnderscore + 1).replace("-", "")
+                        val hlogId = "hlog_${hId}_$dStr"
+                        try { userDoc.collection("plugins").document("com.v07.habits").collection("events").document(hlogId).delete() } catch (_: Exception) {}
+                        userDoc.collection("tombstones").document(hlogId).set(mapOf("id" to hlogId, "deleted_at" to System.currentTimeMillis()), SetOptions.merge())
+                    }
+                }
                 Log.d(TAG, "Deleted remote Firestore event doc: $id across all collections")
             } catch (e: Exception) {
                 Log.w(TAG, "Failed to delete remote event $id: ${e.message}")
@@ -282,37 +512,53 @@ class V3CompanionSyncManager private constructor(
     @Synchronized
     fun startRealtimeSync() {
         stopRealtimeSync()
-        if (!isCloudSyncEnabled()) {
-            Log.i(TAG, "startRealtimeSync skipped: Offline Guest Mode active")
+        val authUser = getSafeAuth()?.currentUser
+        if (authUser == null) {
+            Log.i(TAG, "startRealtimeSync skipped: Offline Sanctuary Mode active (Sign in to sync with cloud)")
             return
         }
         val db = getSafeFirestore() ?: return
-        val uid = getTargetUid()
+        val uid = authUser.uid
         val userDoc = db.collection("users").document(uid)
 
         Log.i(TAG, "Starting realtime Firestore sync for UID: $uid")
+
+        val handleListenerError: (FirebaseFirestoreException?) -> Boolean = { e ->
+            if (e != null) {
+                if (e.message?.contains("PERMISSION_DENIED", ignoreCase = true) == true) {
+                    Log.w(TAG, "Snapshot listener permission denied; halting realtime sync listeners.")
+                    stopRealtimeSync()
+                }
+                true
+            } else false
+        }
 
         try {
             // Sessions
             realtimeRegistrations.add(
                 userDoc.collection("sessions").addSnapshotListener { snapshots, e ->
-                    if (e != null || snapshots == null) return@addSnapshotListener
+                    if (handleListenerError(e) || snapshots == null) return@addSnapshotListener
                     syncScope.launch {
-                        for (doc in snapshots.documents) {
-                            if (repository.isDeletedOrTombstoned(doc.id)) continue
-                            val d = doc.data ?: continue
-                            val (epoch, _) = parseTimestamp(d["startTime"] ?: d["ts"] ?: d["timestamp"], null)
-                            val durSec = (d["durationSec"] as? Number)?.toLong() ?: ((d["duration_sec"] as? Number)?.toLong() ?: 0L)
-                            repository.insertSession(
-                                V3Session(
-                                    id = doc.id,
-                                    activity = d["activity"] as? String ?: d["title"] as? String ?: "Focus Session",
-                                    startTime = epoch,
-                                    endTime = (d["endTime"] as? Number)?.toLong(),
-                                    durationSec = durSec,
-                                    notes = d["notes"] as? String
+                        for (change in snapshots.documentChanges) {
+                            val doc = change.document
+                            if (change.type == com.google.firebase.firestore.DocumentChange.Type.REMOVED) {
+                                repository.deleteEntityEverywhere(doc.id)
+                            } else {
+                                if (repository.isDeletedOrTombstoned(doc.id)) continue
+                                val d = doc.data ?: continue
+                                val (epoch, _) = parseTimestamp(d["startTime"] ?: d["ts"] ?: d["timestamp"], null)
+                                val durSec = (d["durationSec"] as? Number)?.toLong() ?: ((d["duration_sec"] as? Number)?.toLong() ?: 0L)
+                                repository.insertSession(
+                                    V3Session(
+                                        id = doc.id,
+                                        activity = d["activity"] as? String ?: d["title"] as? String ?: "Focus Session",
+                                        startTime = epoch,
+                                        endTime = (d["endTime"] as? Number)?.toLong(),
+                                        durationSec = durSec,
+                                        notes = d["notes"] as? String
+                                    )
                                 )
-                            )
+                            }
                         }
                     }
                 }
@@ -321,23 +567,28 @@ class V3CompanionSyncManager private constructor(
             // Tasks
             realtimeRegistrations.add(
                 userDoc.collection("tasks").addSnapshotListener { snapshots, e ->
-                    if (e != null || snapshots == null) return@addSnapshotListener
+                    if (handleListenerError(e) || snapshots == null) return@addSnapshotListener
                     syncScope.launch {
-                        for (doc in snapshots.documents) {
-                            if (repository.isDeletedOrTombstoned(doc.id)) continue
-                            val d = doc.data ?: continue
-                            val (epoch, _) = parseTimestamp(d["createdAt"] ?: d["ts"] ?: d["timestamp"], null)
-                            repository.insertTask(
-                                V3Task(
-                                    id = doc.id,
-                                    title = d["title"] as? String ?: "Task",
-                                    priority = d["priority"] as? String ?: "MEDIUM",
-                                    status = d["status"] as? String ?: "pending",
-                                    createdAt = epoch,
-                                    completedAt = (d["completedAt"] as? Number)?.toLong(),
-                                    deadline = d["deadline"] as? String
+                        for (change in snapshots.documentChanges) {
+                            val doc = change.document
+                            if (change.type == com.google.firebase.firestore.DocumentChange.Type.REMOVED) {
+                                repository.deleteEntityEverywhere(doc.id)
+                            } else {
+                                if (repository.isDeletedOrTombstoned(doc.id)) continue
+                                val d = doc.data ?: continue
+                                val (epoch, _) = parseTimestamp(d["createdAt"] ?: d["ts"] ?: d["timestamp"], null)
+                                repository.insertTask(
+                                    V3Task(
+                                        id = doc.id,
+                                        title = d["title"] as? String ?: "Task",
+                                        priority = d["priority"] as? String ?: "MEDIUM",
+                                        status = d["status"] as? String ?: "pending",
+                                        createdAt = epoch,
+                                        completedAt = (d["completedAt"] as? Number)?.toLong(),
+                                        deadline = d["deadline"] as? String
+                                    )
                                 )
-                            )
+                            }
                         }
                     }
                 }
@@ -346,23 +597,28 @@ class V3CompanionSyncManager private constructor(
             // Thoughts
             realtimeRegistrations.add(
                 userDoc.collection("thoughts").addSnapshotListener { snapshots, e ->
-                    if (e != null || snapshots == null) return@addSnapshotListener
+                    if (handleListenerError(e) || snapshots == null) return@addSnapshotListener
                     syncScope.launch {
-                        for (doc in snapshots.documents) {
-                            if (repository.isDeletedOrTombstoned(doc.id)) continue
-                            val d = doc.data ?: continue
-                            val (epoch, dateStr) = parseTimestamp(d["timestamp"] ?: d["ts"], d["date"] as? String)
-                            repository.insertThought(
-                                V3Thought(
-                                    id = doc.id,
-                                    timestamp = epoch,
-                                    date = dateStr,
-                                    topic = d["topic"] as? String,
-                                    content = d["content"] as? String ?: d["text"] as? String ?: "",
-                                    pinned = d["pinned"] as? Boolean ?: false,
-                                    tags = d["tags"] as? String
+                        for (change in snapshots.documentChanges) {
+                            val doc = change.document
+                            if (change.type == com.google.firebase.firestore.DocumentChange.Type.REMOVED) {
+                                repository.deleteEntityEverywhere(doc.id)
+                            } else {
+                                if (repository.isDeletedOrTombstoned(doc.id)) continue
+                                val d = doc.data ?: continue
+                                val (epoch, dateStr) = parseTimestamp(d["timestamp"] ?: d["ts"], d["date"] as? String)
+                                repository.insertThought(
+                                    V3Thought(
+                                        id = doc.id,
+                                        timestamp = epoch,
+                                        date = dateStr,
+                                        topic = d["topic"] as? String,
+                                        content = d["content"] as? String ?: d["text"] as? String ?: "",
+                                        pinned = d["pinned"] as? Boolean ?: false,
+                                        tags = d["tags"] as? String
+                                    )
                                 )
-                            )
+                            }
                         }
                     }
                 }
@@ -371,22 +627,28 @@ class V3CompanionSyncManager private constructor(
             // Daytracker
             realtimeRegistrations.add(
                 userDoc.collection("daytracker").addSnapshotListener { snapshots, e ->
-                    if (e != null || snapshots == null) return@addSnapshotListener
+                    if (handleListenerError(e) || snapshots == null) return@addSnapshotListener
                     syncScope.launch {
-                        for (doc in snapshots.documents) {
-                            if (repository.isDeletedOrTombstoned(doc.id)) continue
-                            val d = doc.data ?: continue
-                            val (epoch, dateStr) = parseTimestamp(d["createdAt"] ?: d["ts"], d["targetDate"] as? String ?: d["date"] as? String)
-                            repository.insertDayTrackerItem(
-                                V3DayTrackerItem(
-                                    id = doc.id,
-                                    title = d["title"] as? String ?: "Milestone",
-                                    targetDate = dateStr,
-                                    hour = (d["hour"] as? Number)?.toInt() ?: 0,
-                                    pinned = d["pinned"] as? Boolean ?: false,
-                                    createdAt = epoch
+                        for (change in snapshots.documentChanges) {
+                            val doc = change.document
+                            if (change.type == com.google.firebase.firestore.DocumentChange.Type.REMOVED) {
+                                repository.deleteEntityEverywhere(doc.id)
+                                repository.deleteEntityEverywhere("dt_${doc.id}")
+                            } else {
+                                if (repository.isDeletedOrTombstoned(doc.id)) continue
+                                val d = doc.data ?: continue
+                                val (epoch, dateStr) = parseTimestamp(d["createdAt"] ?: d["ts"], d["targetDate"] as? String ?: d["date"] as? String)
+                                repository.insertDayTrackerItem(
+                                    V3DayTrackerItem(
+                                        id = doc.id,
+                                        title = d["title"] as? String ?: "Milestone",
+                                        targetDate = dateStr,
+                                        hour = (d["hour"] as? Number)?.toInt() ?: 0,
+                                        pinned = d["pinned"] as? Boolean ?: false,
+                                        createdAt = epoch
+                                    )
                                 )
-                            )
+                            }
                         }
                     }
                 }
@@ -395,25 +657,30 @@ class V3CompanionSyncManager private constructor(
             // Ledger
             realtimeRegistrations.add(
                 userDoc.collection("ledger").addSnapshotListener { snapshots, e ->
-                    if (e != null || snapshots == null) return@addSnapshotListener
+                    if (handleListenerError(e) || snapshots == null) return@addSnapshotListener
                     syncScope.launch {
-                        for (doc in snapshots.documents) {
-                            if (repository.isDeletedOrTombstoned(doc.id)) continue
-                            val d = doc.data ?: continue
-                            val (epoch, dateStr) = parseTimestamp(d["timestamp"] ?: d["ts"], d["date"] as? String)
-                            val isoTs = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).format(Date(epoch))
-                            repository.insertEvent(
-                                V3Event(
-                                    id = doc.id,
-                                    category = d["category"] as? String ?: "general",
-                                    date = dateStr,
-                                    ts = isoTs,
-                                    timestamp = epoch,
-                                    title = d["title"] as? String,
-                                    content = d["content"] as? String ?: d["text"] as? String,
-                                    score = (d["score"] as? Number)?.toInt() ?: 0
+                        for (change in snapshots.documentChanges) {
+                            val doc = change.document
+                            if (change.type == com.google.firebase.firestore.DocumentChange.Type.REMOVED) {
+                                repository.deleteEntityEverywhere(doc.id)
+                            } else {
+                                if (repository.isDeletedOrTombstoned(doc.id)) continue
+                                val d = doc.data ?: continue
+                                val (epoch, dateStr) = parseTimestamp(d["timestamp"] ?: d["ts"], d["date"] as? String)
+                                val isoTs = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).format(Date(epoch))
+                                repository.insertEvent(
+                                    V3Event(
+                                        id = doc.id,
+                                        category = d["category"] as? String ?: "general",
+                                        date = dateStr,
+                                        ts = isoTs,
+                                        timestamp = epoch,
+                                        title = d["title"] as? String,
+                                        content = d["content"] as? String ?: d["text"] as? String,
+                                        score = (d["score"] as? Number)?.toInt() ?: 0
+                                    )
                                 )
-                            )
+                            }
                         }
                     }
                 }
@@ -422,9 +689,10 @@ class V3CompanionSyncManager private constructor(
             // Tombstones
             realtimeRegistrations.add(
                 userDoc.collection("tombstones").addSnapshotListener { snapshots, e ->
-                    if (e != null || snapshots == null) return@addSnapshotListener
+                    if (handleListenerError(e) || snapshots == null) return@addSnapshotListener
                     syncScope.launch {
-                        for (doc in snapshots.documents) {
+                        for (change in snapshots.documentChanges) {
+                            val doc = change.document
                             repository.deleteEntityEverywhere(doc.id)
                         }
                     }
@@ -434,7 +702,7 @@ class V3CompanionSyncManager private constructor(
             // System Plugins Catalog
             realtimeRegistrations.add(
                 userDoc.collection("system").document("plugins").addSnapshotListener { snapshot, e ->
-                    if (e != null || snapshot == null || !snapshot.exists()) return@addSnapshotListener
+                    if (handleListenerError(e) || snapshot == null || !snapshot.exists()) return@addSnapshotListener
                     syncScope.launch {
                         try {
                             val data = snapshot.data ?: return@launch
@@ -458,29 +726,53 @@ class V3CompanionSyncManager private constructor(
                 }
             )
 
-            // Known Plugins Subcollections
-            val knownPlugins = listOf("com.v07.habits", "com.v07.vitals", "com.v07.fitness", "com.v07.gita", "com.v07.reader", "com.v07.tasks", "com.v07.timetracker")
-            for (pid in knownPlugins) {
-                realtimeRegistrations.add(
-                    userDoc.collection("plugins").document(pid).collection("events").addSnapshotListener { snapshots, e ->
-                        if (e != null || snapshots == null) return@addSnapshotListener
-                        syncScope.launch {
-                            for (doc in snapshots.documents) {
+            // Habits subcollection with real-time bidirectional synchronization
+            realtimeRegistrations.add(
+                userDoc.collection("plugins").document("com.v07.habits").collection("events").addSnapshotListener { snapshots, e ->
+                    if (handleListenerError(e) || snapshots == null) return@addSnapshotListener
+                    syncScope.launch {
+                        for (change in snapshots.documentChanges) {
+                            val doc = change.document
+                            if (change.type == com.google.firebase.firestore.DocumentChange.Type.REMOVED) {
+                                deleteHabitDocLocally(doc.id)
+                            } else {
                                 if (repository.isDeletedOrTombstoned(doc.id)) continue
                                 val d = doc.data ?: continue
-                                val (epoch, dateStr) = parseTimestamp(d["timestamp"] ?: d["ts"], d["date"] as? String)
-                                val cat = d["category"] as? String ?: "plugin"
-                                val payloadJson = d["payloadJson"] as? String ?: JSONObject(d).toString()
-                                repository.insertPluginEvent(
-                                    V3PluginEvent(
-                                        id = doc.id,
-                                        pluginId = pid,
-                                        category = cat,
-                                        payloadJson = payloadJson,
-                                        timestamp = epoch,
-                                        date = dateStr
+                                reconcileHabitDoc(doc.id, d)
+                            }
+                        }
+                    }
+                }
+            )
+
+            // Other Known Plugins Subcollections
+            val otherPlugins = listOf("com.v07.vitals", "com.v07.fitness", "com.v07.gita", "com.v07.reader", "com.v07.tasks", "com.v07.timetracker")
+            for (pid in otherPlugins) {
+                realtimeRegistrations.add(
+                    userDoc.collection("plugins").document(pid).collection("events").addSnapshotListener { snapshots, e ->
+                        if (handleListenerError(e) || snapshots == null) return@addSnapshotListener
+                        syncScope.launch {
+                            for (change in snapshots.documentChanges) {
+                                val doc = change.document
+                                if (change.type == com.google.firebase.firestore.DocumentChange.Type.REMOVED) {
+                                    repository.deleteEntityEverywhere(doc.id)
+                                } else {
+                                    if (repository.isDeletedOrTombstoned(doc.id)) continue
+                                    val d = doc.data ?: continue
+                                    val (epoch, dateStr) = parseTimestamp(d["timestamp"] ?: d["ts"], d["date"] as? String)
+                                    val cat = d["category"] as? String ?: "plugin"
+                                    val payloadJson = d["payloadJson"] as? String ?: JSONObject(d).toString()
+                                    repository.insertPluginEvent(
+                                        V3PluginEvent(
+                                            id = doc.id,
+                                            pluginId = pid,
+                                            category = cat,
+                                            payloadJson = payloadJson,
+                                            timestamp = epoch,
+                                            date = dateStr
+                                        )
                                     )
-                                )
+                                }
                             }
                         }
                     }
@@ -1204,20 +1496,10 @@ class V3CompanionSyncManager private constructor(
                 }
 
                 val auth = getSafeAuth()
-                if (auth?.currentUser == null) {
-                    try {
-                        Log.i(TAG, "No Firebase user authenticated. Attempting anonymous auth fallback...")
-                        Tasks.await(auth?.signInAnonymously() ?: throw IllegalStateException("Auth is null"))
-                        Log.i(TAG, "Anonymous sign-in succeeded: ${auth?.currentUser?.uid}")
-                    } catch (authEx: Exception) {
-                        Log.w(TAG, "Anonymous sign-in fallback unavailable: ${authEx.message}")
-                    }
-                }
-
                 val currentAuthUser = auth?.currentUser
                 if (currentAuthUser == null) {
                     isSyncing.set(false)
-                    Log.w(TAG, "Cloud sync aborted: No authenticated Firebase session.")
+                    Log.i(TAG, "Cloud sync skipped: Offline Sanctuary Mode active (Sign in to sync with companion website)")
                     onComplete(false, "Authentication required: Please sign in to your Cloud Account")
                     return@launch
                 }
@@ -1303,7 +1585,42 @@ class V3CompanionSyncManager private constructor(
                     daytrackerCol.document(dt.id).set(map, SetOptions.merge())
                 }
 
-                // ─── 5. PUSH PLUGIN DOMAIN EVENTS ──────────────────────────────
+                // ─── 5. PUSH HABITS FROM PLUGIN STORAGE ─────────────────────
+                try {
+                    val logsStr = repository.getPluginValue("com.v07.habits", "logs")
+                    if (!logsStr.isNullOrBlank()) {
+                        val arr = JSONArray(logsStr)
+                        val habitsCol = userDoc.collection("plugins").document("com.v07.habits").collection("events")
+                        for (i in 0 until arr.length()) {
+                            val item = arr.getJSONObject(i)
+                            val hid = item.optString("habit", item.optString("habit_id", ""))
+                            val d = item.optString("date", "")
+                            val on = item.optBoolean("on", item.optBoolean("completed", true))
+                            if (hid.isNotBlank() && d.isNotBlank()) {
+                                val compactDate = d.replace("-", "")
+                                val docId = "hlog_${hid}_$compactDate"
+                                if (on) {
+                                    val map = hashMapOf<String, Any>(
+                                        "id" to docId,
+                                        "habit_id" to hid,
+                                        "habit_name" to getHabitName(hid),
+                                        "date" to d,
+                                        "completed" to true,
+                                        "ts" to item.optLong("created", now),
+                                        "category" to "habits",
+                                        "updated_at" to now,
+                                        "_syncedAt" to Timestamp.now()
+                                    )
+                                    habitsCol.document(docId).set(map, SetOptions.merge())
+                                }
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.w(TAG, "Failed pushing habits to cloud: ${e.message}")
+                }
+
+                // ─── 5b. PUSH PLUGIN DOMAIN EVENTS ──────────────────────────────
                 val pluginEvents = repository.getAllPluginEventsForSync()
                 for (pe in pluginEvents) {
                     val map = HashMap<String, Any>()
@@ -1545,9 +1862,20 @@ class V3CompanionSyncManager private constructor(
                         )
                     }
 
-                    // Pull Known Plugins Domain Events
+                    // Pull Habits Domain Events & reconcile locally
+                    try {
+                        val hSnap = Tasks.await(userDoc.collection("plugins").document("com.v07.habits").collection("events").get())
+                        for (doc in hSnap.documents) {
+                            val d = doc.data ?: continue
+                            if (repository.isDeletedOrTombstoned(doc.id)) continue
+                            reconcileHabitDoc(doc.id, d)
+                        }
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Failed pulling habits from cloud: ${e.message}")
+                    }
+
+                    // Pull Other Known Plugins Domain Events
                     val knownPlugins = listOf(
-                        "com.v07.habits",
                         "com.v07.vitals",
                         "com.v07.fitness",
                         "com.v07.gita",
