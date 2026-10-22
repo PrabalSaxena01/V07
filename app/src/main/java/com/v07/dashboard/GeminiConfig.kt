@@ -166,9 +166,14 @@ object GeminiConfig {
     }
 
     var apiKey: String
-        get() = prefs?.getString(KEY_API_KEY, "") ?: ""
+        get() {
+            val raw = prefs?.getString(KEY_API_KEY, "") ?: ""
+            return com.v07.dashboard.security.SecurityKeyHelper.decrypt(raw)
+        }
         set(value) {
-            prefs?.edit()?.putString(KEY_API_KEY, value.trim())?.apply()
+            val trimmed = value.trim()
+            val stored = if (trimmed.isNotBlank()) com.v07.dashboard.security.SecurityKeyHelper.encrypt(trimmed) else ""
+            prefs?.edit()?.putString(KEY_API_KEY, stored)?.apply()
         }
 
     var baseUrl: String

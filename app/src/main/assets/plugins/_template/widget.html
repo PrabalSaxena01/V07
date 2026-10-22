@@ -3,26 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Template Widget</title>
+<title>General Plugin Data Logger Widget</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   :root {
-    --text: #e1e2ea;
-    --muted: #8a8f98;
-    --border: #2c2c2c;
-    --bar-bg: rgba(255,255,255,0.08);
-    --chip-bg: rgba(255,255,255,0.03);
-    --chip-border: rgba(255,255,255,0.06);
+    --text: #F1F5F9;
+    --muted: #94A3B8;
+    --border: rgba(255, 255, 255, 0.08);
+    --bar-bg: rgba(255, 255, 255, 0.08);
+    --chip-bg: rgba(255, 255, 255, 0.04);
     --primary: #A7C8FF;
+    --primary-glow: rgba(167, 200, 255, 0.15);
   }
   :root[data-theme="light"] {
-    --text: #1a1a2e;
-    --muted: #666666;
-    --border: #d0d0d5;
-    --bar-bg: rgba(0,0,0,0.08);
-    --chip-bg: rgba(0,0,0,0.03);
-    --chip-border: rgba(0,0,0,0.08);
-    --primary: #1a5fb4;
+    --text: #0F172A;
+    --muted: #64748B;
+    --border: rgba(0, 0, 0, 0.08);
+    --bar-bg: rgba(0, 0, 0, 0.08);
+    --chip-bg: rgba(0, 0, 0, 0.04);
+    --primary: #1A5FB4;
+    --primary-glow: rgba(26, 95, 180, 0.12);
   }
   body {
     margin: 0;
@@ -32,30 +33,33 @@
     color: var(--text);
     overflow: hidden;
     width: 100%;
+    user-select: none;
   }
   .gw-wrap { display: flex; flex-direction: column; gap: 6px; width: 100%; }
   .gw-row1 { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
   .gw-lvl-group { display: flex; align-items: center; gap: 6px; }
   .gw-badge {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
     color: var(--primary);
-    background: rgba(167,200,255,0.12);
-    border: 1px solid rgba(167,200,255,0.3);
+    background: var(--primary-glow);
+    border: 1px solid var(--primary);
     border-radius: 4px;
-    padding: 1px 6px;
+    padding: 2px 6px;
     letter-spacing: 0.06em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
   }
   .gw-rank {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     font-size: 9.5px;
     color: var(--muted);
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
+    font-weight: 600;
   }
   .gw-total {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     font-size: 11px;
     font-weight: 700;
     color: var(--text);
@@ -63,17 +67,46 @@
   }
   .gw-bar-track {
     width: 100%;
-    height: 4px;
+    height: 5px;
     background: var(--bar-bg);
-    border-radius: 2px;
+    border-radius: 3px;
     overflow: hidden;
   }
   .gw-bar-fill {
     height: 100%;
     background: var(--primary);
-    border-radius: 2px;
-    box-shadow: 0 0 6px rgba(167,200,255,0.5);
-    transition: width 0.3s ease;
+    border-radius: 3px;
+    transition: width 0.35s ease;
+  }
+  /* Universal 1-Tap Metric Logger Row */
+  .logger-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    margin-top: 1px;
+  }
+  .btn-log {
+    flex: 1;
+    min-height: 26px;
+    background: var(--chip-bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.12s ease;
+  }
+  .btn-log:active {
+    transform: scale(0.92);
+    background: var(--primary-glow);
+    border-color: var(--primary);
+    color: var(--primary);
   }
   .gw-chips {
     display: flex;
@@ -85,25 +118,41 @@
     font-size: 9px;
     color: var(--muted);
     background: var(--chip-bg);
-    border: 1px solid var(--chip-border);
+    border: 1px solid var(--border);
     border-radius: 4px;
-    padding: 2px 6px;
+    padding: 3px 6px;
     display: flex;
     align-items: center;
     gap: 4px;
     white-space: nowrap;
+    cursor: pointer;
   }
+  .gw-chip:active { transform: scale(0.97); }
   .gw-dot { width: 5px; height: 5px; border-radius: 50%; display: inline-block; }
   .gw-dot.on { background: var(--primary); box-shadow: 0 0 5px var(--primary); }
-  .gw-dot.off { background: #565B66; }
+  .gw-dot.off { background: var(--muted); }
   .gw-chip-val { color: var(--text); font-weight: 700; }
-  /* Compact 1*1 */
-  .mini-center {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin: 4px 0;
+  /* Toast feedback */
+  .toast {
+    position: fixed;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid var(--primary);
+    color: #F1F5F9;
+    font-size: 9.5px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 12px;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 100;
+  }
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
   }
 </style>
 <script>
@@ -123,70 +172,130 @@
 })();
 </script>
 </head>
-<body>
+<body onclick="openPlugin(event)">
 <div id="w"></div>
+<div id="toast" class="toast">Metric logged</div>
+
 <script>
+function showToast(msg){
+  var t = document.getElementById('toast');
+  if(!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(function(){ t.classList.remove('show'); }, 1800);
+}
+
+function openPlugin(e){
+  if(e && e.target && e.target.closest('.btn-log')) return;
+  try {
+    if(window.parent && window.parent.openPluginPage){
+      window.parent.openPluginPage('_template');
+      return;
+    }
+    if(window.parent && window.parent.postMessage){
+      window.parent.postMessage({ type: 'v3:plugin:open', pluginId: '_template' }, '*');
+      return;
+    }
+  } catch(e){}
+  location.href = 'index.html';
+}
+
+function getMetricValue(){
+  try {
+    var v = localStorage.getItem('v07_template_metric_val');
+    return v !== null ? parseInt(v, 10) : 12;
+  } catch(_) { return 12; }
+}
+
+function setMetricValue(val){
+  try {
+    localStorage.setItem('v07_template_metric_val', val.toString());
+  } catch(_) {}
+}
+
+window.logMetric = function(delta, e){
+  if(e) e.stopPropagation();
+  var cur = getMetricValue();
+  var next = Math.max(0, cur + delta);
+  setMetricValue(next);
+  showToast('✓ Logged: ' + (delta >= 0 ? '+' : '') + delta + ' (Total: ' + next + ')');
+  draw();
+
+  try {
+    window.parent.postMessage({ type: 'v07_refresh' }, '*');
+  } catch(_) {}
+};
+
 function getSize(){
   try {
     var s = new URLSearchParams(window.location.search).get('size');
-    if(s) return s;
+    if(s === 'compact' || s === '1*1') return 'compact';
+    if(s === 'small' || s === '2*1') return 'small';
+    if(s === 'medium' || s === '3*1') return 'medium';
+    if(s === 'large' || s === '4*2') return 'large';
   } catch(e){}
-  return '4*2';
+  var h = window.innerHeight;
+  if(h > 0 && h <= 85) return 'compact';
+  if(h > 85 && h <= 125) return 'small';
+  if(h > 125 && h <= 190) return 'medium';
+  if(h > 190) return 'large';
+  return 'medium';
 }
+
+window.addEventListener('resize', draw);
+window.addEventListener('message', function(e){
+  if(e.data && (e.data.type === 'setSize' || e.data.type === 'v07_refresh')){
+    draw();
+  }
+});
 
 function draw(){
   var el = document.getElementById('w');
   if(!el) return;
   var size = getSize();
+  var val = getMetricValue();
+  var goal = 20;
+  var pct = Math.min(100, Math.round((val / goal) * 100));
 
-  if(size === '1*1'){
+  if(size === 'compact'){
     el.innerHTML =
-      '<div class="gw-wrap">' +
+      '<div class="gw-wrap" style="cursor:pointer">' +
       '  <div class="gw-row1">' +
-      '    <span class="gw-badge">MOD</span>' +
-      '    <span class="gw-rank">OK</span>' +
+      '    <span class="gw-badge">📊 PLUGIN</span>' +
+      '    <span class="gw-rank">' + val + '/' + goal + '</span>' +
       '  </div>' +
-      '  <div class="mini-center">' +
-      '    <span style="font-family:'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;font-size:18px;font-weight:700;color:var(--text)">85%</span>' +
-      '    <span style="font-size:8px;color:var(--muted);text-transform:uppercase">ACTIVE</span>' +
+      '  <div style="display:flex;justify-content:space-between;align-items:center;margin:2px 0">' +
+      '    <span style="font-size:12px;font-weight:700;color:var(--text)">' + val + ' UNITS</span>' +
+      '    <span style="font-size:9px;color:var(--muted)">' + pct + '% OF GOAL</span>' +
       '  </div>' +
-      '  <div class="gw-bar-track"><div class="gw-bar-fill" style="width:85%"></div></div>' +
+      '  <div class="gw-bar-track"><div class="gw-bar-fill" style="width:' + pct + '%"></div></div>' +
       '</div>';
-  } else if(size === '2*1'){
-    el.innerHTML =
-      '<div class="gw-wrap">' +
-      '  <div class="gw-row1">' +
-      '    <div class="gw-lvl-group">' +
-      '      <span class="gw-badge">STATUS</span>' +
-      '      <span class="gw-rank">ONLINE</span>' +
-      '    </div>' +
-      '    <span class="gw-total">85%</span>' +
-      '  </div>' +
-      '  <div class="gw-bar-track"><div class="gw-bar-fill" style="width:85%"></div></div>' +
-      '  <div class="gw-chips">' +
-      '    <span class="gw-chip"><span class="gw-dot on"></span> SYNCED</span>' +
-      '    <span class="gw-chip">READY &rsaquo;</span>' +
-      '  </div>' +
-      '</div>';
-  } else { // 4*2
-    el.innerHTML =
-      '<div class="gw-wrap">' +
-      '  <div class="gw-row1">' +
-      '    <div class="gw-lvl-group">' +
-      '      <span class="gw-badge">ACTIVE MODULE</span>' +
-      '      <span class="gw-rank">TEMPLATE STATUS</span>' +
-      '    </div>' +
-      '    <span class="gw-total">85% COMPLETE</span>' +
-      '  </div>' +
-      '  <div class="gw-bar-track"><div class="gw-bar-fill" style="width:85%"></div></div>' +
-      '  <div style="font-size:11px;color:var(--muted);padding:4px 0">Modular plugin loaded via standard 5-pillar architecture.</div>' +
-      '  <div class="gw-chips">' +
-      '    <span class="gw-chip"><span class="gw-dot on"></span> RUNNING <span class="gw-chip-val">OK</span></span>' +
-      '    <span class="gw-chip">VERSION <span class="gw-chip-val">1.0.0</span></span>' +
-      '    <span class="gw-chip">OPEN &rsaquo;</span>' +
-      '  </div>' +
-      '</div>';
+    return;
   }
+
+  el.innerHTML =
+    '<div class="gw-wrap" style="cursor:pointer">' +
+    '  <div class="gw-row1">' +
+    '    <div class="gw-lvl-group">' +
+    '      <span class="gw-badge">📊 CUSTOM LOGGER</span>' +
+    '      <span class="gw-rank">MODULAR METRIC</span>' +
+    '    </div>' +
+    '    <span class="gw-total">' + val + ' <span style="font-size:9px;color:var(--muted);font-weight:normal">/ ' + goal + '</span></span>' +
+    '  </div>' +
+    '  <div class="gw-bar-track"><div class="gw-bar-fill" style="width:' + pct + '%"></div></div>' +
+    '  <div class="logger-row">' +
+    '    <button class="btn-log" onclick="logMetric(1, event)">+1</button>' +
+    '    <button class="btn-log" onclick="logMetric(5, event)">+5</button>' +
+    '    <button class="btn-log" onclick="logMetric(10, event)">+10</button>' +
+    '    <button class="btn-log" onclick="logMetric(-1, event)">-1</button>' +
+    '  </div>' +
+    '  <div class="gw-chips">' +
+    '    <span class="gw-chip"><span class="gw-dot on"></span> LOGGED TODAY</span>' +
+    '    <span class="gw-chip">PROGRESS <span class="gw-chip-val">' + pct + '%</span></span>' +
+    '    <span class="gw-chip" onclick="openPlugin(event)">SETTINGS &rsaquo;</span>' +
+    '  </div>' +
+    '</div>';
 }
 draw();
 </script>

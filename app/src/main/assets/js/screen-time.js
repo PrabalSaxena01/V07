@@ -270,7 +270,7 @@ async function loadAppUsageForDate(){
         var pct=Math.round((u.total_duration_sec/totalSec)*100);
         var color=pct>30?'var(--primary)':pct>15?'var(--secondary)':'var(--text)';
         html+='<div style="padding:10px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)'+(idx>=visibleApps.length-1?';border-bottom:none':'')+'">';
-        html+='<span style="font-family:\'JetBrains Mono\',\'Mono\',monospace;font-size:12px;text-transform:uppercase;color:var(--text)">'+esc(u.app)+'</span>';
+        var iconSrc = '/api/v3/apps/icon?package=' + encodeURIComponent(u.package || u.app); html+='<div style="display:flex;align-items:center;gap:8px;overflow:hidden"><img src="'+iconSrc+'" style="width:20px;height:20px;border-radius:4px;object-fit:contain" onerror="this.style.display=\'none\'" /><span style="font-family:\'JetBrains Mono\',\'Mono\',monospace;font-size:12px;text-transform:uppercase;color:var(--text)">'+esc(u.app)+'</span></div>';
         html+='<span style="font-family:\'JetBrains Mono\',\'Mono\',monospace;font-size:12px;color:'+color+'">'+durLabel+'</span>';
         html+='</div>';
       });
@@ -283,7 +283,7 @@ async function loadAppUsageForDate(){
           var pct=Math.round((u.total_duration_sec/totalSec)*100);
           var color=pct>30?'var(--primary)':pct>15?'var(--secondary)':'var(--text)';
           html+='<div style="padding:10px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)'+(idx>=moreApps.length-1?';border-bottom:none':'')+'">';
-          html+='<span style="font-family:\'JetBrains Mono\',\'Mono\',monospace;font-size:12px;text-transform:uppercase;color:var(--text)">'+esc(u.app)+'</span>';
+          var iconSrc = '/api/v3/apps/icon?package=' + encodeURIComponent(u.package || u.app); html+='<div style="display:flex;align-items:center;gap:8px;overflow:hidden"><img src="'+iconSrc+'" style="width:20px;height:20px;border-radius:4px;object-fit:contain" onerror="this.style.display=\'none\'" /><span style="font-family:\'JetBrains Mono\',\'Mono\',monospace;font-size:12px;text-transform:uppercase;color:var(--text)">'+esc(u.app)+'</span></div>';
           html+='<span style="font-family:\'JetBrains Mono\',\'Mono\',monospace;font-size:12px;color:'+color+'">'+durLabel+'</span>';
           html+='</div>';
         });

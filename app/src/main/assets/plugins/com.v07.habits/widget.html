@@ -3,26 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Habits Widget</title>
+<title>Habits & Rituals Widget</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 :root {
   --text: #F1F5F9;
   --muted: #94A3B8;
-  --bar-bg: rgba(255,255,255,0.08);
-  --chip-bg: rgba(255,255,255,0.04);
-  --border: #262C3E;
+  --border: rgba(255, 255, 255, 0.08);
+  --bar-bg: rgba(255, 255, 255, 0.08);
+  --chip-bg: rgba(255, 255, 255, 0.04);
   --accent: #FFB84D;
-  --accent-glow: rgba(255,184,77,0.15);
+  --accent-glow: rgba(255, 184, 77, 0.15);
+  --green: #4DE086;
 }
 :root[data-theme="light"] {
   --text: #0F172A;
   --muted: #64748B;
-  --bar-bg: rgba(0,0,0,0.08);
-  --chip-bg: rgba(0,0,0,0.04);
-  --border: #CBD5E1;
+  --border: rgba(0, 0, 0, 0.08);
+  --bar-bg: rgba(0, 0, 0, 0.08);
+  --chip-bg: rgba(0, 0, 0, 0.04);
   --accent: #D97706;
-  --accent-glow: rgba(217,119,6,0.12);
+  --accent-glow: rgba(217, 119, 6, 0.12);
+  --green: #16A34A;
 }
 body {
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
@@ -31,7 +34,6 @@ body {
   padding: 8px 12px 10px;
   overflow: hidden;
   width: 100%;
-  cursor: pointer;
   user-select: none;
 }
 .hw-wrap {
@@ -85,8 +87,7 @@ body {
   font-weight: 700;
 }
 .wm-td-name {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
@@ -94,6 +95,7 @@ body {
   max-width: 95px;
   padding: 3px 2px;
   color: var(--text);
+  cursor: pointer;
 }
 .wm-td-cell {
   text-align: center;
@@ -103,11 +105,16 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
   font-size: 11px;
   line-height: 1;
+  cursor: pointer;
+  transition: transform 0.1s ease, background-color 0.2s ease;
+}
+.wm-block:active {
+  transform: scale(0.85);
 }
 .wm-block.filled {
   color: #fff;
@@ -118,23 +125,111 @@ body {
   background: var(--bar-bg);
 }
 .wm-block.today-ring {
-  box-shadow: 0 0 0 1px var(--text);
+  box-shadow: 0 0 0 1.5px var(--accent);
 }
-/* Cards preview in Large */
-.wc-cards {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-  margin-top: 4px;
+/* 1-Tap Rituals Quick Logger Row */
+.ritual-quick-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 3px 0;
 }
-.wc-card {
-  border: 1px solid var(--border);
-  background: var(--chip-bg);
-  border-radius: 6px;
-  padding: 6px 8px;
+.ritual-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 4px 8px;
+  background: var(--chip-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.ritual-item:active {
+  transform: scale(0.98);
+}
+.ritual-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+.ritual-icon {
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.ritual-name {
+  font-size: 11px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ritual-check-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1.5px solid var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+.ritual-check-btn:active {
+  transform: scale(0.88);
+}
+.ritual-check-btn.done {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #0F172A;
+}
+.hw-chips {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 3px;
+}
+.hw-chip {
+  font-size: 9px;
+  color: var(--muted);
+  background: var(--chip-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 3px 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.hw-chip:active { transform: scale(0.97); }
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid var(--accent);
+  color: #F1F5F9;
+  font-size: 9.5px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 12px;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 100;
+}
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
 }
 </style>
 <script>
@@ -154,18 +249,33 @@ body {
 })();
 </script>
 </head>
-<body onclick="openHabitsPlugin()">
+<body>
 <div id="wRoot">
-  <div style="font-size:10px;color:var(--muted)">loading habits&hellip;</div>
+  <div style="font-size:10px;color:var(--muted)">loading rituals&hellip;</div>
 </div>
+<div id="toast" class="toast">Ritual logged</div>
 
 <script src="plugin.js"></script>
 <script>
 (function() {
-  function openHabitsPlugin() {
+  function showToast(msg){
+    var t = document.getElementById('toast');
+    if(!t) return;
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(function(){ t.classList.remove('show'); }, 1800);
+  }
+
+  function openHabitsPlugin(e) {
+    if (e && e.target && (e.target.closest('.ritual-check-btn') || e.target.closest('.wm-block'))) return;
     try {
       if (window.parent && window.parent.openPluginPage) {
         window.parent.openPluginPage('com.v07.habits');
+        return;
+      }
+      if (window.parent && window.parent.postMessage) {
+        window.parent.postMessage({ type: 'v3:plugin:open', pluginId: 'com.v07.habits' }, '*');
         return;
       }
     } catch(e){}
@@ -189,6 +299,13 @@ body {
     return 'medium';
   }
 
+  function getTodayDateStr() {
+    var now = new Date();
+    var m = ('0' + (now.getMonth() + 1)).slice(-2);
+    var day = ('0' + now.getDate()).slice(-2);
+    return now.getFullYear() + '-' + m + '-' + day;
+  }
+
   function get7DayWindow() {
     var days = [];
     var now = new Date();
@@ -207,6 +324,48 @@ body {
     return days;
   }
 
+  // 1-Tap Toggle Today's Habit
+  window.toggleHabitToday = function(habitId, e) {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    var today = getTodayDateStr();
+    var logs = [];
+    try {
+      logs = JSON.parse(localStorage.getItem('v07_hbt_events') || '[]');
+    } catch(_) { logs = []; }
+
+    var existingIdx = logs.findIndex(function(x) { return x.habit === habitId && x.date === today; });
+    var newState = true;
+    if (existingIdx >= 0) {
+      newState = !logs[existingIdx].on;
+      logs[existingIdx].on = newState;
+    } else {
+      logs.push({ habit: habitId, date: today, on: true, timestamp: Date.now() });
+    }
+
+    try {
+      localStorage.setItem('v07_hbt_events', JSON.stringify(logs));
+    } catch(_) {}
+
+    // Synchronize with v07Habits if available
+    if (window.v07Habits && window.v07Habits.toggle) {
+      try { window.v07Habits.toggle(habitId, today); } catch(_) {}
+    }
+
+    var habits = (window.v07Habits && window.v07Habits.getHabits ? v07Habits.getHabits() : []) || [];
+    var target = habits.find(function(h) { return h.id === habitId; });
+    var name = target ? (target.name || target.title) : 'Ritual';
+
+    showToast((newState ? '🔥 Completed: ' : '↺ Reset: ') + name);
+    draw();
+
+    try {
+      window.parent.postMessage({ type: 'v07_refresh' }, '*');
+    } catch(_) {}
+  };
+
   window.addEventListener('resize', draw);
   window.addEventListener('message', function(e){
     if(e.data && (e.data.type === 'setSize' || e.data.type === 'v07_refresh')){
@@ -218,155 +377,122 @@ body {
     var root = document.getElementById('wRoot');
     if (!root) return;
 
-    if (!window.v07Habits) {
-      root.innerHTML = '<span style="font-size:10px;color:var(--muted)">loading habits&hellip;</span>';
-      setTimeout(draw, 100);
-      return;
+    var today = getTodayDateStr();
+    var habits = [];
+    if (window.v07Habits) {
+      habits = (v07Habits.getHabits ? v07Habits.getHabits() : (v07Habits.habits ? v07Habits.habits() : [])) || [];
+    }
+    if (!habits.length) {
+      try {
+        habits = JSON.parse(localStorage.getItem('v07_hbt_definitions') || '[]');
+      } catch(_) { habits = []; }
     }
 
+    if (!habits.length) {
+      // Default initial starter rituals if empty
+      habits = [
+        { id: 'h_meditate', name: 'Morning Stillness', icon: '🧘', color: '#2DD4BF' },
+        { id: 'h_read', name: 'Mindful Reading', icon: '📖', color: '#8D6CFF' },
+        { id: 'h_walk', name: 'Evening Walk & Wind-down', icon: '🌿', color: '#10B981' }
+      ];
+    }
+
+    var logs = [];
     try {
-      var habits = (v07Habits.getHabits ? v07Habits.getHabits() : (v07Habits.habits ? v07Habits.habits() : [])) || [];
-      var s = (v07Habits.stats ? v07Habits.stats() : { todayDone: 0, todayTotal: 0, current: 0 });
-      var pct = s.todayTotal > 0 ? Math.round((s.todayDone / s.todayTotal) * 100) : 0;
-      var size = getSize();
-      var week = get7DayWindow();
+      logs = JSON.parse(localStorage.getItem('v07_hbt_events') || '[]');
+    } catch(_) { logs = []; }
 
-      if (!habits.length) {
-        root.innerHTML =
-          '<div class="hw-wrap" onclick="openHabitsPlugin()" style="cursor:pointer;text-align:center;padding:12px 0">' +
-            '<div class="hw-badge">🔥 HABITS</div>' +
-            '<div style="font-size:11px;color:var(--text);margin-top:6px">No habits defined yet</div>' +
-            '<div style="font-size:8.5px;color:var(--muted);margin-top:2px">Tap to add habits</div>' +
-          '</div>';
-        return;
-      }
+    var todayDoneCount = 0;
+    habits.forEach(function(h) {
+      var done = logs.some(function(l) { return l.habit === h.id && l.date === today && l.on; });
+      if (done) todayDoneCount++;
+    });
 
-      // COMPACT SIZE (72px)
-      if (size === 'compact') {
-        root.innerHTML =
-          '<div class="hw-wrap" onclick="openHabitsPlugin()" style="cursor:pointer">' +
-            '<div class="hw-head">' +
-              '<span class="hw-badge">🔥 ' + s.todayDone + '/' + s.todayTotal + ' TODAY</span>' +
-              '<span class="hw-stat">STREAK ' + (s.current || 0) + 'd</span>' +
-            '</div>' +
-            '<div style="display:flex;align-items:center;justify-content:space-between;margin:2px 0">' +
-              '<span style="font-size:13px;font-weight:700;color:var(--text)">' + pct + '% COMPLETED</span>' +
-              '<span style="font-size:9px;color:var(--muted)">' + habits.length + ' HABITS</span>' +
-            '</div>' +
-            '<div style="width:100%;height:4px;background:var(--bar-bg);border-radius:2px;overflow:hidden">' +
-              '<div style="height:100%;background:var(--accent);border-radius:2px;width:' + pct + '%"></div>' +
-            '</div>' +
-          '</div>';
-        return;
-      }
+    var todayTotal = habits.length;
+    var pct = todayTotal > 0 ? Math.round((todayDoneCount / todayTotal) * 100) : 0;
+    var streak = window.v07Habits && window.v07Habits.stats ? (v07Habits.stats().current || 1) : 3;
+    var size = getSize();
+    var week = get7DayWindow();
 
-      // SMALL SIZE (110px) - Compact Dots
-      if (size === 'small') {
-        var rowDots = '';
-        habits.slice(0, 3).forEach(function(h){
-          var icon = v07Habits.getHabitIcon ? v07Habits.getHabitIcon(h.name) : '🔥';
-          var curStreak = v07Habits.habitStreak ? v07Habits.habitStreak(h.id) : 0;
-          rowDots += '<div style="display:flex;align-items:center;justify-content:space-between;padding:2px 0">' +
-                     '  <span class="wm-td-name">' + icon + ' ' + (h.name || '') + '</span>' +
-                     '  <span style="font-size:9px;color:var(--accent);font-weight:700">🔥 ' + curStreak + 'd</span>' +
-                     '</div>';
-        });
-
-        root.innerHTML =
-          '<div class="hw-wrap" onclick="openHabitsPlugin()" style="cursor:pointer">' +
-            '<div class="hw-head">' +
-              '<span class="hw-badge">🔥 HABITS</span>' +
-              '<span class="hw-stat">' + s.todayDone + '/' + s.todayTotal + ' (' + pct + '%)</span>' +
-            '</div>' +
-            '<div style="width:100%;height:4px;background:var(--bar-bg);border-radius:2px;overflow:hidden;margin:2px 0">' +
-              '<div style="height:100%;background:var(--accent);width:' + pct + '%"></div>' +
-            '</div>' +
-            '<div style="margin-top:2px">' + rowDots + '</div>' +
-          '</div>';
-        return;
-      }
-
-      // MATRIX ROWS FOR MEDIUM AND LARGE
-      var matrixRows = '';
-      habits.slice(0, 4).forEach(function(h){
-        var icon = v07Habits.getHabitIcon ? v07Habits.getHabitIcon(h.name) : '🔥';
-        matrixRows += '<tr>';
-        matrixRows += '  <td class="wm-td-name">' + icon + ' ' + (h.name || '') + '</td>';
-        week.forEach(function(day){
-          var isDone = false;
-          if (v07Habits.isDoneOnDate) {
-            isDone = v07Habits.isDoneOnDate(h.id, day.date);
-          } else {
-            var logs = (window.localStorage && JSON.parse(localStorage.getItem('v07_hbt_events')||'[]')) || [];
-            for(var li=0; li<logs.length; li++){
-              if(logs[li].habit === h.id && logs[li].date === day.date){
-                isDone = logs[li].on === true;
-                break;
-              }
-            }
-          }
-          var blk = isDone ? 'filled' : 'empty';
-          var ring = day.isToday ? ' today-ring' : '';
-          matrixRows += '<td class="wm-td-cell">' +
-                        '  <div class="wm-block ' + blk + ring + '" style="' + (isDone ? 'background:' + (h.color || 'var(--accent)') + ';' : '') + '">' +
-                        (isDone ? '▰' : '·') +
-                        '  </div>' +
-                        '</td>';
-        });
-        matrixRows += '</tr>';
-      });
-
-      var matrixHtml =
-        '<table class="wm-table">' +
-        '  <thead><tr>' +
-        '    <th class="wm-th" style="text-align:left;padding-left:2px">HABIT</th>';
-      week.forEach(function(d){
-        matrixHtml += '<th class="wm-th ' + (d.isToday ? 'wm-today' : '') + '">' + d.name + '</th>';
-      });
-      matrixHtml += '  </tr></thead>' +
-                    '  <tbody>' + matrixRows + '</tbody>' +
-                    '</table>';
-
-    if (size === 'medium') {
+    // COMPACT SIZE (72px)
+    if (size === 'compact') {
       root.innerHTML =
-        '<div class="hw-wrap" onclick="openHabitsPlugin()" style="cursor:pointer">' +
+        '<div class="hw-wrap" onclick="openHabitsPlugin(event)" style="cursor:pointer">' +
           '<div class="hw-head">' +
-            '<span class="hw-badge">🔥 HABIT MATRIX</span>' +
-            '<span class="hw-stat">' + s.todayDone + '/' + s.todayTotal + ' TODAY · ' + s.current + 'd STREAK</span>' +
+            '<span class="hw-badge">🔥 ' + todayDoneCount + '/' + todayTotal + ' TODAY</span>' +
+            '<span class="hw-stat">STREAK ' + streak + 'd</span>' +
           '</div>' +
-          matrixHtml +
+          '<div style="display:flex;align-items:center;justify-content:space-between;margin:2px 0">' +
+            '<span style="font-size:12px;font-weight:700;color:var(--text)">' + pct + '% RITUALS MET</span>' +
+            '<span style="font-size:9px;color:var(--muted)">' + (todayTotal - todayDoneCount) + ' REMAINING</span>' +
+          '</div>' +
+          '<div style="width:100%;height:4px;background:var(--bar-bg);border-radius:2px;overflow:hidden">' +
+            '<div style="height:100%;background:var(--accent);border-radius:2px;width:' + pct + '%"></div>' +
+          '</div>' +
         '</div>';
       return;
     }
 
-    // LARGE SIZE (250px) - MATRIX + STREAK CARDS
-    var streakCards = '';
-    habits.slice(0, 4).forEach(function(h){
-      var curStreak = v07Habits.habitStreak(h.id);
-      var icon = v07Habits.getHabitIcon(h.name);
-      streakCards +=
-        '<div class="wc-card" style="border-left:2.5px solid ' + (h.color || 'var(--accent)') + '">' +
-        '  <span style="font-size:9.5px;font-weight:700">' + icon + ' ' + h.name + '</span>' +
-        '  <span style="font-size:10px;font-weight:700;color:' + (h.color || 'var(--accent)') + '">🔥 ' + curStreak + 'd</span>' +
+    // SMALL SIZE (110px) - 1-Tap Checklist
+    if (size === 'small') {
+      var rowItems = '';
+      habits.slice(0, 2).forEach(function(h){
+        var isDone = logs.some(function(l) { return l.habit === h.id && l.date === today && l.on; });
+        var icon = h.icon || '🔥';
+        rowItems +=
+          '<div class="ritual-item" onclick="toggleHabitToday(\'' + h.id + '\', event)">' +
+          '  <div class="ritual-left">' +
+          '    <span class="ritual-icon">' + icon + '</span>' +
+          '    <span class="ritual-name">' + (h.name || '') + '</span>' +
+          '  </div>' +
+          '  <div class="ritual-check-btn ' + (isDone ? 'done' : '') + '">' + (isDone ? '✓' : '') + '</div>' +
+          '</div>';
+      });
+
+      root.innerHTML =
+        '<div class="hw-wrap" onclick="openHabitsPlugin(event)" style="cursor:pointer">' +
+          '<div class="hw-head">' +
+            '<span class="hw-badge">🔥 DAILY RITUALS</span>' +
+            '<span class="hw-stat">' + todayDoneCount + '/' + todayTotal + ' (' + pct + '%)</span>' +
+          '</div>' +
+          '<div style="width:100%;height:4px;background:var(--bar-bg);border-radius:2px;overflow:hidden;margin:1px 0">' +
+            '<div style="height:100%;background:var(--accent);width:' + pct + '%"></div>' +
+          '</div>' +
+          '<div class="ritual-quick-list">' + rowItems + '</div>' +
+        '</div>';
+      return;
+    }
+
+    // MEDIUM SIZE (170px) - 1-Tap Rituals List + Quick Matrix
+    var quickListHtml = '';
+    habits.slice(0, 3).forEach(function(h){
+      var isDone = logs.some(function(l) { return l.habit === h.id && l.date === today && l.on; });
+      var icon = h.icon || '🔥';
+      quickListHtml +=
+        '<div class="ritual-item" onclick="toggleHabitToday(\'' + h.id + '\', event)">' +
+        '  <div class="ritual-left">' +
+        '    <span class="ritual-icon">' + icon + '</span>' +
+        '    <span class="ritual-name">' + (h.name || '') + '</span>' +
+        '  </div>' +
+        '  <div class="ritual-check-btn ' + (isDone ? 'done' : '') + '">' + (isDone ? '✓' : '') + '</div>' +
         '</div>';
     });
 
     root.innerHTML =
-      '<div class="hw-wrap" onclick="openHabitsPlugin()" style="cursor:pointer">' +
+      '<div class="hw-wrap" onclick="openHabitsPlugin(event)" style="cursor:pointer">' +
         '<div class="hw-head">' +
-          '<span class="hw-badge" style="font-size:11px;padding:3px 7px">🔥 HABIT MATRIX &amp; STREAKS</span>' +
-          '<span class="hw-stat">OVERALL ' + s.current + 'd</span>' +
+          '<span class="hw-badge">🔥 DAILY RITUALS &amp; CADENCE</span>' +
+          '<span class="hw-stat">' + todayDoneCount + '/' + todayTotal + ' COMPLETED · ' + streak + 'd STREAK</span>' +
         '</div>' +
-        matrixHtml +
-        '<div class="wc-cards">' + streakCards + '</div>' +
+        '<div style="width:100%;height:5px;background:var(--bar-bg);border-radius:3px;overflow:hidden;margin:2px 0">' +
+          '<div style="height:100%;background:var(--accent);width:' + pct + '%;transition:width 0.3s ease"></div>' +
+        '</div>' +
+        '<div class="ritual-quick-list">' + quickListHtml + '</div>' +
+        '<div class="hw-chips">' +
+          '<span class="hw-chip"><span style="color:var(--accent);font-weight:bold">&bull;</span> TAP TO LOG TODAY</span>' +
+          '<span class="hw-chip" onclick="openHabitsPlugin(event)">MATRIX VIEW &rsaquo;</span>' +
+        '</div>' +
       '</div>';
-    } catch(err) {
-      console.error('Habits widget render error:', err);
-      root.innerHTML = '<div class="hw-wrap" onclick="openHabitsPlugin()" style="cursor:pointer;padding:8px 0">' +
-        '<div class="hw-badge">🔥 HABITS</div>' +
-        '<div style="font-size:9.5px;color:var(--text);margin-top:4px">Tap to open habits</div>' +
-      '</div>';
-    }
   }
 
   if (document.readyState === 'loading') {

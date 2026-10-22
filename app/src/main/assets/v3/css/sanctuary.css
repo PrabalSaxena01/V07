@@ -714,3 +714,11 @@ html, body {
   padding-left: 20px;
   margin-bottom: 8px;
 }
+
+@keyframes chronoPulseGlow {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(77,224,134,0.3)); opacity: 1; }
+  50% { filter: drop-shadow(0 0 16px rgba(77,224,134,0.85)); opacity: 0.95; }
+}
+.chrono-running-pulse {
+  animation: chronoPulseGlow 2.5s infinite ease-in-out !important;
+}

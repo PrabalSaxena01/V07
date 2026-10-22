@@ -3,28 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Vitals Widget</title>
+<title>Vitals & State Widget</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   :root {
     --text: #F1F5F9;
     --muted: #94A3B8;
-    --border: #262C3E;
-    --bar-bg: rgba(255,255,255,0.08);
-    --chip-bg: rgba(255,255,255,0.04);
-    --chip-border: rgba(255,255,255,0.08);
+    --border: rgba(255, 255, 255, 0.08);
+    --bar-bg: rgba(255, 255, 255, 0.08);
+    --chip-bg: rgba(255, 255, 255, 0.04);
     --primary: #4DE086;
-    --primary-glow: rgba(77,224,134,0.15);
+    --primary-glow: rgba(77, 224, 134, 0.15);
   }
   :root[data-theme="light"] {
     --text: #0F172A;
     --muted: #64748B;
-    --border: #CBD5E1;
-    --bar-bg: rgba(0,0,0,0.08);
-    --chip-bg: rgba(0,0,0,0.04);
-    --chip-border: rgba(0,0,0,0.08);
+    --border: rgba(0, 0, 0, 0.08);
+    --bar-bg: rgba(0, 0, 0, 0.08);
+    --chip-bg: rgba(0, 0, 0, 0.04);
     --primary: #16A34A;
-    --primary-glow: rgba(22,163,74,0.12);
+    --primary-glow: rgba(22, 163, 74, 0.12);
   }
   body {
     margin: 0;
@@ -34,7 +33,6 @@
     color: var(--text);
     overflow: hidden;
     width: 100%;
-    cursor: pointer;
     user-select: none;
   }
   .gw-wrap {
@@ -55,7 +53,6 @@
     gap: 6px;
   }
   .gw-badge {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     font-size: 10px;
     font-weight: 700;
     color: var(--primary);
@@ -65,39 +62,126 @@
     padding: 2px 6px;
     letter-spacing: 0.06em;
     text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
   }
   .gw-rank {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     font-size: 9.5px;
     color: var(--muted);
     letter-spacing: 0.06em;
     text-transform: uppercase;
+    font-weight: 600;
   }
   .gw-total {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     font-size: 11px;
     font-weight: 700;
     color: var(--text);
     letter-spacing: 0.05em;
+  }
+  /* Quick Mood Selector Chips */
+  .mood-selector {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin: 2px 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .mood-selector::-webkit-scrollbar { display: none; }
+  .mood-pill {
+    flex: 1;
+    min-height: 28px;
+    padding: 4px 6px;
+    background: var(--chip-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+  }
+  .mood-pill:active {
+    transform: scale(0.92);
+  }
+  .mood-pill.active {
+    background: var(--primary-glow);
+    border-color: var(--primary);
+    color: var(--primary);
+    font-weight: 700;
+  }
+  /* Energy Rating Bar */
+  .energy-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--chip-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 8px;
+    margin-top: 1px;
+  }
+  .energy-lbl {
+    font-size: 9.5px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .energy-btns {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .energy-btn {
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: var(--bar-bg);
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .energy-btn:active {
+    transform: scale(0.85);
+  }
+  .energy-btn.active {
+    background: var(--primary);
+    color: #0F172A;
+    border-color: var(--primary);
   }
   .gw-chips {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 6px;
+    margin-top: 2px;
   }
   .gw-chip {
     font-size: 9px;
     color: var(--muted);
     background: var(--chip-bg);
-    border: 1px solid var(--chip-border);
+    border: 1px solid var(--border);
     border-radius: 4px;
     padding: 3px 6px;
     display: flex;
     align-items: center;
     gap: 4px;
     white-space: nowrap;
+    cursor: pointer;
   }
+  .gw-chip:active { transform: scale(0.97); }
   .gw-dot {
     width: 5px;
     height: 5px;
@@ -114,6 +198,28 @@
   .gw-chip-val {
     color: var(--text);
     font-weight: 700;
+  }
+  /* Toast feedback */
+  .toast {
+    position: fixed;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid var(--primary);
+    color: #F1F5F9;
+    font-size: 9.5px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 12px;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 100;
+  }
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
   }
 </style>
 <script>
@@ -135,19 +241,88 @@
 </head>
 <body>
 <div id="w"></div>
+<div id="toast" class="toast">Vitals logged</div>
+
 <script>
-function esc(t){
-  return (t || '').toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+function showToast(msg){
+  var t = document.getElementById('toast');
+  if(!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(function(){ t.classList.remove('show'); }, 1800);
 }
 
-function openVitalsPlugin(){
+function openVitalsPlugin(e){
+  if(e && e.target && (e.target.closest('.mood-pill') || e.target.closest('.energy-btn'))) return;
   try {
     if(window.parent && window.parent.openPluginPage){
       window.parent.openPluginPage('com.v07.vitals');
       return;
     }
+    if(window.parent && window.parent.postMessage){
+      window.parent.postMessage({ type: 'v3:plugin:open', pluginId: 'com.v07.vitals' }, '*');
+      return;
+    }
   } catch(e){}
   location.href = 'index.html';
+}
+
+function getLocalVitals(){
+  try {
+    var s = localStorage.getItem('v07_vitals_today');
+    if(s) return JSON.parse(s);
+  } catch(e){}
+  return { mood: 'Calm', moodIcon: '😌', energy: 4, timestamp: null };
+}
+
+function saveLocalVitals(v){
+  try {
+    localStorage.setItem('v07_vitals_today', JSON.stringify(v));
+  } catch(e){}
+}
+
+async function logMood(mood, icon, e){
+  if(e) e.stopPropagation();
+  var v = getLocalVitals();
+  v.mood = mood;
+  v.moodIcon = icon;
+  v.timestamp = Date.now();
+  saveLocalVitals(v);
+  showToast('✓ State Logged: ' + icon + ' ' + mood);
+  draw();
+
+  try {
+    await fetch('/events/mood', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mood: mood.toLowerCase(), label: mood, timestamp: Date.now() })
+    });
+  } catch(e){}
+  try {
+    window.parent.postMessage({ type: 'v07_refresh' }, '*');
+  } catch(e){}
+}
+
+async function logEnergy(level, e){
+  if(e) e.stopPropagation();
+  var v = getLocalVitals();
+  v.energy = level;
+  v.timestamp = Date.now();
+  saveLocalVitals(v);
+  showToast('⚡ Energy Rated: ' + level + '/5');
+  draw();
+
+  try {
+    await fetch('/events/energy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ energy: level, timestamp: Date.now() })
+    });
+  } catch(e){}
+  try {
+    window.parent.postMessage({ type: 'v07_refresh' }, '*');
+  } catch(e){}
 }
 
 function getSize(){
@@ -177,110 +352,68 @@ function draw(){
   var el = document.getElementById('w');
   if(!el) return;
   var size = getSize();
+  var v = getLocalVitals();
 
-  Promise.allSettled([
-    fetch('/events/mood/today').then(function(r){ return r.json(); }),
-    fetch('/events/energy/today').then(function(r){ return r.json(); })
-  ]).then(function(results){
-    var moodData = results[0].status === 'fulfilled' ? results[0].value : null;
-    var energyData = results[1].status === 'fulfilled' ? results[1].value : null;
+  var moods = [
+    { name: 'Calm', icon: '😌' },
+    { name: 'Energy', icon: '⚡' },
+    { name: 'Focus', icon: '🎯' },
+    { name: 'Still', icon: '🧘' },
+    { name: 'Low', icon: '🌧️' }
+  ];
 
-    var moodEv = (moodData && moodData.events && moodData.events[0]) || null;
-    var energyEv = (energyData && energyData.events && energyData.events[0]) || null;
-
-    var moodLabel = moodEv ? (moodEv.label || moodEv.mood || 'LOGGED') : '--';
-    var energyVal = energyEv ? energyEv.energy : 0;
-    var energyLabel = energyEv ? (energyEv.energy + '/5') : '--';
-
-    if(size === 'compact'){
-      el.innerHTML =
-        '<div class="gw-wrap" onclick="openVitalsPlugin()" style="cursor:pointer">' +
-        '  <div class="gw-row1">' +
-        '    <span class="gw-badge">⚡ VITALS</span>' +
-        '    <span class="gw-rank">' + (energyEv ? 'E: ' + energyLabel : 'LOGGED') + '</span>' +
-        '  </div>' +
-        '  <div style="display:flex;justify-content:space-between;align-items:center;margin:2px 0">' +
-        '    <span style="font-size:12px;font-weight:700;color:var(--text)">' + moodLabel.toUpperCase() + '</span>' +
-        '    <span style="font-size:9px;color:var(--muted)">' + (energyEv ? 'ENERGY ' + energyLabel : 'TAP TO LOG') + '</span>' +
-        '  </div>' +
-        '  <div style="width:100%;height:4px;background:var(--bar-bg);border-radius:2px;overflow:hidden">' +
-        '    <div style="height:100%;background:var(--primary);border-radius:2px;width:' + (energyVal * 20) + '%"></div>' +
-        '  </div>' +
-        '</div>';
-      return;
-    }
-
-    if(size === 'small'){
-      el.innerHTML =
-        '<div class="gw-wrap" onclick="openVitalsPlugin()" style="cursor:pointer">' +
-        '  <div class="gw-row1">' +
-        '    <div class="gw-lvl-group">' +
-        '      <span class="gw-badge">⚡ VITALS</span>' +
-        '      <span class="gw-rank">DAILY STATE</span>' +
-        '    </div>' +
-        '    <span class="gw-total">' + moodLabel.toUpperCase() + '</span>' +
-        '  </div>' +
-        '  <div class="gw-chips" style="margin-top:4px">' +
-        '    <span class="gw-chip"><span class="gw-dot ' + (moodEv?'on':'off') + '"></span> MOOD ' + moodLabel + '</span>' +
-        '    <span class="gw-chip">ENERGY <span class="gw-chip-val">' + energyLabel + '</span></span>' +
-        '  </div>' +
-        '</div>';
-      return;
-    }
-
-    if(size === 'medium'){
-      el.innerHTML =
-        '<div class="gw-wrap" onclick="openVitalsPlugin()" style="cursor:pointer">' +
-        '  <div class="gw-row1">' +
-        '    <div class="gw-lvl-group">' +
-        '      <span class="gw-badge">⚡ MOOD &amp; ENERGY</span>' +
-        '      <span class="gw-rank">DAILY CHECK-IN</span>' +
-        '    </div>' +
-        '    <span class="gw-total">' + moodLabel.toUpperCase() + '</span>' +
-        '  </div>' +
-        '  <div class="gw-chips" style="margin-top:6px">' +
-        '    <span class="gw-chip"><span class="gw-dot ' + (moodEv?'on':'off') + '"></span> MOOD <span class="gw-chip-val">' + moodLabel + '</span></span>' +
-        '    <span class="gw-chip">ENERGY <span class="gw-chip-val">' + energyLabel + '</span></span>' +
-        '    <span class="gw-chip" onclick="openVitalsPlugin()">LOG &rsaquo;</span>' +
-        '  </div>' +
-        '</div>';
-      return;
-    }
-
-    // Large (250px)
-    var noteSnippet = (moodEv && moodEv.note) ? esc(moodEv.note) : 'No vitals journal note entered today.';
-    var energyDots = '';
-    for(var i = 1; i <= 5; i++){
-      energyDots += '<span style="display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:3px;background:' + (i <= energyVal ? 'var(--primary)' : 'var(--bar-bg)') + '"></span>';
-    }
+  if(size === 'compact'){
     el.innerHTML =
-      '<div class="gw-wrap" onclick="openVitalsPlugin()" style="cursor:pointer">' +
+      '<div class="gw-wrap" onclick="openVitalsPlugin(event)" style="cursor:pointer">' +
       '  <div class="gw-row1">' +
-      '    <div class="gw-lvl-group">' +
-      '      <span class="gw-badge" style="font-size:11px;padding:3px 7px">⚡ VITALS · STATE</span>' +
-      '      <span class="gw-rank">DAILY SPECTRUM</span>' +
-      '    </div>' +
-      '    <span class="gw-total" style="font-size:15px">' + moodLabel.toUpperCase() + '</span>' +
+      '    <span class="gw-badge">⚡ VITALS</span>' +
+      '    <span class="gw-rank">E: ' + v.energy + '/5</span>' +
       '  </div>' +
-      '  <div style="display:flex;align-items:center;justify-content:space-between;margin:6px 0">' +
-      '    <div style="font-size:9.5px;color:var(--muted)">ENERGY LEVEL:</div>' +
-      '    <div style="display:flex;align-items:center">' + energyDots + ' <span style="font-size:10px;font-weight:700;margin-left:4px">' + energyLabel + '</span></div>' +
+      '  <div style="display:flex;justify-content:space-between;align-items:center;margin:2px 0">' +
+      '    <span style="font-size:12px;font-weight:700;color:var(--text)">' + (v.moodIcon || '') + ' ' + (v.mood || 'CALM').toUpperCase() + '</span>' +
+      '    <span style="font-size:9px;color:var(--muted)">ENERGY ' + v.energy + '/5</span>' +
       '  </div>' +
-      '  <div style="background:var(--chip-bg);border:1px solid var(--border);border-radius:6px;padding:8px 10px;margin-bottom:6px">' +
-      '    <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px">Journal Note</div>' +
-      '    <div style="font-size:11px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + noteSnippet + '</div>' +
-      '  </div>' +
-      '  <div class="gw-chips">' +
-      '    <span class="gw-chip"><span class="gw-dot ' + (moodEv?'on':'off') + '"></span> ' + (moodEv ? 'CHECKED IN' : 'DUE TODAY') + '</span>' +
-      '    <span class="gw-chip" onclick="openVitalsPlugin()">OPEN VITALS &rsaquo;</span>' +
+      '  <div style="width:100%;height:4px;background:var(--bar-bg);border-radius:2px;overflow:hidden">' +
+      '    <div style="height:100%;background:var(--primary);border-radius:2px;width:' + (v.energy * 20) + '%"></div>' +
       '  </div>' +
       '</div>';
-  }).catch(function(){
-    el.innerHTML = '<div style="font-size:10px;color:var(--muted)">Loading vitals...</div>';
-  });
+    return;
+  }
+
+  var moodPillsHtml = moods.map(function(m){
+    var active = (v.mood === m.name);
+    return '<div class="mood-pill ' + (active ? 'active' : '') + '" onclick="logMood(\'' + m.name + '\',\'' + m.icon + '\', event)">' +
+           '  <span>' + m.icon + '</span> <span>' + m.name + '</span>' +
+           '</div>';
+  }).join('');
+
+  var energyBtnsHtml = '';
+  for(var i = 1; i <= 5; i++){
+    var activeE = (v.energy === i);
+    energyBtnsHtml += '<div class="energy-btn ' + (activeE ? 'active' : '') + '" onclick="logEnergy(' + i + ', event)">' + i + '</div>';
+  }
+
+  el.innerHTML =
+    '<div class="gw-wrap" onclick="openVitalsPlugin(event)" style="cursor:pointer">' +
+    '  <div class="gw-row1">' +
+    '    <div class="gw-lvl-group">' +
+    '      <span class="gw-badge">⚡ VITALS &amp; SPECTRUM</span>' +
+    '      <span class="gw-rank">INSTANT CHECK-IN</span>' +
+    '    </div>' +
+    '    <span class="gw-total">' + (v.moodIcon || '') + ' ' + (v.mood || 'CALM').toUpperCase() + '</span>' +
+    '  </div>' +
+    '  <div class="mood-selector">' + moodPillsHtml + '</div>' +
+    '  <div class="energy-row">' +
+    '    <span class="energy-lbl">Energy Level</span>' +
+    '    <div class="energy-btns">' + energyBtnsHtml + '</div>' +
+    '  </div>' +
+    '  <div class="gw-chips">' +
+    '    <span class="gw-chip"><span class="gw-dot ' + (v.timestamp ? 'on' : 'off') + '"></span> ' + (v.timestamp ? 'LOGGED TODAY' : 'TAP TO LOG') + '</span>' +
+    '    <span class="gw-chip" onclick="openVitalsPlugin(event)">JOURNAL &rsaquo;</span>' +
+    '  </div>' +
+    '</div>';
 }
 draw();
-setInterval(draw, 30000);
 </script>
 </body>
 </html>

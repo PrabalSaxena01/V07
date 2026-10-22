@@ -41,6 +41,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.v07.v3.app.telemetry.ScreenTimeTracker
 import com.v07.v3.core.data.EventRepository
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.foundation.Image
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.drawable.BitmapDrawable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -831,21 +836,11 @@ fun ScreenTimeScreen(
                                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                                         modifier = Modifier.weight(1f)
                                     ) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(36.dp)
-                                                .clip(RoundedCornerShape(10.dp))
-                                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Text(
-                                                text = usage.appName.take(1).uppercase(),
-                                                style = MaterialTheme.typography.titleMedium.copy(
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = MaterialTheme.colorScheme.primary
-                                                )
-                                            )
-                                        }
+                                        AppLogoIcon(
+                                            packageName = usage.packageName,
+                                            appName = usage.appName,
+                                            modifier = Modifier.size(36.dp)
+                                        )
 
                                         Column(modifier = Modifier.weight(1f)) {
                                             Text(
@@ -903,6 +898,66 @@ fun ScreenTimeScreen(
                     }
                 }
             }
+        }
+    }
+}
+
+/**
+ * Resilient, cached application icon loader for Digital Stillness.
+ * Extracts actual package logo directly from PackageManager with fallback to styled initial.
+ */
+@Composable
+fun AppLogoIcon(
+    packageName: String,
+    appName: String,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    var iconBitmap by remember(packageName) { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
+
+    LaunchedEffect(packageName) {
+        withContext(Dispatchers.IO) {
+            try {
+                val pm = context.packageManager
+                val drawable = pm.getApplicationIcon(packageName)
+                val width = drawable.intrinsicWidth.coerceAtLeast(72)
+                val height = drawable.intrinsicHeight.coerceAtLeast(72)
+                val bitmap = if (drawable is BitmapDrawable && drawable.bitmap != null) {
+                    drawable.bitmap
+                } else {
+                    val bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                    val canvas = Canvas(bmp)
+                    drawable.setBounds(0, 0, canvas.width, canvas.height)
+                    drawable.draw(canvas)
+                    bmp
+                }
+                iconBitmap = bitmap.asImageBitmap()
+            } catch (_: Exception) {
+                iconBitmap = null
+            }
+        }
+    }
+
+    if (iconBitmap != null) {
+        Image(
+            bitmap = iconBitmap!!,
+            contentDescription = appName,
+            modifier = modifier.clip(RoundedCornerShape(10.dp))
+        )
+    } else {
+        Box(
+            modifier = modifier
+                .clip(RoundedCornerShape(10.dp))
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = appName.take(1).uppercase(),
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            )
         }
     }
 }

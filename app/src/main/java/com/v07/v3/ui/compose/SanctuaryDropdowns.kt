@@ -277,7 +277,7 @@ fun SanctuaryProfileDropdownMenu(
 
     // Dynamic profiles available in Sanctuary SQLite
     val profiles = remember(expanded) {
-        (listOf("guest", "Work", "Deep Study", "Monk Routine") + V07Database.listProfiles(context)).distinct()
+        (listOf(V07Database.DEFAULT_PROFILE_ID) + V07Database.listProfiles(context)).distinct()
     }
 
     DropdownMenu(

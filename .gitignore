@@ -1,5 +1,6 @@
 # Built application files
 *.apk
+!apk/*.apk
 *.aar
 *.ap_
 *.aab
@@ -60,5 +61,6 @@ scratch/v07_companion_export/
 # Backups and legacy data
 data/backups/
 _backups/
+_backup_pre_decomposition_20261022/
 legacy_data/
 

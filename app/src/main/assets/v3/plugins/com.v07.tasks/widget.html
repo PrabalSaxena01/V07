@@ -3,38 +3,43 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Tasks Widget</title>
+<title>Tasks & Directives Widget</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   :root {
+    --bg: transparent;
     --text: #F1F5F9;
     --muted: #94A3B8;
-    --bar-bg: rgba(255,255,255,0.08);
-    --chip-bg: rgba(255,255,255,0.04);
-    --chip-border: rgba(255,255,255,0.08);
+    --border: rgba(255, 255, 255, 0.08);
+    --bar-bg: rgba(255, 255, 255, 0.08);
+    --chip-bg: rgba(255, 255, 255, 0.04);
+    --card-bg: rgba(15, 23, 42, 0.65);
     --accent: #5CE1E6;
-    --accent-glow: rgba(92,225,230,0.15);
+    --accent-glow: rgba(92, 225, 230, 0.15);
     --green: #4DE086;
+    --input-bg: rgba(255, 255, 255, 0.06);
   }
   :root[data-theme="light"] {
     --text: #0F172A;
     --muted: #64748B;
-    --bar-bg: rgba(0,0,0,0.08);
-    --chip-bg: rgba(0,0,0,0.04);
-    --chip-border: rgba(0,0,0,0.08);
+    --border: rgba(0, 0, 0, 0.08);
+    --bar-bg: rgba(0, 0, 0, 0.08);
+    --chip-bg: rgba(0, 0, 0, 0.04);
+    --card-bg: rgba(248, 250, 252, 0.85);
     --accent: #0284C7;
-    --accent-glow: rgba(2,132,199,0.12);
+    --accent-glow: rgba(2, 132, 199, 0.12);
     --green: #16A34A;
+    --input-bg: rgba(0, 0, 0, 0.04);
   }
   body {
     margin: 0;
     padding: 8px 12px 10px;
-    background: transparent;
+    background: var(--bg);
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     color: var(--text);
     overflow: hidden;
     width: 100%;
-    cursor: pointer;
     user-select: none;
   }
   .gw-wrap {
@@ -55,7 +60,6 @@
     gap: 6px;
   }
   .gw-badge {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     font-size: 10px;
     font-weight: 700;
     color: var(--accent);
@@ -65,16 +69,18 @@
     padding: 2px 6px;
     letter-spacing: 0.06em;
     text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
   }
   .gw-rank {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     font-size: 9.5px;
     color: var(--muted);
     letter-spacing: 0.06em;
     text-transform: uppercase;
+    font-weight: 600;
   }
   .gw-total {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     font-size: 11px;
     font-weight: 700;
     color: var(--text);
@@ -91,13 +97,15 @@
     height: 100%;
     background: var(--accent);
     border-radius: 3px;
-    transition: width 0.3s ease;
+    transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .task-list {
     display: flex;
     flex-direction: column;
     gap: 5px;
     margin: 2px 0;
+    max-height: 105px;
+    overflow-y: auto;
   }
   .task-item {
     display: flex;
@@ -106,59 +114,120 @@
     font-size: 11px;
     color: var(--text);
     min-width: 0;
+    padding: 3px 2px;
+    border-radius: 4px;
+    transition: background 0.15s ease;
   }
   .task-check {
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
     border: 1.5px solid var(--muted);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 9px;
+    font-size: 11px;
+    font-weight: bold;
     flex-shrink: 0;
     cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .task-check:active {
+    transform: scale(0.9);
   }
   .task-check.done {
     border-color: var(--green);
     background: var(--green);
-    color: #000;
+    color: #0F172A;
   }
   .task-text {
     flex: 1;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     letter-spacing: 0.01em;
+    cursor: pointer;
+    font-weight: 500;
   }
   .task-text.done {
     text-decoration: line-through;
     color: var(--muted);
+    opacity: 0.7;
   }
   .task-time {
     font-size: 9px;
     color: var(--muted);
     flex-shrink: 0;
   }
+  /* Inline Quick Task Adder */
+  .quick-add-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+  }
+  .quick-add-input {
+    flex: 1;
+    min-width: 0;
+    height: 28px;
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0 8px;
+    font-family: inherit;
+    font-size: 10.5px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+  .quick-add-input:focus {
+    border-color: var(--accent);
+  }
+  .quick-add-input::placeholder {
+    color: var(--muted);
+    opacity: 0.7;
+  }
+  .quick-add-btn {
+    height: 28px;
+    padding: 0 10px;
+    background: var(--accent);
+    color: #090D16;
+    border: none;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    white-space: nowrap;
+    transition: transform 0.08s ease, opacity 0.15s ease;
+  }
+  .quick-add-btn:active {
+    transform: scale(0.95);
+  }
   .gw-chips {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 6px;
+    margin-top: 2px;
   }
   .gw-chip {
     font-size: 9px;
     color: var(--muted);
     background: var(--chip-bg);
-    border: 1px solid var(--chip-border);
+    border: 1px solid var(--border);
     border-radius: 4px;
     padding: 3px 6px;
     display: flex;
     align-items: center;
     gap: 4px;
     white-space: nowrap;
+    cursor: pointer;
   }
+  .gw-chip:active { transform: scale(0.97); }
   .gw-dot {
     width: 5px;
     height: 5px;
@@ -175,6 +244,28 @@
   .gw-chip-val {
     color: var(--text);
     font-weight: 700;
+  }
+  /* Toast feedback */
+  .toast {
+    position: fixed;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid var(--accent);
+    color: #F1F5F9;
+    font-size: 9.5px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 12px;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 100;
+  }
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
   }
 </style>
 <script>
@@ -196,14 +287,32 @@
 </head>
 <body>
 <div id="w"></div>
+<div id="toast" class="toast">Directive logged</div>
+
 <script>
-function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function esc(s){
+  if(s == null) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showToast(msg){
+  var t = document.getElementById('toast');
+  if(!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(function(){ t.classList.remove('show'); }, 1800);
+}
 
 function openTaskPlugin(event){
-  if(event && event.target && event.target.closest('.task-check')) return;
+  if(event && event.target && (event.target.closest('.task-check') || event.target.closest('.quick-add-row') || event.target.tagName === 'INPUT' || event.target.tagName === 'BUTTON')) return;
   try {
     if(window.parent && window.parent.openPluginPage){
       window.parent.openPluginPage('com.v07.tasks');
+      return;
+    }
+    if(window.parent && window.parent.postMessage){
+      window.parent.postMessage({ type: 'v3:plugin:open', pluginId: 'com.v07.tasks' }, '*');
       return;
     }
   } catch(e){}
@@ -235,6 +344,7 @@ async function toggleTask(id, event){
   if(t){
     t.done = !wasDone;
     saveLocalTasks(list);
+    showToast(t.done ? '✓ Completed: ' + t.title : '↺ Reopened: ' + t.title);
   }
   draw();
 
@@ -245,7 +355,44 @@ async function toggleTask(id, event){
   try {
     await fetch('/checklist/' + encodeURIComponent(id) + '/toggle', { method: 'POST' });
   } catch(e){}
+  try {
+    window.parent.postMessage({ type: 'v07_refresh' }, '*');
+  } catch(e){}
+}
+
+async function quickAddTask(event){
+  if(event) event.preventDefault();
+  var input = document.getElementById('quickTaskInput');
+  if(!input) return;
+  var title = input.value.trim();
+  if(!title) return;
+
+  var newTask = {
+    id: 'task_' + Date.now(),
+    title: title,
+    done: false,
+    priority: 'high',
+    deadline: 'Today',
+    created_at: new Date().toISOString()
+  };
+
+  var list = getLocalTasks();
+  list.unshift(newTask);
+  saveLocalTasks(list);
+  input.value = '';
+  showToast('✓ Directive added: ' + title);
   draw();
+
+  try {
+    await fetch('/tasks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newTask)
+    });
+  } catch(e){}
+  try {
+    window.parent.postMessage({ type: 'v07_refresh' }, '*');
+  } catch(e){}
 }
 
 function getSize(){
@@ -298,25 +445,6 @@ async function draw(){
     } catch(e){}
   }
 
-  if(!tasks || !tasks.length){
-    try {
-      var r2 = await fetch('/checklist/today');
-      if(r2.ok){
-        var j2 = await r2.json();
-        if(j2 && Array.isArray(j2.items) && j2.items.length){
-          tasks = j2.items.map(function(t){
-            return {
-              id: t.id,
-              title: t.label || t.title,
-              done: t.status === 'done' || t.done === true,
-              priority: 'medium'
-            };
-          });
-        }
-      }
-    } catch(e){}
-  }
-
   tasks = tasks || [];
   var done = tasks.filter(function(t){ return t.done; }).length;
   var total = tasks.length;
@@ -327,7 +455,7 @@ async function draw(){
     el.innerHTML =
       '<div class="gw-wrap" onclick="openTaskPlugin(event)" style="cursor:pointer">' +
       '  <div class="gw-row1">' +
-      '    <span class="gw-badge">✓ TASKS</span>' +
+      '    <span class="gw-badge">✓ DIRECTIVES</span>' +
       '    <span class="gw-rank">' + done + '/' + total + '</span>' +
       '  </div>' +
       '  <div style="display:flex;justify-content:space-between;align-items:center;margin:2px 0">' +
@@ -342,17 +470,18 @@ async function draw(){
   if(size === 'small'){
     var topTask = tasks.find(function(t){ return !t.done; }) || tasks[0];
     var taskSnippet = topTask ?
-      '<div style="font-size:10px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:2px 0">' +
-      '  <span style="color:var(--accent)">&bull;</span> ' + esc(topTask.title) +
+      '<div style="font-size:10px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:2px 0;display:flex;align-items:center;gap:6px">' +
+      '  <span class="task-check ' + (topTask.done ? 'done' : '') + '" onclick="toggleTask(\'' + topTask.id + '\', event)">' + (topTask.done ? '✓' : '') + '</span>' +
+      '  <span class="task-text ' + (topTask.done ? 'done' : '') + '">' + esc(topTask.title) + '</span>' +
       '</div>' :
-      '<div style="font-size:10px;color:var(--muted)">No pending tasks</div>';
+      '<div style="font-size:10px;color:var(--muted)">No pending directives</div>';
 
     el.innerHTML =
       '<div class="gw-wrap" onclick="openTaskPlugin(event)" style="cursor:pointer">' +
       '  <div class="gw-row1">' +
       '    <div class="gw-lvl-group">' +
-      '      <span class="gw-badge">✓ TASKS</span>' +
-      '      <span class="gw-rank">' + done + '/' + total + ' DONE</span>' +
+      '      <span class="gw-badge">✓ DIRECTIVES</span>' +
+      '      <span class="gw-rank">' + done + '/' + total + ' COMPLETED</span>' +
       '    </div>' +
       '    <span class="gw-total">' + pct + '%</span>' +
       '  </div>' +
@@ -361,18 +490,19 @@ async function draw(){
       '  <div class="gw-chips">' +
       '    <span class="gw-chip"><span class="gw-dot ' + (done > 0 ? 'on' : 'off') + '"></span> DONE <span class="gw-chip-val">' + done + '</span></span>' +
       '    <span class="gw-chip">PENDING <span class="gw-chip-val">' + pending + '</span></span>' +
+      '    <span class="gw-chip" onclick="openTaskPlugin(event)">VIEW ALL &rsaquo;</span>' +
       '  </div>' +
       '</div>';
     return;
   }
 
-  // Medium (170px) or Large (250px)
-  var showCount = size === 'medium' ? 3 : 6;
+  // Medium (170px) and Large (250px)
+  var showCount = size === 'medium' ? 2 : 5;
   var rowsHtml = tasks.length === 0 ?
-    '<div style="font-size:11px;color:var(--muted);padding:4px 0">No tasks scheduled</div>' :
+    '<div style="font-size:11px;color:var(--muted);padding:4px 0">No directives scheduled today. Add one below:</div>' :
     tasks.slice(0, showCount).map(function(t){
       var isDone = !!t.done;
-      return '<div class="task-item" style="cursor:pointer">' +
+      return '<div class="task-item">' +
              '  <span class="task-check ' + (isDone ? 'done' : '') + '" onclick="toggleTask(\'' + t.id + '\', event)">' + (isDone ? '✓' : '') + '</span>' +
              '  <span class="task-text ' + (isDone ? 'done' : '') + '" onclick="openTaskPlugin(event)">' + esc(t.title) + '</span>' +
              '  <span class="task-time">' + esc(t.deadline || '') + '</span>' +
@@ -383,7 +513,7 @@ async function draw(){
     '<div class="gw-wrap" onclick="openTaskPlugin(event)" style="cursor:pointer">' +
     '  <div class="gw-row1">' +
     '    <div class="gw-lvl-group">' +
-    '      <span class="gw-badge">✓ DIRECTIVES</span>' +
+    '      <span class="gw-badge">✓ DIRECTIVES &amp; TASKS</span>' +
     '      <span class="gw-rank">' + done + ' OF ' + total + ' COMPLETED</span>' +
     '    </div>' +
     '    <span class="gw-total">' + pct + '%</span>' +
@@ -392,10 +522,14 @@ async function draw(){
     '    <div class="gw-bar-fill" style="width:' + pct + '%"></div>' +
     '  </div>' +
     '  <div class="task-list">' + rowsHtml + '</div>' +
+    '  <form class="quick-add-row" onsubmit="quickAddTask(event)">' +
+    '    <input id="quickTaskInput" class="quick-add-input" type="text" placeholder="+ Quick log new directive..." autocomplete="off" />' +
+    '    <button type="submit" class="quick-add-btn">+ Log</button>' +
+    '  </form>' +
     '  <div class="gw-chips">' +
     '    <span class="gw-chip"><span class="gw-dot ' + (done > 0 ? 'on' : 'off') + '"></span> DONE <span class="gw-chip-val">' + done + '</span></span>' +
     '    <span class="gw-chip">PENDING <span class="gw-chip-val">' + pending + '</span></span>' +
-    '    <span class="gw-chip" onclick="openTaskPlugin(event)">MANAGE &rsaquo;</span>' +
+    '    <span class="gw-chip" onclick="openTaskPlugin(event)">EXPAND &rsaquo;</span>' +
     '  </div>' +
     '</div>';
 }

@@ -92,8 +92,14 @@ class DatabaseManager private constructor(private val context: Context) {
     }
 
     fun resolveBackupDirectory(): File {
+        // Priority 1: Scoped external files directory (accessible via USB MTP without runtime permissions)
+        val extBackupDir = context.getExternalFilesDir(BACKUP_DIR_NAME)
+        if (extBackupDir != null && (extBackupDir.exists() || extBackupDir.mkdirs())) {
+            return extBackupDir
+        }
+        // Fallback: Internal app storage directory
         val baseDir = V07Database.resolveDatabaseFile(context).parentFile
-            ?: File(Environment.getExternalStorageDirectory(), V07Database.DEFAULT_DIR_NAME)
+            ?: File(context.filesDir, V07Database.DEFAULT_DIR_NAME)
         val backupDir = File(baseDir, BACKUP_DIR_NAME)
         if (!backupDir.exists()) {
             backupDir.mkdirs()

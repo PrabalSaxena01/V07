@@ -676,12 +676,17 @@
           const durMin = Math.round(a.duration_sec / 60);
           const durStr = durMin >= 60 ? Math.floor(durMin/60) + 'h ' + (durMin%60) + 'm' : durMin + 'm';
 
+          const iconSrc = a.icon_url || ('/api/v3/apps/icon?package=' + encodeURIComponent(a.package_name || a.app_name));
           row.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px;">
-              <span style="font-weight:600; color:var(--v07-text-lead);" class="truncate-single">${escapeHtml(a.app_name || a.package_name)}</span>
-              <span style="font-family:var(--font-mono); font-weight:600; color:var(--v07-cyan);">${durStr} (${Math.round(a.percentage)}%)</span>
+              <div style="display:flex; align-items:center; gap:8px; overflow:hidden;">
+                <img src="${iconSrc}" alt="" style="width:20px; height:20px; border-radius:5px; object-fit:contain; flex-shrink:0; background:var(--v07-surface-raised);" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';" />
+                <span class="material-symbols-outlined" style="display:none; font-size:16px; color:var(--v07-text-muted); flex-shrink:0;">apps</span>
+                <span style="font-weight:600; color:var(--v07-text-lead);" class="truncate-single">${escapeHtml(a.app_name || a.package_name)}</span>
+              </div>
+              <span style="font-family:var(--font-mono); font-weight:600; color:var(--v07-cyan); white-space:nowrap; margin-left:8px;">${durStr} (${Math.round(a.percentage)}%)</span>
             </div>
-            <div style="height:4px; width:100%; background:var(--v07-surface-raised); border-radius:var(--radius-full); overflow:hidden;">
+            <div style="height:4px; width:100%; background:var(--v07-surface-raised); border-radius:var(--radius-full); overflow:hidden; margin-top:2px;">
               <div style="height:100%; width:${Math.min(100, Math.max(2, a.percentage))}%; background:var(--v07-cyan); transition:width 0.3s ease;"></div>
             </div>
           `;

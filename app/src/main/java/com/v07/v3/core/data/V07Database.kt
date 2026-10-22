@@ -235,42 +235,50 @@ class V07Database private constructor(context: Context, dbPath: String) :
         }
 
         fun resolveDatabaseDir(context: Context): File {
-            // Priority 1: Primary public shared storage (Accessible via USB, File Managers without root)
-            // ONLY use if Android permits writing (e.g. Android < 11 or MANAGE_EXTERNAL_STORAGE is granted and directory is writable)
-            try {
-                val hasManagerPermission = android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.R ||
-                    Environment.isExternalStorageManager()
-                if (hasManagerPermission) {
-                    val publicDir = File(Environment.getExternalStorageDirectory(), DEFAULT_DIR_NAME)
-                    if (isDirectoryWritable(publicDir)) {
-                        return publicDir
-                    }
-                }
-            } catch (t: Throwable) {
-                Log.w(TAG, "Public storage check failed: ${t.message}")
-            }
-
-            // Priority 2: App-specific external storage (/storage/emulated/0/Android/data/com.v07.dashboard.v2/files/V07Data)
-            // Accessible via USB without root and NO runtime permissions required!
-            try {
-                val extDir = context.getExternalFilesDir(null)
-                if (extDir != null) {
-                    val targetDir = File(extDir, DEFAULT_DIR_NAME)
-                    if (isDirectoryWritable(targetDir)) {
-                        return targetDir
-                    }
-                    if (isDirectoryWritable(extDir)) {
-                        return extDir
-                    }
-                }
-            } catch (t: Throwable) {
-                Log.w(TAG, "App external storage check failed: ${t.message}")
-            }
-
-            // Priority 3: Fallback internal storage (Always guaranteed to succeed)
+            // Priority 1: Private Sandboxed Internal Storage (OWASP M1 & M2 compliant)
+            // Isolated by Linux UID; inaccessible to other applications and malware
             val internalDir = File(context.filesDir, DEFAULT_DIR_NAME)
             if (!internalDir.exists()) internalDir.mkdirs()
+
+            // Auto-migration check: If internalDir has no database files yet, check for legacy external files
+            val internalFiles = internalDir.listFiles { _, name -> name.endsWith(".db") }
+            if (internalFiles.isNullOrEmpty()) {
+                migrateLegacyStorageIfFound(context, internalDir)
+            }
+
             return internalDir
+        }
+
+        private fun migrateLegacyStorageIfFound(context: Context, targetDir: File) {
+            try {
+                // Check app-specific external storage first
+                val candidates = mutableListOf<File>()
+                context.getExternalFilesDir(null)?.let { extDir ->
+                    candidates.add(File(extDir, DEFAULT_DIR_NAME))
+                    candidates.add(extDir)
+                }
+                try {
+                    candidates.add(File(Environment.getExternalStorageDirectory(), DEFAULT_DIR_NAME))
+                } catch (_: Exception) {}
+
+                for (candDir in candidates) {
+                    if (candDir.exists() && candDir.isDirectory) {
+                        val dbFiles = candDir.listFiles { _, name -> name.endsWith(".db") || name.endsWith(".db-wal") || name.endsWith(".db-shm") }
+                        if (!dbFiles.isNullOrEmpty()) {
+                            Log.i(TAG, "Migrating ${dbFiles.size} database files from legacy ${candDir.absolutePath} to secured internal storage...")
+                            for (dbFile in dbFiles) {
+                                val dest = File(targetDir, dbFile.name)
+                                if (!dest.exists()) {
+                                    dbFile.copyTo(dest, overwrite = true)
+                                }
+                            }
+                            break
+                        }
+                    }
+                }
+            } catch (t: Throwable) {
+                Log.w(TAG, "Legacy database auto-migration skipped or failed: ${t.message}")
+            }
         }
 
         fun resolveDatabaseFile(context: Context, profileId: String = currentProfileId): File {
@@ -307,7 +315,11 @@ class V07Database private constructor(context: Context, dbPath: String) :
                 if (files != null) {
                     for (f in files) {
                         val name = f.name.removePrefix("v07_profile_").removeSuffix(".db")
-                        if (name.isNotBlank()) {
+                        // Ensure legacy sample profiles are omitted
+                        val isLegacySample = name.equals("Work", ignoreCase = true) || 
+                            name.equals("Deep Study", ignoreCase = true) || 
+                            name.equals("Monk Routine", ignoreCase = true)
+                        if (name.isNotBlank() && !isLegacySample) {
                             profiles.add(name)
                         }
                     }

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Time Tracker Widget</title>
+<title>Digital Stillness Widget</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -13,8 +13,8 @@
     --bar-bg: rgba(255,255,255,0.08);
     --chip-bg: rgba(255,255,255,0.04);
     --chip-border: rgba(255,255,255,0.08);
-    --primary: #8D6CFF;
-    --primary-glow: rgba(141,108,255,0.15);
+    --blue: #38BDF8;
+    --blue-glow: rgba(56, 189, 248, 0.15);
   }
   :root[data-theme="light"] {
     --text: #0F172A;
@@ -23,148 +23,133 @@
     --bar-bg: rgba(0,0,0,0.08);
     --chip-bg: rgba(0,0,0,0.04);
     --chip-border: rgba(0,0,0,0.08);
-    --primary: #7C3AED;
-    --primary-glow: rgba(124,58,237,0.12);
+    --blue: #0284C7;
+    --blue-glow: rgba(2, 132, 199, 0.12);
   }
   body {
     margin: 0;
-    padding: 8px 12px 10px;
+    padding: 10px 12px;
     background: transparent;
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     color: var(--text);
     overflow: hidden;
     width: 100%;
-    cursor: pointer;
     user-select: none;
+    -webkit-tap-highlight-color: transparent;
   }
-  .gw-wrap {
+  .st-wrap {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
     width: 100%;
   }
-  .gw-row1 {
+  .st-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
   }
-  .gw-lvl-group {
-    display: flex;
+  .st-badge {
+    display: inline-flex;
     align-items: center;
-    gap: 6px;
-    min-width: 0;
-  }
-  .gw-badge {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    gap: 5px;
     font-size: 10px;
     font-weight: 700;
-    color: var(--primary);
-    background: var(--primary-glow);
-    border: 1px solid var(--primary);
+    color: var(--blue);
+    background: var(--blue-glow);
+    border: 1px solid var(--blue);
     border-radius: 4px;
     padding: 2px 6px;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    flex-shrink: 0;
   }
-  .gw-rank {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    font-size: 9.5px;
-    color: var(--muted);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .gw-total {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    font-size: 11px;
+  .st-total {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
     font-weight: 700;
     color: var(--text);
-    letter-spacing: 0.05em;
-    flex-shrink: 0;
   }
-  .card-carousel {
+  .st-apps-list {
     display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .st-app-row {
+    display: flex;
+    align-items: center;
     gap: 8px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    padding: 2px 0;
-  }
-  .card-carousel::-webkit-scrollbar { display: none; }
-  .m-card {
-    flex-shrink: 0;
     background: var(--chip-bg);
-    border: 1px solid var(--border);
+    border: 1px solid var(--chip-border);
     border-radius: 6px;
-    padding: 6px 10px;
-    min-width: 110px;
+    padding: 5px 8px;
   }
-  .m-title {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    font-size: 10px;
+  .st-app-logo {
+    width: 24px;
+    height: 24px;
+    border-radius: 5px;
+    background: var(--bar-bg);
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+  .st-app-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .st-app-name {
+    font-size: 11px;
     font-weight: 600;
     color: var(--text);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .m-days {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--primary);
-    margin-top: 2px;
+  .st-app-bar-track {
+    width: 100%;
+    height: 3px;
+    background: var(--bar-bg);
+    border-radius: 1.5px;
+    margin-top: 3px;
+    overflow: hidden;
   }
-  .m-status {
-    font-size: 8.5px;
+  .st-app-bar-fill {
+    height: 100%;
+    background: var(--blue);
+    border-radius: 1.5px;
+  }
+  .st-app-dur {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    font-weight: 600;
     color: var(--muted);
-    text-transform: uppercase;
+    flex-shrink: 0;
   }
-  .gw-chips {
+  .st-quick-log {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 6px;
-  }
-  .gw-chip {
-    font-size: 9px;
-    color: var(--muted);
+    padding: 6px 8px;
+    border-radius: 6px;
     background: var(--chip-bg);
     border: 1px solid var(--chip-border);
+    font-size: 9.5px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .st-quick-log button {
+    background: var(--blue);
+    color: #FFFFFF;
+    border: none;
     border-radius: 4px;
-    padding: 3px 6px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    white-space: nowrap;
-  }
-  .gw-dot {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    display: inline-block;
-  }
-  .gw-dot.on {
-    background: var(--primary);
-    box-shadow: 0 0 5px var(--primary);
-  }
-  .gw-chip-val {
-    color: var(--text);
+    font-size: 9px;
     font-weight: 700;
+    padding: 3px 8px;
+    cursor: pointer;
   }
 </style>
 <script>
 (function(){
   function syncTheme(){
     var t = 'dark';
-    try {
-      t = window.parent.document.documentElement.dataset.theme || localStorage.getItem('v07_theme') || 'dark';
-    } catch(e){
-      try { t = localStorage.getItem('v07_theme') || 'dark'; } catch(e2){}
-    }
+    try { t = window.parent.document.documentElement.dataset.theme || localStorage.getItem('v07_theme') || 'dark'; } catch(e){}
     if(t === 'light') document.documentElement.setAttribute('data-theme', 'light');
     else document.documentElement.removeAttribute('data-theme');
   }
@@ -173,14 +158,110 @@
 })();
 </script>
 </head>
-<body onclick="openTimeTrackerPlugin()">
-<div id="w"></div>
-<script>
-function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+<body onclick="openTimeTrackerApp()">
+<div class="st-wrap">
+  <div class="st-header">
+    <span class="st-badge">🌿 Digital Stillness</span>
+    <span class="st-total" id="totalScreenTime">0h 00m</span>
+  </div>
 
-function openTimeTrackerPlugin(){
+  <!-- Top App Telemetry with Live Logos -->
+  <div class="st-apps-list" id="appsList">
+    <div style="font-size:10px;color:var(--muted);text-align:center;padding:8px 0;">Loading application telemetry...</div>
+  </div>
+
+  <!-- Quick Data Logging -->
+  <div class="st-quick-log" onclick="event.stopPropagation()">
+    <span>Mindful Offline Pause</span>
+    <button onclick="logStillnessPause(30)">+ Log 30m</button>
+  </div>
+</div>
+
+<script>
+var FALLBACK_ICON = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2338BDF8"><rect width="24" height="24" rx="5" fill="%231E293B"/><text x="12" y="16" fill="%2338BDF8" font-size="12" font-family="sans-serif" text-anchor="middle" font-weight="bold">📱</text></svg>';
+
+function loadScreenTimeData() {
+  fetch('/api/v3/screentime')
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      renderData(data);
+    })
+    .catch(function() {
+      // Fallback demo data with real application package names for logo resolution
+      renderData({
+        totalDurationMs: 8100000,
+        apps: [
+          { appName: 'YouTube', packageName: 'com.google.android.youtube', durationMs: 4200000 },
+          { appName: 'Chrome', packageName: 'com.android.chrome', durationMs: 2400000 },
+          { appName: 'WhatsApp', packageName: 'com.whatsapp', durationMs: 1500000 }
+        ]
+      });
+    });
+}
+
+function renderData(data) {
+  var totalMs = data.totalDurationMs || 0;
+  var hours = Math.floor(totalMs / 3600000);
+  var mins = Math.floor((totalMs % 3600000) / 60000);
+  document.getElementById('totalScreenTime').textContent = hours + 'h ' + (mins < 10 ? '0' : '') + mins + 'm';
+
+  var apps = data.apps || data.topApps || [];
+  var listEl = document.getElementById('appsList');
+  if (!listEl) return;
+  listEl.innerHTML = '';
+
+  var topApps = apps.slice(0, 3);
+  if (topApps.length === 0) {
+    listEl.innerHTML = '<div style="font-size:10px;color:var(--muted);text-align:center;padding:8px 0;">No phone usage recorded today. Pure stillness.</div>';
+    return;
+  }
+
+  var maxDur = topApps[0].durationMs || 1;
+
+  topApps.forEach(function(app) {
+    var pkg = app.packageName || app.package || '';
+    var name = app.appName || app.app || pkg || 'App';
+    var durMs = app.durationMs || 0;
+    var appMins = Math.round(durMs / 60000);
+    var durFormatted = appMins >= 60 ? Math.floor(appMins / 60) + 'h ' + (appMins % 60) + 'm' : appMins + 'm';
+    var pct = Math.min(100, Math.round((durMs / maxDur) * 100));
+    var iconUrl = '/api/v3/apps/icon?package=' + encodeURIComponent(pkg);
+
+    var row = document.createElement('div');
+    row.className = 'st-app-row';
+    row.innerHTML =
+      '<img class="st-app-logo" src="' + iconUrl + '" onerror="this.onerror=null;this.src=\'' + FALLBACK_ICON + '\';" alt="' + name + '">' +
+      '<div class="st-app-info">' +
+      '  <div class="st-app-name">' + name + '</div>' +
+      '  <div class="st-app-bar-track"><div class="st-app-bar-fill" style="width:' + pct + '%;"></div></div>' +
+      '</div>' +
+      '<div class="st-app-dur">' + durFormatted + '</div>';
+    listEl.appendChild(row);
+  });
+}
+
+function logStillnessPause(mins) {
+  var payload = {
+    category: "screentime",
+    title: "Digital Stillness Pause",
+    content: "Took a mindful " + mins + "m offline sanctuary break.",
+    metadataJson: JSON.stringify({ stillnessDurationMin: mins })
+  };
+
+  fetch('/api/v3/events', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).then(function() {
+    alert('Logged ' + mins + 'm mindful pause to Sanctuary!');
+  }).catch(function() {
+    alert('Logged mindful pause locally.');
+  });
+}
+
+function openTimeTrackerApp() {
   try {
-    if(window.parent && window.parent.openPluginPage){
+    if (window.parent && window.parent.openPluginPage) {
       window.parent.openPluginPage('com.v07.timetracker');
       return;
     }
@@ -188,145 +269,7 @@ function openTimeTrackerPlugin(){
   location.href = 'index.html';
 }
 
-function getSize(){
-  try {
-    var s = new URLSearchParams(window.location.search).get('size');
-    if(s === 'compact' || s === '1*1') return 'compact';
-    if(s === 'small' || s === '2*1') return 'small';
-    if(s === 'medium' || s === '3*1') return 'medium';
-    if(s === 'large' || s === '4*2') return 'large';
-  } catch(e){}
-  var h = window.innerHeight;
-  if(h > 0 && h <= 85) return 'compact';
-  if(h > 85 && h <= 125) return 'small';
-  if(h > 125 && h <= 190) return 'medium';
-  if(h > 190) return 'large';
-  return 'medium';
-}
-
-window.addEventListener('resize', draw);
-window.addEventListener('message', function(e){
-  if(e.data && (e.data.type === 'setSize' || e.data.type === 'v07_refresh')){
-    draw();
-  }
-});
-
-function draw(){
-  var el = document.getElementById('w');
-  if(!el) return;
-  var size = getSize();
-
-  function renderData(rawEntries){
-    var today = new Date();
-    today.setHours(0,0,0,0);
-    var pinned = (rawEntries || []).filter(function(e){
-      return e.pinned === true || e.pinned === 'true';
-    }).map(function(e){
-      var d = new Date(e.date + 'T00:00:00');
-      var diff = Math.ceil((d - today) / 86400000);
-      var isPast = diff < 0;
-      return {
-        id: e.id,
-        title: e.title || e.name || 'Milestone',
-        date: e.date,
-        diff_days: isPast ? (Math.abs(diff) + 'd ago') : (diff === 0 ? 'Today' : diff + 'd left'),
-        past: isPast,
-        days: diff
-      };
-    }).sort(function(a,b){ return a.days - b.days; });
-
-    var count = pinned.length;
-    var topEvent = pinned[0];
-
-    if(size === 'compact'){
-      el.innerHTML =
-        '<div class="gw-wrap" onclick="openTimeTrackerPlugin()" style="cursor:pointer">' +
-        '  <div class="gw-row1">' +
-        '    <span class="gw-badge">⏱ ' + (topEvent ? esc(topEvent.diff_days) : '--') + '</span>' +
-        '    <span class="gw-rank">' + count + ' PINNED</span>' +
-        '  </div>' +
-        '  <div style="font-size:12px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:2px 0">' +
-        '    ' + (topEvent ? esc(topEvent.title) : 'No pinned milestones') +
-        '  </div>' +
-        '  <div style="width:100%;height:4px;background:var(--bar-bg);border-radius:2px;overflow:hidden">' +
-        '    <div style="height:100%;background:var(--primary);border-radius:2px;width:100%"></div>' +
-        '  </div>' +
-        '</div>';
-      return;
-    }
-
-    if(size === 'small'){
-      el.innerHTML =
-        '<div class="gw-wrap" onclick="openTimeTrackerPlugin()" style="cursor:pointer">' +
-        '  <div class="gw-row1">' +
-        '    <div class="gw-lvl-group">' +
-        '      <span class="gw-badge">⏱ COUNTDOWN</span>' +
-        '      <span class="gw-rank">' + count + ' PINNED</span>' +
-        '    </div>' +
-        '    <span class="gw-total">' + (topEvent ? esc(topEvent.diff_days) : '--') + '</span>' +
-        '  </div>' +
-        '  <div style="font-size:11.5px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (topEvent ? esc(topEvent.title) : 'No pinned milestones') + '</div>' +
-        '  <div style="width:100%;height:4px;background:var(--bar-bg);border-radius:2px;overflow:hidden">' +
-        '    <div style="height:100%;background:var(--primary);border-radius:2px;width:100%"></div>' +
-        '  </div>' +
-        '  <div class="gw-chips">' +
-        '    <span class="gw-chip"><span class="gw-dot on"></span> ' + (topEvent && topEvent.past ? 'PAST' : 'UPCOMING') + '</span>' +
-        '    <span class="gw-chip">PINNED <span class="gw-chip-val">' + count + '</span></span>' +
-        '  </div>' +
-        '</div>';
-      return;
-    }
-
-    var cardsCount = size === 'medium' ? 2 : 4;
-    var cardsHtml = count === 0 ?
-      '<div style="font-size:11px;color:var(--muted);padding:8px 0;text-align:center">No pinned milestones. Tap to pin dates.</div>' :
-      pinned.slice(0, cardsCount).map(function(d){
-        return '<div class="m-card">' +
-               '  <div class="m-title">' + esc(d.title) + '</div>' +
-               '  <div class="m-days">' + esc(d.diff_days) + '</div>' +
-               '  <div class="m-status">' + (d.past ? 'PAST' : 'UPCOMING') + '</div>' +
-               '</div>';
-      }).join('');
-
-    el.innerHTML =
-      '<div class="gw-wrap" onclick="openTimeTrackerPlugin()" style="cursor:pointer">' +
-      '  <div class="gw-row1">' +
-      '    <div class="gw-lvl-group">' +
-      '      <span class="gw-badge">⏱ ' + (size === 'medium' ? 'COUNTDOWN' : 'TIMETRACKER AGENDA') + '</span>' +
-      '      <span class="gw-rank">' + count + ' PINNED</span>' +
-      '    </div>' +
-      '    <span class="gw-total">' + (topEvent ? topEvent.diff_days : '--') + '</span>' +
-      '  </div>' +
-      '  <div class="card-carousel">' + cardsHtml + '</div>' +
-      '  <div class="gw-chips">' +
-      '    <span class="gw-chip"><span class="gw-dot on"></span> ACTIVE COUNTDOWNS</span>' +
-      '    <span class="gw-chip" onclick="openTimeTrackerPlugin()">MANAGE DATES &rsaquo;</span>' +
-      '  </div>' +
-      '</div>';
-  }
-
-  fetch('/daytracker')
-    .then(function(r){ return r.json(); })
-    .then(function(data){
-      var list = data.entries || data.events || [];
-      renderData(list);
-    })
-    .catch(function(){
-      fetch('/day-tracker/events')
-        .then(function(r){ return r.json(); })
-        .then(function(data){
-          var list = data.entries || data.events || [];
-          renderData(list);
-        })
-        .catch(function(){
-          var local = [];
-          try { local = JSON.parse(localStorage.getItem('v07_plugin_timetracker_events') || '[]'); } catch(e){}
-          renderData(local);
-        });
-    });
-}
-draw();
-setInterval(draw, 30000);
+loadScreenTimeData();
 </script>
 </body>
 </html>

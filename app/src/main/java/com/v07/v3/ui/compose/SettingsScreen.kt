@@ -1254,7 +1254,7 @@ fun SettingsScreen(
         var selectedGlyph by remember { mutableStateOf(profileAvatarSymbol) }
         var selectedProfile by remember { mutableStateOf(activeProfileId) }
         val existingDbProfiles = remember { com.v07.v3.core.data.V07Database.listProfiles(context) }
-        var availableProfiles by remember { mutableStateOf((listOf("guest", "Work", "Deep Study", "Monk Routine") + existingDbProfiles).distinct()) }
+        var availableProfiles by remember { mutableStateOf((listOf(com.v07.v3.core.data.V07Database.DEFAULT_PROFILE_ID) + existingDbProfiles).distinct()) }
         var newProfileNameInput by remember { mutableStateOf("") }
         var isAddingNewProfile by remember { mutableStateOf(false) }
         val glyphs = listOf("S", "P", "A", "V", "🪔", "🧘", "⚡", "⚔️", "🌿", "📚", "💎", "🎯", "🛡️")

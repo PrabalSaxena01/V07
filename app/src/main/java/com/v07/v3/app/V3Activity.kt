@@ -244,17 +244,19 @@ class V3Activity : AppCompatActivity() {
     }
 
     private fun setupWebView(baseUrl: String) {
-        WebView.setWebContentsDebuggingEnabled(true)
+        // Threat Hardening: Gate WebView debugging behind debug build flag
+        val isDebuggable = (applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0
+        WebView.setWebContentsDebuggingEnabled(isDebuggable)
         val settings = webView.settings
         settings.javaScriptEnabled = true
         settings.domStorageEnabled = true
         settings.databaseEnabled = true
-        settings.allowFileAccess = true
-        settings.allowContentAccess = true
+        settings.allowFileAccess = false
+        settings.allowContentAccess = false
         settings.mediaPlaybackRequiresUserGesture = false
         settings.cacheMode = WebSettings.LOAD_DEFAULT
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+            settings.mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
         }
 
         // Attach native platform RPC bridge

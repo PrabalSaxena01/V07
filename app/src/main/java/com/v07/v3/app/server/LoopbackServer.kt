@@ -236,6 +236,10 @@ class LoopbackServer(
 
     private fun serveStaticAsset(requestedPath: String): HttpResponse {
         val clean = requestedPath.removePrefix("/").substringBefore('?')
+        // Threat 1 Hardening: Reject path traversal attempts
+        if (clean.contains("..") || clean.contains('\\') || clean.contains("%2e", ignoreCase = true) || clean.contains('\u0000')) {
+            return HttpResponse.error("Forbidden: Invalid asset path", 403)
+        }
         val cacheKey = clean.ifEmpty { "index.html" }
         val cached = assetCache[cacheKey]
         if (cached != null) return cached
@@ -257,21 +261,24 @@ class LoopbackServer(
             } catch (_: Exception) {}
         }
 
-        // Try external storage (e.g. plugins directory)
-        val extDirs = listOf(
-            java.io.File(com.v07.v3.core.data.V07Database.resolveDatabaseFile(context).parentFile, clean),
-            java.io.File(context.getExternalFilesDir(null), clean),
-            java.io.File(context.filesDir, clean)
+        // Try external storage (e.g. plugins directory) with strict canonical directory containment
+        val extBases = listOfNotNull(
+            com.v07.v3.core.data.V07Database.resolveDatabaseFile(context).parentFile,
+            context.getExternalFilesDir(null),
+            context.filesDir
         )
-        for (f in extDirs) {
-            if (f.exists() && f.isFile) {
-                try {
-                    val bytes = f.readBytes()
+        for (baseDir in extBases) {
+            try {
+                val candidate = java.io.File(baseDir, clean).canonicalFile
+                val canonicalBase = baseDir.canonicalFile
+                val isContained = candidate.path.startsWith(canonicalBase.path + java.io.File.separator) || candidate.path == canonicalBase.path
+                if (isContained && candidate.exists() && candidate.isFile) {
+                    val bytes = candidate.readBytes()
                     val resp = formatAssetResponse(clean, bytes)
                     assetCache[cacheKey] = resp
                     return resp
-                } catch (_: Exception) {}
-            }
+                }
+            } catch (_: Exception) {}
         }
 
         return HttpResponse.error("Asset not found: $requestedPath", 404)

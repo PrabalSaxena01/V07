@@ -186,8 +186,9 @@
       const toggleBtn = document.getElementById('chronoToggleBtn');
       const toggleIcon = document.getElementById('chronoToggleIcon');
 
+      // 1. Cockpit Mini Gauge
       if (digitsEl) digitsEl.textContent = chrono.getFormattedTime();
-      if (modeLabel) modeLabel.textContent = `${chrono.activity} · ${chrono.mode.toUpperCase()}`;
+      if (modeLabel) modeLabel.textContent = ${chrono.activity} · ;
 
       if (progressCircle) {
         const radius = 100;
@@ -204,6 +205,45 @@
         } else {
           toggleIcon.textContent = 'play_arrow';
           toggleBtn.className = 'touch-target px-6 py-2.5 rounded-xl font-bold bg-[var(--primary)] text-white flex items-center gap-2 btn-press';
+        }
+      }
+
+      // 2. Dedicated Focus Sanctuary Full Circle Timer
+      const sanctDigits = document.getElementById('sanctuaryChronoDigits');
+      const sanctCircle = document.getElementById('sanctuaryProgressCircle');
+      const sanctModePill = document.getElementById('sanctuaryModePill');
+      const sanctActLabel = document.getElementById('sanctuaryChronoActivityName');
+      const sanctToggleBtn = document.getElementById('sanctuaryToggleBtn');
+      const sanctToggleIcon = document.getElementById('sanctuaryToggleIcon');
+      const sanctToggleText = document.getElementById('sanctuaryToggleText');
+
+      if (sanctDigits) sanctDigits.textContent = chrono.getFormattedTime();
+      if (sanctModePill) sanctModePill.textContent = ${chrono.mode.toUpperCase()} MODE · M;
+      if (sanctActLabel) sanctActLabel.textContent = chrono.activity;
+
+      if (sanctCircle) {
+        const sRadius = 118;
+        const sCircumference = 2 * Math.PI * sRadius;
+        const sRatio = chrono.getProgressRatio();
+        const sOffset = sCircumference - (sRatio * sCircumference);
+        sanctCircle.style.strokeDashoffset = sOffset;
+
+        if (chrono.state === 'RUNNING') {
+          sanctCircle.classList.add('chrono-running-pulse');
+        } else {
+          sanctCircle.classList.remove('chrono-running-pulse');
+        }
+      }
+
+      if (sanctToggleBtn && sanctToggleIcon) {
+        if (chrono.state === 'RUNNING') {
+          sanctToggleIcon.textContent = 'pause';
+          if (sanctToggleText) sanctToggleText.textContent = 'Pause Interval';
+          sanctToggleBtn.className = 'touch-target px-8 py-2.5 rounded-xl font-bold bg-[var(--warning)] text-[var(--text-inverse)] flex items-center gap-2 btn-press';
+        } else {
+          sanctToggleIcon.textContent = 'play_arrow';
+          if (sanctToggleText) sanctToggleText.textContent = 'Begin Flow';
+          sanctToggleBtn.className = 'touch-target px-8 py-2.5 rounded-xl font-bold bg-[var(--primary)] text-white flex items-center gap-2 btn-press';
         }
       }
     }

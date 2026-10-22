@@ -4,25 +4,26 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Gamify Widget</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   :root {
     --text: #F1F5F9;
     --muted: #94A3B8;
-    --bar-bg: rgba(255,255,255,0.08);
-    --chip-bg: rgba(255,255,255,0.04);
-    --chip-border: rgba(255,255,255,0.08);
+    --border: rgba(255, 255, 255, 0.08);
+    --bar-bg: rgba(255, 255, 255, 0.08);
+    --chip-bg: rgba(255, 255, 255, 0.04);
     --green: #4DE086;
-    --green-glow: rgba(77,224,134,0.15);
+    --green-glow: rgba(77, 224, 134, 0.15);
   }
   :root[data-theme="light"] {
     --text: #0F172A;
     --muted: #64748B;
-    --bar-bg: rgba(0,0,0,0.08);
-    --chip-bg: rgba(0,0,0,0.04);
-    --chip-border: rgba(0,0,0,0.08);
+    --border: rgba(0, 0, 0, 0.08);
+    --bar-bg: rgba(0, 0, 0, 0.08);
+    --chip-bg: rgba(0, 0, 0, 0.04);
     --green: #16A34A;
-    --green-glow: rgba(22,163,74,0.12);
+    --green-glow: rgba(22, 163, 74, 0.12);
   }
   body {
     margin: 0;
@@ -32,7 +33,6 @@
     color: var(--text);
     overflow: hidden;
     width: 100%;
-    cursor: pointer;
     user-select: none;
   }
   .gw-wrap {
@@ -53,7 +53,6 @@
     gap: 6px;
   }
   .gw-badge {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     font-size: 10px;
     font-weight: 700;
     color: var(--green);
@@ -65,14 +64,13 @@
     text-transform: uppercase;
   }
   .gw-rank {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     font-size: 9.5px;
     color: var(--muted);
     letter-spacing: 0.06em;
     text-transform: uppercase;
+    font-weight: 600;
   }
   .gw-total {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     font-size: 11px;
     font-weight: 700;
     color: var(--text);
@@ -89,7 +87,38 @@
     height: 100%;
     background: var(--green);
     border-radius: 3px;
-    transition: width 0.3s ease;
+    transition: width 0.35s ease;
+  }
+  /* Quick XP Logger Row */
+  .xp-log-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    margin-top: 1px;
+  }
+  .btn-xp-chip {
+    flex: 1;
+    min-height: 26px;
+    background: var(--chip-bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 9.5px;
+    font-weight: 700;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    transition: all 0.12s ease;
+  }
+  .btn-xp-chip:active {
+    transform: scale(0.92);
+    background: var(--green-glow);
+    border-color: var(--green);
+    color: var(--green);
   }
   .gw-chips {
     display: flex;
@@ -101,7 +130,7 @@
     font-size: 9px;
     color: var(--muted);
     background: var(--chip-bg);
-    border: 1px solid var(--chip-border);
+    border: 1px solid var(--border);
     border-radius: 4px;
     padding: 3px 6px;
     display: flex;
@@ -126,6 +155,28 @@
     color: var(--text);
     font-weight: 700;
   }
+  /* Toast feedback */
+  .toast {
+    position: fixed;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid var(--green);
+    color: #F1F5F9;
+    font-size: 9.5px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 12px;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 100;
+  }
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
 </style>
 <script>
 (function(){
@@ -144,10 +195,21 @@
 })();
 </script>
 </head>
-<body onclick="openGamifyPlugin()">
+<body onclick="openGamifyPlugin(event)">
 <div id="w"></div>
+<div id="toast" class="toast">XP logged</div>
+
 <script src="plugin.js"></script>
 <script>
+function showToast(msg){
+  var t = document.getElementById('toast');
+  if(!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(function(){ t.classList.remove('show'); }, 1800);
+}
+
 function rankTitle(lvl) {
   if (lvl >= 8) return 'ARCHITECT';
   if (lvl >= 7) return 'ELITE';
@@ -159,10 +221,15 @@ function rankTitle(lvl) {
   return 'NOVICE';
 }
 
-function openGamifyPlugin(){
+function openGamifyPlugin(e){
+  if(e && e.target && e.target.closest('.btn-xp-chip')) return;
   try {
     if(window.parent && window.parent.openPluginPage){
       window.parent.openPluginPage('com.v07.gamify');
+      return;
+    }
+    if(window.parent && window.parent.postMessage){
+      window.parent.postMessage({ type: 'v3:plugin:open', pluginId: 'com.v07.gamify' }, '*');
       return;
     }
   } catch(e){}
@@ -185,6 +252,40 @@ function getSize(){
   return 'medium';
 }
 
+function getGamifyData(){
+  try {
+    var raw = localStorage.getItem('v07_gamify_data');
+    if(raw) return JSON.parse(raw);
+  } catch(_) {}
+  return { xp: 140, level: 2, todayXp: 35, streak: 4 };
+}
+
+function saveGamifyData(d){
+  try {
+    localStorage.setItem('v07_gamify_data', JSON.stringify(d));
+  } catch(_) {}
+}
+
+window.logXp = function(amount, reason, e){
+  if(e) e.stopPropagation();
+  var d = getGamifyData();
+  d.xp = (d.xp || 0) + amount;
+  d.todayXp = (d.todayXp || 0) + amount;
+  d.level = Math.floor(d.xp / 100) + 1;
+  saveGamifyData(d);
+
+  if (window.v07Gamify && window.v07Gamify.addXp) {
+    try { window.v07Gamify.addXp(amount, reason); } catch(_) {}
+  }
+
+  showToast('⚔️ +' + amount + ' XP Logged: ' + reason);
+  draw();
+
+  try {
+    window.parent.postMessage({ type: 'v07_refresh' }, '*');
+  } catch(_) {}
+};
+
 window.addEventListener('resize', draw);
 window.addEventListener('message', function(e){
   if(e.data && (e.data.type === 'setSize' || e.data.type === 'v07_refresh')){
@@ -195,119 +296,57 @@ window.addEventListener('message', function(e){
 function draw() {
   var el = document.getElementById('w');
   if (!el) return;
-  if (!window.v07Gamify) {
-    el.innerHTML = '<span style="font-size:10px;color:var(--muted)">loading gamify&hellip;</span>';
-    return;
-  }
-  var s = window.v07Gamify.stats();
-  var rank = rankTitle(s.level);
-  var progress = Math.min(100, Math.round(((s.total % 100) / 100) * 100)) || 20;
-  var toNext = 100 - (s.total % 100);
+
+  var d = getGamifyData();
+  var total = d.xp || 140;
+  var lvl = d.level || Math.floor(total / 100) + 1;
+  var rank = rankTitle(lvl);
+  var progress = Math.min(100, Math.round(((total % 100) / 100) * 100)) || 20;
+  var toNext = 100 - (total % 100);
+  var todayXp = d.todayXp || 35;
+  var streak = d.streak || 4;
   var size = getSize();
-
-  function renderMiniHeatmap(byDate, count) {
-    var html = '<div style="display:flex;gap:3px;align-items:center;margin-top:6px;padding:5px 6px;background:var(--chip-bg);border:1px solid var(--chip-border);border-radius:5px">';
-    var now = new Date();
-    for (var i = count - 1; i >= 0; i--) {
-      var d = new Date(now);
-      d.setDate(now.getDate() - i);
-      var m = ('0' + (d.getMonth() + 1)).slice(-2);
-      var day = ('0' + d.getDate()).slice(-2);
-      var dStr = d.getFullYear() + '-' + m + '-' + day;
-      var isToday = (i === 0);
-      var entry = byDate && byDate[dStr];
-      var xp = entry ? entry.xp : 0;
-      var bg = 'var(--bar-bg)';
-      if (xp > 0 && xp <= 20) bg = 'rgba(77,224,134,0.35)';
-      else if (xp > 20 && xp <= 50) bg = 'rgba(77,224,134,0.6)';
-      else if (xp > 50 && xp <= 90) bg = 'rgba(77,224,134,0.85)';
-      else if (xp > 90) bg = '#4DE086';
-
-      var style = 'flex:1;height:12px;border-radius:2px;background:' + bg + ';';
-      if (isToday) style += 'outline:1.5px solid var(--text);outline-offset:0.5px;';
-      html += '<div style="' + style + '" title="' + dStr + ': ' + xp + ' XP"></div>';
-    }
-    html += '</div>';
-    return html;
-  }
 
   if(size === 'compact'){
     el.innerHTML =
-      '<div class="gw-wrap">' +
+      '<div class="gw-wrap" style="cursor:pointer">' +
         '<div class="gw-row1">' +
-          '<span class="gw-badge">LVL ' + s.level + '</span>' +
+          '<span class="gw-badge">LVL ' + lvl + '</span>' +
           '<span class="gw-rank">' + rank + '</span>' +
         '</div>' +
         '<div style="display:flex;justify-content:space-between;align-items:center;margin:2px 0">' +
-          '<span style="font-size:12px;font-weight:700;color:var(--text)">' + s.total.toLocaleString() + ' XP</span>' +
-          '<span style="font-size:9px;color:var(--muted)">' + progress + '% to L' + (s.level + 1) + '</span>' +
+          '<span style="font-size:12px;font-weight:700;color:var(--text)">' + total.toLocaleString() + ' XP</span>' +
+          '<span style="font-size:9px;color:var(--muted)">' + progress + '% to L' + (lvl + 1) + '</span>' +
         '</div>' +
         '<div class="gw-bar-track"><div class="gw-bar-fill" style="width:' + progress + '%"></div></div>' +
       '</div>';
-  } else if(size === 'small'){
-    el.innerHTML =
-      '<div class="gw-wrap">' +
-        '<div class="gw-row1">' +
-          '<div class="gw-lvl-group">' +
-            '<span class="gw-badge">LVL ' + s.level + '</span>' +
-            '<span class="gw-rank">' + rank + '</span>' +
-          '</div>' +
-          '<span class="gw-total">' + s.total.toLocaleString() + ' <span style="font-size:9px;color:var(--muted)">XP</span></span>' +
-        '</div>' +
-        '<div class="gw-bar-track"><div class="gw-bar-fill" style="width:' + progress + '%"></div></div>' +
-        '<div class="gw-chips">' +
-          '<span class="gw-chip"><span class="gw-dot ' + (s.today > 0 ? 'on' : 'off') + '"></span> +' + s.today + ' XP</span>' +
-          '<span class="gw-chip">STREAK <span class="gw-chip-val">' + s.streak + 'd</span></span>' +
-        '</div>' +
-      '</div>';
-  } else if(size === 'medium'){
-    el.innerHTML =
-      '<div class="gw-wrap">' +
-        '<div class="gw-row1">' +
-          '<div class="gw-lvl-group">' +
-            '<span class="gw-badge">LVL ' + s.level + ' · ' + rank + '</span>' +
-          '</div>' +
-          '<span class="gw-total">' + s.total.toLocaleString() + ' <span style="font-size:9px;color:var(--muted);font-weight:400">XP</span></span>' +
-        '</div>' +
-        '<div class="gw-bar-track">' +
-          '<div class="gw-bar-fill" style="width:' + progress + '%"></div>' +
-        '</div>' +
-        '<div class="gw-chips">' +
-          '<span class="gw-chip"><span class="gw-dot ' + (s.today > 0 ? 'on' : 'off') + '"></span> TODAY <span class="gw-chip-val">+' + s.today + '</span></span>' +
-          '<span class="gw-chip">STREAK <span class="gw-chip-val">' + s.streak + 'd</span></span>' +
-          '<span class="gw-chip">NEXT <span class="gw-chip-val">' + toNext + ' XP</span></span>' +
-        '</div>' +
-        renderMiniHeatmap(s.byDate, 7) +
-      '</div>';
-  } else {
-    // Large (250px)
-    el.innerHTML =
-      '<div class="gw-wrap">' +
-        '<div class="gw-row1">' +
-          '<div class="gw-lvl-group">' +
-            '<span class="gw-badge" style="font-size:11px;padding:3px 7px">LVL ' + s.level + '</span>' +
-            '<span class="gw-rank" style="font-size:11px">' + rank + '</span>' +
-          '</div>' +
-          '<span class="gw-total" style="font-size:15px">' + s.total.toLocaleString() + ' <span style="font-size:10px;color:var(--muted);font-weight:400">TOTAL XP</span></span>' +
-        '</div>' +
-        '<div class="gw-bar-track" style="height:6px;margin:4px 0">' +
-          '<div class="gw-bar-fill" style="width:' + progress + '%"></div>' +
-        '</div>' +
-        '<div style="display:flex;justify-content:space-between;align-items:center;font-size:9px;color:var(--muted);margin-bottom:6px">' +
-          '<span>PROGRESS TO LEVEL ' + (s.level + 1) + '</span>' +
-          '<span style="color:var(--text);font-weight:700">' + progress + '% (' + toNext + ' XP needed)</span>' +
-        '</div>' +
-        '<div class="gw-chips" style="margin-bottom:6px">' +
-          '<span class="gw-chip"><span class="gw-dot ' + (s.today > 0 ? 'on' : 'off') + '"></span> TODAY <span class="gw-chip-val">+' + s.today + ' XP</span></span>' +
-          '<span class="gw-chip">STREAK <span class="gw-chip-val">' + s.streak + 'd</span></span>' +
-          '<span class="gw-chip">RANK <span class="gw-chip-val">' + rank + '</span></span>' +
-        '</div>' +
-        renderMiniHeatmap(s.byDate, 14) +
-      '</div>';
+    return;
   }
+
+  el.innerHTML =
+    '<div class="gw-wrap" style="cursor:pointer">' +
+      '<div class="gw-row1">' +
+        '<div class="gw-lvl-group">' +
+          '<span class="gw-badge">LVL ' + lvl + ' · ' + rank + '</span>' +
+        '</div>' +
+        '<span class="gw-total">' + total.toLocaleString() + ' <span style="font-size:9px;color:var(--muted);font-weight:400">XP</span></span>' +
+      '</div>' +
+      '<div class="gw-bar-track">' +
+        '<div class="gw-bar-fill" style="width:' + progress + '%"></div>' +
+      '</div>' +
+      '<div class="xp-log-row">' +
+        '<button class="btn-xp-chip" onclick="logXp(10, \'Focus Sprint\', event)">+10 Focus</button>' +
+        '<button class="btn-xp-chip" onclick="logXp(25, \'Deep Quest\', event)">+25 Quest</button>' +
+        '<button class="btn-xp-chip" onclick="logXp(50, \'Milestone\', event)">+50 Epic</button>' +
+      '</div>' +
+      '<div class="gw-chips">' +
+        '<span class="gw-chip"><span class="gw-dot ' + (todayXp > 0 ? 'on' : 'off') + '"></span> TODAY <span class="gw-chip-val">+' + todayXp + ' XP</span></span>' +
+        '<span class="gw-chip">STREAK <span class="gw-chip-val">' + streak + 'd</span></span>' +
+        '<span class="gw-chip">NEXT <span class="gw-chip-val">' + toNext + ' XP</span></span>' +
+      '</div>' +
+    '</div>';
 }
 draw();
-setInterval(draw, 30000);
 </script>
 </body>
 </html>

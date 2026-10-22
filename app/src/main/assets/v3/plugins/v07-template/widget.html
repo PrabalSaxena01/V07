@@ -2,54 +2,133 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-  <link rel="stylesheet" href="plugin.css">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   <script src="v07-sdk.js"></script>
   <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    :root {
+      --text: #F1F5F9;
+      --muted: #94A3B8;
+      --border: rgba(255, 255, 255, 0.08);
+      --chip-bg: rgba(255, 255, 255, 0.04);
+      --primary: #2DD4BF;
+      --primary-glow: rgba(45, 212, 191, 0.15);
+    }
+    :root[data-theme="light"] {
+      --text: #0F172A;
+      --muted: #64748B;
+      --border: rgba(0, 0, 0, 0.08);
+      --chip-bg: rgba(0, 0, 0, 0.04);
+      --primary: #0D9488;
+      --primary-glow: rgba(13, 148, 136, 0.12);
+    }
     body {
-      padding: 10px;
+      padding: 8px 12px;
       margin: 0;
-      min-height: auto;
       background: transparent;
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      user-select: none;
+    }
+    .widget-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
-    .widget-box {
+    .widget-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--primary);
+      background: var(--primary-glow);
+      border: 1px solid var(--primary);
+      border-radius: 4px;
+      padding: 2px 6px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .widget-count {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text);
+    }
+    .logger-btns {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 6px;
+    }
+    .btn-step {
+      flex: 1;
+      min-height: 26px;
+      background: var(--chip-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.12s ease;
+    }
+    .btn-step:active {
+      transform: scale(0.92);
+      background: var(--primary-glow);
+      border-color: var(--primary);
+      color: var(--primary);
     }
   </style>
 </head>
 <body>
-  <div class="widget-box">
-    <div class="plugin-icon" style="width: 32px; height: 32px; font-size: 18px;">
-      <span class="material-symbols-outlined">extension</span>
+  <div class="widget-header">
+    <div class="widget-badge">
+      <span class="material-symbols-outlined" style="font-size:12px">extension</span>
+      <span>Plugin Data Logger</span>
     </div>
-    <div>
-      <div style="font-size: 10px; font-weight: 700; color: var(--on-surface-variant); text-transform: uppercase;">Companion</div>
-      <div style="font-size: 15px; font-weight: 800; color: var(--primary);" id="widget-count">0</div>
-    </div>
+    <div class="widget-count" id="widget-count">0</div>
   </div>
-  <button onclick="incrementWidget()" class="btn btn-primary" style="padding: 6px 12px; font-size: 11px;">
-    +1
-  </button>
+
+  <div class="logger-btns">
+    <button onclick="logStep(1)" class="btn-step">+1</button>
+    <button onclick="logStep(5)" class="btn-step">+5</button>
+    <button onclick="logStep(10)" class="btn-step">+10</button>
+    <button onclick="logStep(-1)" class="btn-step">-1</button>
+  </div>
 
   <script>
     let count = 0;
     async function loadWidget() {
-      const saved = await v07.storage.get('counter');
-      if (saved !== null) {
-        count = parseInt(saved, 10) || 0;
-        document.getElementById('widget-count').textContent = count;
-      }
-    }
-    async function incrementWidget() {
-      count++;
+      try {
+        if (window.v07 && v07.storage) {
+          const saved = await v07.storage.get('counter');
+          if (saved !== null) count = parseInt(saved, 10) || 0;
+        } else {
+          count = parseInt(localStorage.getItem('v07_companion_counter') || '0', 10);
+        }
+      } catch(_) {}
       document.getElementById('widget-count').textContent = count;
-      await v07.storage.set('counter', count);
     }
+
+    async function logStep(delta) {
+      count = Math.max(0, count + delta);
+      document.getElementById('widget-count').textContent = count;
+      try {
+        if (window.v07 && v07.storage) {
+          await v07.storage.set('counter', count);
+        }
+        localStorage.setItem('v07_companion_counter', count.toString());
+        window.parent.postMessage({ type: 'v07_refresh' }, '*');
+      } catch(_) {}
+    }
+
     window.addEventListener('DOMContentLoaded', loadWidget);
   </script>
 </body>

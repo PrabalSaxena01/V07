@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Weekly Digest Widget</title>
+<title>Focus Sanctuary Widget</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -13,10 +13,9 @@
     --bar-bg: rgba(255,255,255,0.08);
     --chip-bg: rgba(255,255,255,0.04);
     --chip-border: rgba(255,255,255,0.08);
-    --green: #4DE086;
-    --purple: #8D6CFF;
-    --yellow: #FFB84D;
-    --blue: #5CE1E6;
+    --teal: #14B8A6;
+    --teal-glow: rgba(20, 184, 166, 0.2);
+    --surface: #0E1420;
   }
   :root[data-theme="light"] {
     --text: #0F172A;
@@ -25,26 +24,25 @@
     --bar-bg: rgba(0,0,0,0.08);
     --chip-bg: rgba(0,0,0,0.04);
     --chip-border: rgba(0,0,0,0.08);
-    --green: #16A34A;
-    --purple: #7C3AED;
-    --yellow: #D97706;
-    --blue: #0284C7;
+    --teal: #0D9488;
+    --teal-glow: rgba(13, 148, 136, 0.15);
+    --surface: #F8FAFC;
   }
   body {
     margin: 0;
-    padding: 8px 12px 10px;
+    padding: 10px 12px;
     background: transparent;
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     color: var(--text);
     overflow: hidden;
     width: 100%;
-    cursor: pointer;
     user-select: none;
+    -webkit-tap-highlight-color: transparent;
   }
   .cs-wrap {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
     width: 100%;
   }
   .cs-header {
@@ -58,77 +56,110 @@
     gap: 5px;
     font-size: 10px;
     font-weight: 700;
-    color: var(--green);
-    background: rgba(77,224,134,0.12);
-    border: 1px solid var(--green);
+    color: var(--teal);
+    background: var(--teal-glow);
+    border: 1px solid var(--teal);
     border-radius: 4px;
     padding: 2px 6px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
-  .cs-range {
-    font-size: 9px;
+  .cs-status {
+    font-size: 9.5px;
+    font-weight: 600;
     color: var(--muted);
     letter-spacing: 0.04em;
-  }
-  .cs-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 5px;
-  }
-  .cs-stat {
-    background: var(--chip-bg);
-    border: 1px solid var(--chip-border);
-    border-radius: 6px;
-    padding: 4px 6px;
-    text-align: center;
-  }
-  .cs-val {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--text);
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  }
-  .cs-lbl {
-    font-size: 8px;
-    color: var(--muted);
     text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-top: 1px;
   }
-  .cs-footer {
+  .cs-gauge-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 4px 0;
+  }
+  .cs-gauge-svg {
+    transform: rotate(-90deg);
+  }
+  .cs-digits-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+  .cs-digits {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: 0.02em;
+    line-height: 1;
+  }
+  .cs-mode-lbl {
+    font-size: 8px;
+    font-weight: 700;
+    color: var(--teal);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 3px;
+  }
+  .cs-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 2px;
+  }
+  .cs-btn {
+    border: 1px solid var(--border);
+    background: var(--chip-bg);
+    color: var(--text);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: transform 0.08s ease, background 0.15s ease;
+  }
+  .cs-btn:active {
+    transform: scale(0.96);
+  }
+  .cs-btn.primary {
+    background: var(--teal);
+    color: #FFFFFF;
+    border-color: var(--teal);
+    font-weight: 700;
+  }
+  .cs-quick-log {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    font-size: 9px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    background: var(--chip-bg);
+    border: 1px solid var(--chip-border);
+    font-size: 9.5px;
     color: var(--muted);
-    padding-top: 2px;
   }
-  .cs-tagline {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 75%;
-  }
-  .cs-btn {
+  .cs-quick-log button {
+    background: var(--teal);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 4px;
     font-size: 9px;
-    color: var(--green);
     font-weight: 700;
-    letter-spacing: 0.04em;
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
+    padding: 3px 8px;
+    cursor: pointer;
   }
 </style>
 <script>
 (function(){
   function syncTheme(){
     var t = 'dark';
-    try {
-      t = window.parent.document.documentElement.dataset.theme || localStorage.getItem('v07_theme') || 'dark';
-    } catch(e){
-      try { t = localStorage.getItem('v07_theme') || 'dark'; } catch(e2){}
-    }
+    try { t = window.parent.document.documentElement.dataset.theme || localStorage.getItem('v07_theme') || 'dark'; } catch(e){}
     if(t === 'light') document.documentElement.setAttribute('data-theme', 'light');
     else document.documentElement.removeAttribute('data-theme');
   }
@@ -137,175 +168,138 @@
 })();
 </script>
 </head>
-<body onclick="openPlugin()">
-<div id="csRoot">
-  <div style="font-size:10px;color:var(--muted)">loading telemetry&hellip;</div>
+<body>
+<div class="cs-wrap" id="app">
+  <div class="cs-header">
+    <span class="cs-badge">⏳ Focus Sanctuary</span>
+    <span class="cs-status" id="chronoStatus">Ready</span>
+  </div>
+
+  <!-- Circular Timer Ring -->
+  <div class="cs-gauge-container" onclick="openFocusApp()">
+    <svg class="cs-gauge-svg" width="108" height="108" viewBox="0 0 108 108">
+      <circle cx="54" cy="54" r="45" stroke="var(--bar-bg)" stroke-width="7" fill="none" />
+      <circle id="ringProgress" cx="54" cy="54" r="45" stroke="var(--teal)" stroke-width="7" stroke-linecap="round" fill="none"
+              stroke-dasharray="282.7" stroke-dashoffset="0" style="transition: stroke-dashoffset 0.4s ease;" />
+    </svg>
+    <div class="cs-digits-overlay">
+      <div class="cs-digits" id="timeDigits">25:00</div>
+      <div class="cs-mode-lbl" id="targetLabel">25m Target</div>
+    </div>
+  </div>
+
+  <!-- Presets & Quick Action Controls -->
+  <div class="cs-controls">
+    <button class="cs-btn" onclick="setPreset(15)">15m</button>
+    <button class="cs-btn primary" id="toggleBtn" onclick="toggleFlow()">Begin Flow</button>
+    <button class="cs-btn" onclick="setPreset(45)">45m</button>
+  </div>
+
+  <!-- Quick Data Logging -->
+  <div class="cs-quick-log">
+    <span>Quick Log: Completed 25m Focus</span>
+    <button onclick="logQuickSession(25)">+ Log</button>
+  </div>
 </div>
 
 <script>
-function getSize(){
-  try {
-    var s = new URLSearchParams(window.location.search).get('size');
-    if(s === 'compact' || s === '1*1') return 'compact';
-    if(s === 'small' || s === '2*1') return 'small';
-    if(s === 'medium' || s === '3*1') return 'medium';
-    if(s === 'large' || s === '4*2') return 'large';
-  } catch(e){}
-  var h = window.innerHeight;
-  if(h > 0 && h <= 85) return 'compact';
-  if(h > 85 && h <= 125) return 'small';
-  if(h > 125 && h <= 190) return 'medium';
-  if(h > 190) return 'large';
-  return 'medium';
-}
-window.addEventListener('resize', loadData);
-window.addEventListener('message', function(e){
-  if(e.data && (e.data.type === 'setSize' || e.data.type === 'v07_refresh')){
-    loadData();
-  }
-});
+var targetSec = 25 * 60;
+var remainingSec = 25 * 60;
+var isRunning = false;
+var timerInterval = null;
+var CIRCUMFERENCE = 282.7;
 
-function openPlugin() {
+function updateGauge() {
+  var fraction = Math.max(0, Math.min(1, remainingSec / targetSec));
+  var offset = CIRCUMFERENCE * (1 - fraction);
+  var ring = document.getElementById('ringProgress');
+  if (ring) ring.style.strokeDashoffset = offset;
+
+  var mins = Math.floor(remainingSec / 60);
+  var secs = remainingSec % 60;
+  var display = (mins < 10 ? '0' : '') + mins + ':' + (secs < 10 ? '0' : '') + secs;
+  var digitsEl = document.getElementById('timeDigits');
+  if (digitsEl) digitsEl.textContent = display;
+}
+
+function setPreset(mins) {
+  if (isRunning) toggleFlow();
+  targetSec = mins * 60;
+  remainingSec = targetSec;
+  document.getElementById('targetLabel').textContent = mins + 'm Target';
+  updateGauge();
+}
+
+function toggleFlow() {
+  isRunning = !isRunning;
+  var btn = document.getElementById('toggleBtn');
+  var status = document.getElementById('chronoStatus');
+  if (isRunning) {
+    btn.textContent = 'Pause';
+    btn.style.background = '#F59E0B';
+    btn.style.borderColor = '#F59E0B';
+    status.textContent = 'Flow Active';
+    status.style.color = '#14B8A6';
+    timerInterval = setInterval(function() {
+      if (remainingSec > 0) {
+        remainingSec--;
+        updateGauge();
+      } else {
+        clearInterval(timerInterval);
+        isRunning = false;
+        btn.textContent = 'Completed!';
+        btn.style.background = '#14B8A6';
+        status.textContent = 'Complete';
+        logQuickSession(Math.round(targetSec / 60));
+      }
+    }, 1000);
+  } else {
+    clearInterval(timerInterval);
+    btn.textContent = 'Resume';
+    btn.style.background = '#14B8A6';
+    btn.style.borderColor = '#14B8A6';
+    status.textContent = 'Paused';
+  }
+}
+
+function logQuickSession(durationMins) {
+  var durationSec = durationMins * 60;
+  var payload = {
+    activity: "Focus Flow",
+    durationSec: durationSec,
+    notes: "Logged from Focus Widget"
+  };
+
+  try {
+    if (window.parent && window.parent.V07Platform && window.parent.V07Platform.callBridge) {
+      window.parent.V07Platform.callBridge('sessions:insert', payload);
+      alert('Logged ' + durationMins + 'm session to Sanctuary database!');
+      return;
+    }
+  } catch(e){}
+
+  fetch('/api/v3/sessions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).then(function() {
+    alert('Logged ' + durationMins + 'm session to Sanctuary database!');
+  }).catch(function() {
+    alert('Logged session locally.');
+  });
+}
+
+function openFocusApp() {
   try {
     if (window.parent && window.parent.openPluginPage) {
       window.parent.openPluginPage('com.v07.chronosynth');
       return;
     }
-  } catch(e) {}
+  } catch(e){}
   location.href = 'index.html';
 }
 
-async function loadData() {
-  var root = document.getElementById('csRoot');
-  if(!root) return;
-  var size = getSize();
-
-  var m = { total_focus_hours: 0, tasks_completed: 0, habit_consistency_pct: 0, screen_time_hours: 0, total_run_km: 0, dsa_solved: 0, avg_mood_score: 0 };
-  var dateStr = 'Current Week';
-
-  try {
-    var res = await fetch('/api/weekly-summary/aggregate?offset=0');
-    var data = await res.json();
-    if (data && data.summary_metrics) {
-      m = data.summary_metrics;
-      var range = data.range || {};
-      if (range.start && range.end) {
-        dateStr = range.start.substring(5) + ' → ' + range.end.substring(5);
-      }
-    }
-  } catch(e) {}
-
-  var bullets = [];
-  if (m.total_run_km > 0) bullets.push(m.total_run_km + 'km run');
-  if (m.dsa_solved > 0) bullets.push(m.dsa_solved + ' DSA');
-  if (m.avg_mood_score > 0) bullets.push('Mood ' + m.avg_mood_score + '/10');
-  var tag = bullets.length ? bullets.join(' · ') : 'Tap to synthesize week with AI';
-
-  if (size === 'compact') {
-    root.innerHTML =
-      '<div class="cs-wrap">' +
-      '  <div class="cs-header" style="margin-bottom:2px">' +
-      '    <div class="cs-badge" style="font-size:9px;padding:1px 5px">⚡ WEEKLY</div>' +
-      '    <div style="font-size:9px;color:var(--purple);font-weight:700">' + (m.total_focus_hours || 0) + 'h FOCUS</div>' +
-      '  </div>' +
-      '  <div style="display:flex;justify-content:space-between;align-items:center;background:var(--chip-bg);border:1px solid var(--chip-border);border-radius:6px;padding:4px 8px">' +
-      '    <span style="font-size:10px;font-weight:700;color:var(--text)">' + (m.tasks_completed || 0) + ' Tasks Done</span>' +
-      '    <span style="font-size:10px;font-weight:700;color:var(--green)">' + (m.habit_consistency_pct || 0) + '% Habits</span>' +
-      '    <span style="font-size:9px;color:var(--muted)">' + (m.total_run_km > 0 ? (m.total_run_km + 'km') : dateStr) + '</span>' +
-      '  </div>' +
-      '</div>';
-  } else if (size === 'small') {
-    root.innerHTML =
-      '<div class="cs-wrap">' +
-      '  <div class="cs-header">' +
-      '    <div class="cs-badge">⚡ DIGEST</div>' +
-      '    <div class="cs-range">' + dateStr + '</div>' +
-      '  </div>' +
-      '  <div class="cs-grid" style="grid-template-columns: 1fr 1fr; gap: 4px;">' +
-      '    <div class="cs-stat">' +
-      '      <div class="cs-val" style="color:var(--purple)">' + (m.total_focus_hours || 0) + 'h</div>' +
-      '      <div class="cs-lbl">Focus Time</div>' +
-      '    </div>' +
-      '    <div class="cs-stat">' +
-      '      <div class="cs-val" style="color:var(--blue)">' + (m.tasks_completed || 0) + '</div>' +
-      '      <div class="cs-lbl">Tasks Done</div>' +
-      '    </div>' +
-      '  </div>' +
-      '  <div style="display:flex;justify-content:space-between;align-items:center;font-size:8.5px;color:var(--muted);padding:0 2px">' +
-      '    <span>' + (m.habit_consistency_pct || 0) + '% Habits</span>' +
-      '    <span style="color:var(--green);font-weight:700">Open Briefing ›</span>' +
-      '  </div>' +
-      '</div>';
-  } else if (size === 'medium') {
-    root.innerHTML =
-      '<div class="cs-wrap">' +
-      '  <div class="cs-header">' +
-      '    <div class="cs-badge">⚡ WEEKLY DIGEST</div>' +
-      '    <div class="cs-range">' + dateStr + '</div>' +
-      '  </div>' +
-      '  <div class="cs-grid">' +
-      '    <div class="cs-stat">' +
-      '      <div class="cs-val" style="color:var(--purple)">' + (m.total_focus_hours || 0) + 'h</div>' +
-      '      <div class="cs-lbl">Focus</div>' +
-      '    </div>' +
-      '    <div class="cs-stat">' +
-      '      <div class="cs-val" style="color:var(--blue)">' + (m.tasks_completed || 0) + '</div>' +
-      '      <div class="cs-lbl">Tasks</div>' +
-      '    </div>' +
-      '    <div class="cs-stat">' +
-      '      <div class="cs-val" style="color:var(--green)">' + (m.habit_consistency_pct || 0) + '%</div>' +
-      '      <div class="cs-lbl">Habits</div>' +
-      '    </div>' +
-      '    <div class="cs-stat">' +
-      '      <div class="cs-val" style="color:var(--yellow)">' + (m.screen_time_hours || 0) + 'h</div>' +
-      '      <div class="cs-lbl">Screen</div>' +
-      '    </div>' +
-      '  </div>' +
-      '  <div class="cs-footer">' +
-      '    <span class="cs-tagline">' + tag + '</span>' +
-      '    <span class="cs-btn">BRIEFING ›</span>' +
-      '  </div>' +
-      '</div>';
-  } else {
-    // Large size
-    root.innerHTML =
-      '<div class="cs-wrap">' +
-      '  <div class="cs-header">' +
-      '    <div class="cs-badge" style="font-size:11px;padding:3px 7px">⚡ WEEKLY EXECUTIVE BRIEFING</div>' +
-      '    <div class="cs-range" style="font-size:10px">' + dateStr + '</div>' +
-      '  </div>' +
-      '  <div class="cs-grid" style="grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 4px;">' +
-      '    <div class="cs-stat">' +
-      '      <div class="cs-val" style="color:var(--purple);font-size:15px">' + (m.total_focus_hours || 0) + 'h</div>' +
-      '      <div class="cs-lbl">Deep Focus</div>' +
-      '    </div>' +
-      '    <div class="cs-stat">' +
-      '      <div class="cs-val" style="color:var(--blue);font-size:15px">' + (m.tasks_completed || 0) + '</div>' +
-      '      <div class="cs-lbl">Tasks Finished</div>' +
-      '    </div>' +
-      '    <div class="cs-stat">' +
-      '      <div class="cs-val" style="color:var(--green);font-size:15px">' + (m.habit_consistency_pct || 0) + '%</div>' +
-      '      <div class="cs-lbl">Consistency</div>' +
-      '    </div>' +
-      '    <div class="cs-stat">' +
-      '      <div class="cs-val" style="color:var(--yellow);font-size:15px">' + (m.screen_time_hours || 0) + 'h</div>' +
-      '      <div class="cs-lbl">Screen Time</div>' +
-      '    </div>' +
-      '  </div>' +
-      '  <div style="background:var(--chip-bg);border:1px solid var(--chip-border);border-radius:6px;padding:8px 10px;margin-top:2px">' +
-      '    <div style="font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Key Signals</div>' +
-      '    <div style="font-size:11px;color:var(--text);line-height:1.4">' + tag + '</div>' +
-      '  </div>' +
-      '  <div class="cs-footer" style="padding-top:4px">' +
-      '    <span style="font-size:9.5px;color:var(--muted)">Synthesized via Gemini &amp; Obsidian Telemetry</span>' +
-      '    <span class="cs-btn" style="font-size:10px">OPEN EXECUTIVE BRIEFING ›</span>' +
-      '  </div>' +
-      '</div>';
-  }
-}
-
-loadData();
-setInterval(loadData, 30000);
+updateGauge();
 </script>
 </body>
 </html>

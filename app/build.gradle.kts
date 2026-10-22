@@ -19,16 +19,16 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file("../keystore/release.jks")
-            storePassword = "v07release2026"
-            keyAlias = "v07"
-            keyPassword = "v07release2026"
+            storeFile = file(System.getenv("V07_RELEASE_KEYSTORE") ?: "../keystore/release.jks")
+            storePassword = System.getenv("V07_RELEASE_STORE_PASSWORD") ?: (project.findProperty("V07_RELEASE_STORE_PASSWORD") as? String) ?: "v07release2026"
+            keyAlias = System.getenv("V07_RELEASE_KEY_ALIAS") ?: (project.findProperty("V07_RELEASE_KEY_ALIAS") as? String) ?: "v07"
+            keyPassword = System.getenv("V07_RELEASE_KEY_PASSWORD") ?: (project.findProperty("V07_RELEASE_KEY_PASSWORD") as? String) ?: "v07release2026"
         }
         create("test") {
-            storeFile = file("../keystore/test.jks")
-            storePassword = "v07test2026"
-            keyAlias = "v07test"
-            keyPassword = "v07test2026"
+            storeFile = file(System.getenv("V07_TEST_KEYSTORE") ?: "../keystore/test.jks")
+            storePassword = System.getenv("V07_TEST_STORE_PASSWORD") ?: (project.findProperty("V07_TEST_STORE_PASSWORD") as? String) ?: "v07test2026"
+            keyAlias = System.getenv("V07_TEST_KEY_ALIAS") ?: (project.findProperty("V07_TEST_KEY_ALIAS") as? String) ?: "v07test"
+            keyPassword = System.getenv("V07_TEST_KEY_PASSWORD") ?: (project.findProperty("V07_TEST_KEY_PASSWORD") as? String) ?: "v07test2026"
         }
     }
 

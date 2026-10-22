@@ -36,6 +36,7 @@ fun SanctuaryTopBar(
     isLight: Boolean = false,
     onToggleTheme: () -> Unit = {},
     onProfileClick: () -> Unit,
+    onNotificationClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -132,13 +133,16 @@ fun SanctuaryTopBar(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                val notificationManager = remember { com.v07.v3.app.notification.SanctuaryNotificationManager.getInstance(context) }
+                val unreadCount by notificationManager.unreadCount.collectAsState()
+
                 Box(
                     modifier = Modifier
                         .size(34.dp)
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.surfaceVariant)
                         .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
-                        .clickable { /* Notification trigger */ },
+                        .clickable { onNotificationClick() },
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -147,6 +151,15 @@ fun SanctuaryTopBar(
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(18.dp)
                     )
+                    if (unreadCount > 0) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFFF59E0B))
+                                .align(Alignment.TopEnd)
+                        )
+                    }
                 }
 
                 // Theme Switcher Button

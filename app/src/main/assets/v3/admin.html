@@ -1595,6 +1595,15 @@
 
         async autoDiscoverToken(showToastOnSuccess = true) {
           try {
+            const platform = window.V07Platform || {};
+            const urlParams = new URLSearchParams(window.location.search);
+            const injectedToken = urlParams.get('token') || platform.TOKEN;
+            if (injectedToken) {
+              this.token = injectedToken;
+              localStorage.setItem('v07_admin_token', this.token);
+              if (showToastOnSuccess) this.showToast('Session token detected from platform', 'success');
+              return true;
+            }
             const res = await fetch(this.baseUrl + '/api/v3/status');
             const data = await res.json();
             if (data.session_token) {

@@ -28,9 +28,16 @@ fun SanctuaryShell(
     onImportPluginZip: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     var currentTab by remember { mutableStateOf(SanctuaryTab.HOME) }
     var activeSubView by remember { mutableStateOf(SanctuarySubView.NONE) }
     var activePlugin by remember { mutableStateOf<Triple<String, String, String>?>(null) }
+    var showNotificationsSheet by remember { mutableStateOf(false) }
+    val notificationManager = remember { com.v07.v3.app.notification.SanctuaryNotificationManager.getInstance(context) }
+
+    LaunchedEffect(Unit) {
+        notificationManager.startPolling(this)
+    }
 
     // Intercept back presses: exit plugin first, then sub-view, or return to Home tab
     BackHandler(enabled = activePlugin != null || activeSubView != SanctuarySubView.NONE || currentTab != SanctuaryTab.HOME) {
@@ -56,6 +63,9 @@ fun SanctuaryShell(
                     onProfileClick = {
                         currentTab = SanctuaryTab.SETTINGS
                         onProfileClick()
+                    },
+                    onNotificationClick = {
+                        showNotificationsSheet = true
                     }
                 )
             }
@@ -215,4 +225,13 @@ fun SanctuaryShell(
             }
         }
     }
+
+    SanctuaryNotificationsSheet(
+        isOpen = showNotificationsSheet,
+        onDismiss = { showNotificationsSheet = false },
+        notificationManager = notificationManager,
+        onNavigateToTasks = { activeSubView = SanctuarySubView.TASKS },
+        onNavigateToFocus = { activeSubView = SanctuarySubView.FOCUS },
+        onNavigateToCadence = { activeSubView = SanctuarySubView.HABITS }
+    )
 }

@@ -326,6 +326,62 @@
           <h2 class="text-2xl font-bold text-[var(--text)] mb-1">Deep Work Sanctuary</h2>
           <p class="text-xs text-[var(--text-secondary)] mb-6">Monotonic chronometer immune to tab backgrounding</p>
 
+          
+          <!-- Focus Sanctuary Circle Timer -->
+          <div class="relative flex flex-col items-center justify-center my-6">
+            <div class="relative w-72 h-72 flex items-center justify-center">
+              <svg class="w-full h-full -rotate-90" viewBox="0 0 280 280">
+                <defs>
+                  <linearGradient id="sanctuaryGaugeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#4DE086" />
+                    <stop offset="50%" stop-color="#10B981" />
+                    <stop offset="100%" stop-color="#059669" />
+                  </linearGradient>
+                </defs>
+                <!-- Decorative subtle outer orbit ring -->
+                <circle cx="140" cy="140" r="132" stroke="var(--border)" stroke-width="1.5" stroke-dasharray="4 6" fill="none" opacity="0.45"></circle>
+                <!-- Background track circle -->
+                <circle cx="140" cy="140" r="118" stroke="var(--surface-alt)" stroke-width="12" fill="none"></circle>
+                <!-- Animated active progress circle -->
+                <circle id="sanctuaryProgressCircle" cx="140" cy="140" r="118" stroke="url(#sanctuaryGaugeGrad)" stroke-width="12" stroke-linecap="round" fill="none"
+                        stroke-dasharray="741.4" stroke-dashoffset="0"
+                        style="transition: stroke-dashoffset 0.5s linear, filter 0.3s ease; filter: drop-shadow(0 0 10px rgba(77,224,134,0.3));"></circle>
+              </svg>
+              <!-- Center Digits & Information Overlay -->
+              <div class="absolute inset-0 flex flex-col items-center justify-center text-center select-none pointer-events-none">
+                <span id="sanctuaryModePill" class="px-3 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-[var(--primary-dim)] text-[var(--primary)] border border-[var(--primary)]/30 mb-2">
+                  COUNTDOWN · 25M
+                </span>
+                <span id="sanctuaryChronoDigits" class="text-5xl font-extrabold tracking-tight text-[var(--text)] tabular-nums font-mono-code leading-none">
+                  25:00
+                </span>
+                <span id="sanctuaryChronoActivity" class="text-xs font-semibold text-[var(--text-secondary)] mt-2 flex items-center gap-1.5">
+                  <span id="sanctuaryChronoPulse" class="w-2 h-2 rounded-full bg-[var(--primary)] inline-block"></span>
+                  <span id="sanctuaryChronoActivityName">Deep Work</span>
+                </span>
+              </div>
+            </div>
+
+            <!-- Target Interval Quick Presets -->
+            <div class="flex items-center justify-center gap-2 mt-6">
+              <button onclick="window.FocusChronometer.setTargetMinutes(15)" class="px-3 py-1 text-xs rounded-full bg-[var(--surface-alt)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-[var(--text-secondary)] btn-press">15m</button>
+              <button onclick="window.FocusChronometer.setTargetMinutes(25)" class="px-3 py-1 text-xs rounded-full bg-[var(--primary-dim)] border border-[var(--primary)]/30 text-[var(--primary)] font-bold btn-press">25m</button>
+              <button onclick="window.FocusChronometer.setTargetMinutes(50)" class="px-3 py-1 text-xs rounded-full bg-[var(--surface-alt)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-[var(--text-secondary)] btn-press">50m</button>
+              <button onclick="window.FocusChronometer.setTargetMinutes(90)" class="px-3 py-1 text-xs rounded-full bg-[var(--surface-alt)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-[var(--text-secondary)] btn-press">90m</button>
+            </div>
+
+            <!-- Execution Controls (Play/Pause & Reset) -->
+            <div class="flex items-center justify-center gap-3 mt-5 mb-2">
+              <button id="sanctuaryToggleBtn" onclick="window.FocusChronometer.toggle()" class="touch-target px-8 py-2.5 rounded-xl font-bold bg-[var(--primary)] text-white flex items-center gap-2 btn-press">
+                <span id="sanctuaryToggleIcon" class="material-symbols-outlined text-lg">play_arrow</span>
+                <span id="sanctuaryToggleText">Begin Flow</span>
+              </button>
+              <button id="sanctuaryResetBtn" onclick="window.FocusChronometer.reset()" class="touch-target px-4 py-2.5 rounded-xl bg-[var(--surface-alt)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-[var(--text-secondary)] btn-press" title="Release Interval">
+                <span class="material-symbols-outlined text-lg">restart_alt</span>
+              </button>
+            </div>
+          </div>
+
           <!-- Modes Selector -->
           <div class="flex justify-center gap-2 mb-8">
             <button onclick="window.FocusChronometer.mode='block'; window.SanctuaryViews.renderCockpit();" class="px-4 py-1.5 text-xs font-bold rounded-lg bg-[var(--surface-alt)] text-[var(--text)] border border-[var(--border)] btn-press">COUNTDOWN</button>

@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -625,22 +626,86 @@ fun HomeScreen(
 
                     Spacer(modifier = Modifier.height(14.dp))
 
-                    // Chrono Digits & Badges
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.clickable { onNavigateToSubView(SanctuarySubView.FOCUS) }
-                    ) {
-                        Text(
-                            text = timeDisplay,
-                            style = MaterialTheme.typography.headlineLarge.copy(
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 42.sp,
-                                letterSpacing = 1.sp
-                            ),
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
+                    // Circular Focus Sanctuary Timer Ring
+                    val elapsedSeconds = timerState.getElapsedMs() / 1000f
+                    val targetSec = if (isOpenStopwatchMode || timerState.mode == TimerMode.STOPWATCH) 3600f else if (timerState.targetDurationMs > 0) (timerState.targetDurationMs / 1000f) else (selectedPresetMinutes * 60f).coerceAtLeast(1f)
+                    val progressFraction = if (isOpenStopwatchMode || timerState.mode == TimerMode.STOPWATCH) {
+                        ((elapsedSeconds % 60) / 60f)
+                    } else {
+                        (elapsedSeconds / targetSec).coerceIn(0f, 1f)
+                    }
+                    val animatedProgress by androidx.compose.animation.core.animateFloatAsState(
+                        targetValue = progressFraction,
+                        animationSpec = androidx.compose.animation.core.tween(durationMillis = 400),
+                        label = "FocusProgress"
+                    )
+                    val primaryColor = MaterialTheme.colorScheme.primary
+                    val trackColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)
 
-                        Spacer(modifier = Modifier.height(4.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 6.dp)
+                            .clickable { onNavigateToSubView(SanctuarySubView.FOCUS) },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Canvas(modifier = Modifier.size(164.dp)) {
+                            val strokeWidth = 8.dp.toPx()
+                            val radius = (size.minDimension - strokeWidth) / 2f
+                            val centerOffset = Offset(size.width / 2f, size.height / 2f)
+
+                            drawCircle(
+                                color = trackColor,
+                                radius = radius,
+                                center = centerOffset,
+                                style = androidx.compose.ui.graphics.drawscope.Stroke(width = strokeWidth)
+                            )
+
+                            val sweepAngle = if (isRunning && (isOpenStopwatchMode || timerState.mode == TimerMode.STOPWATCH)) {
+                                ((elapsedSeconds * 6f) % 360f).coerceAtLeast(6f)
+                            } else {
+                                (animatedProgress * 360f).coerceAtLeast(if (isRunning) 6f else 0f)
+                            }
+
+                            drawArc(
+                                color = primaryColor,
+                                startAngle = -90f,
+                                sweepAngle = sweepAngle,
+                                useCenter = false,
+                                style = androidx.compose.ui.graphics.drawscope.Stroke(
+                                    width = strokeWidth,
+                                    cap = androidx.compose.ui.graphics.StrokeCap.Round
+                                )
+                            )
+                        }
+
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = timeDisplay,
+                                style = MaterialTheme.typography.headlineLarge.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 36.sp,
+                                    letterSpacing = 1.sp
+                                ),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = if (isRunning) "FLOWING" else if (!isIdle) "PAUSED" else "SANCTUARY",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    letterSpacing = 1.2.sp,
+                                    color = if (isRunning) SanctuaryPalette.AccentHabits else MaterialTheme.colorScheme.primary
+                                )
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
 
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -692,7 +757,6 @@ fun HomeScreen(
                                 )
                             }
                         }
-                    }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
