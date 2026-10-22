@@ -4,7 +4,12 @@
   "version": "3.0.0",
   "author": "V07 Sanctuary",
   "description": "Contemplative verses and philosophical clarity for daily life. Search, reflect, and internalize sacred teachings.",
-  "permissions": ["events:read", "events:write", "storage:isolated"],
+  "permissions": [
+    "events:read",
+    "events:write",
+    "storage:isolated",
+    "ai"
+  ],
   "entry": "index.html",
   "settings": "settings.html",
   "nav": {
@@ -20,7 +25,10 @@
       "icon": "auto_stories",
       "path": "widget.html",
       "color": "#FF9F43",
-      "supportedSizes": ["small", "medium"],
+      "supportedSizes": [
+        "small",
+        "medium"
+      ],
       "defaultSize": "medium"
     }
   ]

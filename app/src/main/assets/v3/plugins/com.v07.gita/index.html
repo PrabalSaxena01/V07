@@ -229,7 +229,10 @@
       <span id="savedIndicator" style="font-size:10px;font-family:monospace;color:var(--accent);"></span>
     </div>
     <textarea id="reflectionInput" placeholder="Reflect on this verse's wisdom for your day..."></textarea>
-    <button class="btn-save" onclick="saveReflection()">Save Reflection</button>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <button class="btn-save" onclick="saveReflection()">Save Reflection</button>
+      <button id="aiWisdomBtn" onclick="generateAiContemplation()" style="background:#1C6150;color:#fff;border:none;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">✨ Ask AI Wisdom</button>
+    </div>
   </div>
 
 <script>
@@ -328,6 +331,45 @@
         });
       }
     } catch (_) {}
+  }
+
+  async function generateAiContemplation() {
+    var c = document.getElementById('chapSelect').value;
+    var v = document.getElementById('verseSelect').value;
+    var eng = document.getElementById('verseTranslation').textContent;
+    var btn = document.getElementById('aiWisdomBtn');
+    var input = document.getElementById('reflectionInput');
+
+    btn.disabled = true;
+    btn.textContent = 'Seeking wisdom...';
+
+    var prompt = "Provide a serene, grounding 2-sentence practical contemplation for daily modern work based on Shrimad Bhagavad Gita Chapter " + c + ", Verse " + v + ":\nTranslation: " + eng;
+
+    try {
+      var res = null;
+      if (window.V07Platform && window.V07Platform.ai && typeof window.V07Platform.ai.generateText === 'function') {
+        res = await window.V07Platform.ai.generateText({ prompt: prompt });
+      } else {
+        var r = await fetch('/ai/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Plugin-Id': 'com.v07.gita' },
+          body: JSON.stringify({ prompt: prompt })
+        });
+        res = await r.json();
+      }
+
+      if (res && res.text) {
+        input.value = (input.value ? input.value + "\n\n" : "") + "🌿 Sanctuary Wisdom:\n" + res.text.trim();
+        document.getElementById('savedIndicator').textContent = 'Wisdom added';
+      } else {
+        input.value = (input.value ? input.value + "\n\n" : "") + "🌿 Sanctuary Reflection:\nFocus completely on the execution of your present task without anxiety over future outcomes.";
+      }
+    } catch (e) {
+      input.value = (input.value ? input.value + "\n\n" : "") + "🌿 Sanctuary Reflection:\nRemain steadfast in duty, tranquil in mind, treating success and failure with equanimity.";
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '✨ Ask AI Wisdom';
+    }
   }
 
   init();

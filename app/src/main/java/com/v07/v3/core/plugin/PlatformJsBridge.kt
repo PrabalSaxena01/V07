@@ -70,6 +70,11 @@ class PlatformJsBridge(
                         return errorJson("Permission Denied: Plugin '$pluginId' requires 'events:listen' or 'events:emit' permission")
                     }
                 }
+                method.startsWith("ai:") -> {
+                    if (manifest != null && !manifest.hasPermission("ai")) {
+                        return errorJson("Permission Denied: Plugin '$pluginId' requires 'ai' permission")
+                    }
+                }
             }
 
             val params = JSONObject(if (paramsJson.isNotBlank()) paramsJson else "{}")
@@ -1620,6 +1625,94 @@ class PlatformJsBridge(
                     successJson(JSONObject().put("success", true).put("purgedCount", purgedIds.size))
                 }
 
+                // AI Integration API
+                "ai:status" -> {
+                    com.v07.dashboard.GeminiConfig.init(context)
+                    val configured = com.v07.dashboard.GeminiConfig.isConfigured
+                    val res = JSONObject().apply {
+                        put("configured", configured)
+                        put("defaultModel", com.v07.dashboard.GeminiConfig.defaultModel)
+                        put("provider", com.v07.dashboard.GeminiConfig.provider)
+                        put("maskedKey", com.v07.dashboard.GeminiConfig.maskedKey())
+                        put("models", JSONArray(com.v07.dashboard.GeminiConfig.AVAILABLE_MODELS))
+                    }
+                    successJson(res)
+                }
+                "ai:generate" -> {
+                    com.v07.dashboard.GeminiConfig.init(context)
+                    val prompt = params.optString("prompt").trim()
+                    if (prompt.isBlank()) return errorJson("Missing required 'prompt'")
+                    val sysInst = params.optString("systemInstruction").ifBlank { null }
+                    val model = params.optString("model").ifBlank { null }
+                    val temp = if (params.has("temperature")) params.optDouble("temperature").toFloat() else null
+                    val maxTok = if (params.has("maxTokens")) params.optInt("maxTokens") else null
+                    val format = params.optString("responseFormat", "text")
+                    val schema = params.optJSONObject("jsonSchema")?.let { s ->
+                        val map = mutableMapOf<String, Any?>()
+                        s.keys().forEach { k -> map[k] = s.get(k) }
+                        map
+                    }
+
+                    val result = kotlinx.coroutines.runBlocking(kotlinx.coroutines.Dispatchers.IO) {
+                        com.v07.dashboard.GeminiClient.generate(
+                            com.v07.dashboard.GeminiClient.GenerateOptions(
+                                prompt = prompt,
+                                systemInstruction = sysInst,
+                                model = model,
+                                temperature = temp,
+                                maxTokens = maxTok,
+                                responseFormat = format,
+                                responseSchema = schema
+                            )
+                        )
+                    }
+                    if (result.ok) {
+                        val promptTok = (result.usage["promptTokens"] as? Number)?.toInt() ?: 0
+                        val candTok = (result.usage["candidatesTokens"] as? Number)?.toInt() ?: 0
+                        com.v07.dashboard.GeminiManager.recordUsage(promptTok, candTok)
+                    }
+                    val res = JSONObject().apply {
+                        put("ok", result.ok)
+                        put("text", result.text ?: "")
+                        put("model", result.model)
+                        put("latencyMs", result.latencyMs)
+                        if (result.error != null) put("error", result.error)
+                    }
+                    if (result.ok) successJson(res) else errorJson(result.error ?: "AI generation failed")
+                }
+                "ai:chat" -> {
+                    com.v07.dashboard.GeminiConfig.init(context)
+                    val rawMessages = params.optJSONArray("messages") ?: JSONArray()
+                    val messages = mutableListOf<Map<String, String>>()
+                    for (i in 0 until rawMessages.length()) {
+                        val m = rawMessages.optJSONObject(i) ?: continue
+                        messages.add(mapOf(
+                            "role" to m.optString("role", "user"),
+                            "content" to m.optString("content", m.optString("text", ""))
+                        ))
+                    }
+                    val sysInst = params.optString("systemInstruction").ifBlank { null }
+                    val model = params.optString("model").ifBlank { null }
+                    val temp = if (params.has("temperature")) params.optDouble("temperature").toFloat() else null
+
+                    val result = kotlinx.coroutines.runBlocking(kotlinx.coroutines.Dispatchers.IO) {
+                        com.v07.dashboard.GeminiClient.chat(messages, sysInst, model, temp)
+                    }
+                    if (result.ok) {
+                        val promptTok = (result.usage["promptTokens"] as? Number)?.toInt() ?: 0
+                        val candTok = (result.usage["candidatesTokens"] as? Number)?.toInt() ?: 0
+                        com.v07.dashboard.GeminiManager.recordUsage(promptTok, candTok)
+                    }
+                    val res = JSONObject().apply {
+                        put("ok", result.ok)
+                        put("text", result.text ?: "")
+                        put("model", result.model)
+                        put("latencyMs", result.latencyMs)
+                        if (result.error != null) put("error", result.error)
+                    }
+                    if (result.ok) successJson(res) else errorJson(result.error ?: "AI chat failed")
+                }
+
                 // Gita Wisdom API (Access to 700+ Verses from assets/gita.json)
                 "gita:getVerse", "gita:getDaily" -> {
                     val gitaProvider = GitaProvider.getInstance(context)
@@ -2020,6 +2113,31 @@ class PlatformJsBridge(
                         }
                     },
                     
+                    ai: {
+                        isAvailable: async function() {
+                            try {
+                                const res = await callNative('ai:status', {});
+                                return !!(res && res.configured);
+                            } catch(e) { return false; }
+                        },
+                        getStatus: async function() {
+                            return await callNative('ai:status', {});
+                        },
+                        generateText: async function(opts) {
+                            if (typeof opts === 'string') opts = { prompt: opts };
+                            return await callNative('ai:generate', opts || {});
+                        },
+                        generateJson: async function(opts) {
+                            opts = opts || {};
+                            opts.responseFormat = 'json';
+                            return await callNative('ai:generate', opts);
+                        },
+                        chat: async function(opts) {
+                            if (Array.isArray(opts)) opts = { messages: opts };
+                            return await callNative('ai:chat', opts || {});
+                        }
+                    },
+
                     ui: {
                         toast: function(message) {
                             callNative('ui:toast', { message: message });
@@ -2113,7 +2231,7 @@ class PlatformJsBridge(
 
                 window.V07 = {
                     pluginId: pid,
-                    features: { notifications: true, ai: false },
+                    features: { notifications: true, ai: true },
                     readEventsAll: function(cat) {
                         return { ok: true, events: getLocal(cat) };
                     },

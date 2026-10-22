@@ -11,7 +11,8 @@
   "permissions": [
     "storage:isolated",
     "events:write",
-    "events:read"
+    "events:read",
+    "ai"
   ],
   "entry": "index.html",
   "settings": "settings.html",
@@ -27,7 +28,10 @@
       "entry": "widget.html",
       "icon": "extension",
       "color": "#4DE086",
-      "supportedSizes": ["small", "medium"],
+      "supportedSizes": [
+        "small",
+        "medium"
+      ],
       "defaultSize": "medium"
     }
   ]

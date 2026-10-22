@@ -95,6 +95,62 @@
     },
 
     // UI & Shell Interactions
+    ai: {
+      isAvailable: async function() {
+        if (window.V07Platform && window.V07Platform.ai && typeof window.V07Platform.ai.isAvailable === 'function') {
+          return await window.V07Platform.ai.isAvailable();
+        }
+        try {
+          const res = await fetch('/ai/status');
+          const data = await res.json();
+          return !!(data && data.configured);
+        } catch (_) { return false; }
+      },
+      getStatus: async function() {
+        if (window.V07Platform && window.V07Platform.ai && typeof window.V07Platform.ai.getStatus === 'function') {
+          return await window.V07Platform.ai.getStatus();
+        }
+        const res = await fetch('/ai/status');
+        return await res.json();
+      },
+      generateText: async function(opts) {
+        if (typeof opts === 'string') opts = { prompt: opts };
+        if (window.V07Platform && window.V07Platform.ai && typeof window.V07Platform.ai.generateText === 'function') {
+          return await window.V07Platform.ai.generateText(opts);
+        }
+        const res = await fetch('/ai/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Plugin-Id': v07.pluginId },
+          body: JSON.stringify(opts || {})
+        });
+        return await res.json();
+      },
+      generateJson: async function(opts) {
+        opts = opts || {};
+        opts.responseFormat = 'json';
+        if (window.V07Platform && window.V07Platform.ai && typeof window.V07Platform.ai.generateJson === 'function') {
+          return await window.V07Platform.ai.generateJson(opts);
+        }
+        const res = await fetch('/ai/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Plugin-Id': v07.pluginId },
+          body: JSON.stringify(opts)
+        });
+        return await res.json();
+      },
+      chat: async function(opts) {
+        if (Array.isArray(opts)) opts = { messages: opts };
+        if (window.V07Platform && window.V07Platform.ai && typeof window.V07Platform.ai.chat === 'function') {
+          return await window.V07Platform.ai.chat(opts);
+        }
+        const res = await fetch('/ai/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Plugin-Id': v07.pluginId },
+          body: JSON.stringify(opts || {})
+        });
+        return await res.json();
+      }
+    },
     ui: {
       showToast: function(title, message = '', type = 'info') {
         if (window.parent && typeof window.parent.showToast === 'function') {
