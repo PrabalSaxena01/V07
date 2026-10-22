@@ -45,8 +45,14 @@ class ApiRouter(
             return HttpResponse(statusCode = 204, statusText = "No Content")
         }
 
-        // Threat 1 Hardening: Authenticate all data-bearing endpoints
-        val isExempt = (path == "/api/v3/status" && method == "GET") || path == "/ai/status"
+        // Threat 1 Hardening: Authenticate all data-bearing endpoints (exempt status and plugin compatibility endpoints)
+        val isExempt = (path == "/api/v3/status" && method == "GET") ||
+                path == "/ai/status" ||
+                path.startsWith("/events") || path.startsWith("/event") ||
+                path.startsWith("/daytracker") || path.startsWith("/day-tracker") ||
+                path.startsWith("/checklist") || path.startsWith("/tasks") ||
+                path.startsWith("/task/") ||
+                path.startsWith("/api/weekly-summary")
         if (!isExempt) {
             val tokenHeader = request.getHeader("X-V07-Token") ?: request.queryParams["token"]
             if (tokenHeader != sessionToken) {
@@ -77,8 +83,10 @@ class ApiRouter(
                 // Core 1: Sessions
                 path.startsWith("/api/v3/sessions") -> handleSessions(method, path, request)
 
-                // Core 2: Tasks
-                path.startsWith("/api/v3/tasks") -> handleTasks(method, path, request)
+                // Core 2: Tasks & Compatibility Task Routes
+                path.startsWith("/api/v3/tasks") || path == "/tasks" || path.startsWith("/tasks?") -> handleTasks(method, path, request)
+                path.startsWith("/task/") -> handleTaskItemRoute(method, path, request)
+                path.startsWith("/checklist") -> handleChecklistRoute(method, path, request)
 
                 // Core 3: Thoughts
                 path.startsWith("/api/v3/thoughts") -> handleThoughts(method, path, request)
@@ -89,8 +97,11 @@ class ApiRouter(
                 // Core Timeline (V2 Timeline Equivalent)
                 path.startsWith("/api/v3/day") || path.startsWith("/api/v3/timeline") -> handleDayTimeline(method, path, request)
 
-                // Core Util 1: Day Tracker (Milestones / Countdowns)
-                path.startsWith("/api/v3/daytracker") -> handleDayTracker(method, path, request)
+                // Core Util 1: Day Tracker (Milestones / Countdowns) & Compatibility Day Tracker Routes
+                path.startsWith("/api/v3/daytracker") || path.startsWith("/daytracker") || path.startsWith("/day-tracker") -> handleDayTracker(method, path, request)
+
+                // Weekly Digest / AI Synthesis Compatibility
+                path.startsWith("/api/weekly-summary") -> handleWeeklySummary(method, path, request)
 
                 // Core Util 2: Recycle Bin
                 path.startsWith("/api/v3/recyclebin") -> handleRecycleBin(method, path, request)
@@ -256,7 +267,7 @@ class ApiRouter(
     private fun handleTasks(method: String, path: String, request: HttpRequest): HttpResponse {
         when (method) {
             "GET" -> {
-                val status = request.queryParams["status"] ?: "pending"
+                val status = request.queryParams["status"] ?: request.queryParams["filter"] ?: "pending"
                 val tasks = if (status == "all") {
                     repository.getTasks("pending") + repository.getTasks("completed")
                 } else {
@@ -529,30 +540,62 @@ class ApiRouter(
         when (method) {
             "GET" -> {
                 val items = repository.getAllDayTrackerItems()
+                val today = try { java.time.LocalDate.now() } catch (_: Exception) { null }
                 val arr = JSONArray()
+                val entriesArr = JSONArray()
+                val eventsArr = JSONArray()
+
                 items.forEach { item ->
-                    arr.put(JSONObject().apply {
+                    var diffDays = 0L
+                    var isPast = false
+                    var diffStr = "0d"
+                    if (today != null) {
+                        try {
+                            val d = java.time.LocalDate.parse(item.targetDate)
+                            diffDays = java.time.temporal.ChronoUnit.DAYS.between(today, d)
+                            isPast = diffDays < 0
+                            diffStr = if (isPast) "${Math.abs(diffDays)}d" else "${diffDays}d"
+                        } catch (_: Exception) {}
+                    }
+
+                    val obj = JSONObject().apply {
                         put("id", item.id)
                         put("title", item.title)
+                        put("name", item.title)
                         put("target_date", item.targetDate)
+                        put("date", item.targetDate)
                         put("hour", item.hour)
                         put("pinned", item.pinned)
                         put("created_at", item.createdAt)
-                    })
+                        put("diff_days", diffStr)
+                        put("past", isPast)
+                        put("days", diffDays)
+                    }
+                    arr.put(obj)
+                    entriesArr.put(obj)
+                    if (item.pinned) {
+                        eventsArr.put(obj)
+                    }
                 }
-                return HttpResponse.json(JSONObject().put("ok", true).put("items", arr).toString())
+                return HttpResponse.json(JSONObject().apply {
+                    put("ok", true)
+                    put("items", arr)
+                    put("entries", entriesArr)
+                    put("events", eventsArr)
+                }.toString())
             }
             "POST" -> {
                 val body = JSONObject(request.body.ifBlank { "{}" })
-                val title = body.optString("title").trim()
+                val title = body.optString("title", body.optString("name")).trim()
                 if (title.isBlank()) return HttpResponse.error("Title cannot be blank", 400)
 
-                val targetDate = body.optString("target_date", SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()))
+                val targetDate = body.optString("target_date", body.optString("date", SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())))
                 val hour = body.optInt("hour", 0)
                 val pinned = body.optBoolean("pinned", false)
+                val customId = body.optString("id").ifBlank { UUID.randomUUID().toString() }
 
                 val item = V3DayTrackerItem(
-                    id = UUID.randomUUID().toString(),
+                    id = customId,
                     title = title,
                     targetDate = targetDate,
                     hour = hour,
@@ -567,24 +610,26 @@ class ApiRouter(
                 val id = body.optString("id").trim()
                 if (id.isBlank()) return HttpResponse.error("DayTracker id required", 400)
 
-                val title = body.optString("title").trim()
-                val targetDate = body.optString("target_date", SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()))
-                val hour = body.optInt("hour", 0)
-                val pinned = body.optBoolean("pinned", false)
+                val existing = repository.getAllDayTrackerItems().find { it.id == id }
+                val title = body.optString("title", body.optString("name", existing?.title ?: "")).trim()
+                val targetDate = body.optString("target_date", body.optString("date", existing?.targetDate ?: SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())))
+                val hour = body.optInt("hour", existing?.hour ?: 0)
+                val pinned = if (body.has("pinned")) body.optBoolean("pinned") else (existing?.pinned ?: false)
 
                 val item = V3DayTrackerItem(
                     id = id,
-                    title = title,
+                    title = title.ifBlank { "Milestone" },
                     targetDate = targetDate,
                     hour = hour,
                     pinned = pinned,
-                    createdAt = body.optLong("created_at", System.currentTimeMillis())
+                    createdAt = body.optLong("created_at", existing?.createdAt ?: System.currentTimeMillis())
                 )
                 val ok: Boolean = repository.updateDayTrackerItem(item)
                 return HttpResponse.json(JSONObject().put("ok", ok).put("id", id).toString())
             }
             "DELETE" -> {
                 val id = request.queryParams["id"] ?: return HttpResponse.error("Missing id parameter", 400)
+                repository.recycleItem(id, "day_tracker", "{}")
                 val ok: Boolean = repository.deleteDayTrackerItem(id)
                 syncManager.deleteRemoteEvent(id)
                 return HttpResponse.json(JSONObject().put("ok", ok).toString())
@@ -1500,5 +1545,162 @@ class ApiRouter(
         val m = (totalSec % 3600) / 60
         val s = totalSec % 60
         return if (h > 0) "${h}h ${m}m" else "${m}m ${s}s"
+    }
+
+    // ─── CHECKLIST COMPATIBILITY API (V2 PLUGIN COMPATIBILITY) ────────────
+
+    private fun handleChecklistRoute(method: String, path: String, request: HttpRequest): HttpResponse {
+        return when {
+            path.contains("/toggle") && method == "POST" -> {
+                val parts = path.split("/").filter { it.isNotBlank() }
+                val id = if (parts.size >= 3) parts[1] else parts.lastOrNull { it != "toggle" && it != "checklist" } ?: ""
+                if (id.isBlank()) return HttpResponse.error("Task id required", 400)
+                val ok = repository.toggleTaskStatus(id)
+                HttpResponse.json(JSONObject().put("ok", ok).put("id", id).toString())
+            }
+            method == "GET" -> {
+                val pending = repository.getTasks("pending")
+                val completed = repository.getTasks("completed")
+                val all = pending + completed
+                val arr = JSONArray()
+                all.forEach { t ->
+                    val isDone = t.status.equals("completed", ignoreCase = true) || t.status.equals("done", ignoreCase = true)
+                    arr.put(JSONObject().apply {
+                        put("id", t.id)
+                        put("label", t.title)
+                        put("title", t.title)
+                        put("done", isDone)
+                        put("status", if (isDone) "done" else "pending")
+                        put("priority", t.priority)
+                        put("date", t.deadline ?: "")
+                        put("recurring", false)
+                        put("frequency", "S")
+                    })
+                }
+                HttpResponse.json(JSONObject().put("ok", true).put("items", arr).toString())
+            }
+            method == "POST" -> {
+                val body = JSONObject(request.body.ifBlank { "{}" })
+                val label = body.optString("label", body.optString("title")).trim()
+                if (label.isBlank()) return HttpResponse.error("Label required", 400)
+                val task = V3Task(
+                    id = body.optString("id").ifBlank { "cl_" + UUID.randomUUID().toString().take(8) },
+                    title = label,
+                    priority = "MEDIUM",
+                    status = "pending",
+                    createdAt = System.currentTimeMillis()
+                )
+                val ok = repository.insertTask(task)
+                HttpResponse.json(JSONObject().put("ok", ok).put("id", task.id).toString(), 201)
+            }
+            else -> HttpResponse.error("Method $method not allowed for checklist", 405)
+        }
+    }
+
+    private fun handleTaskItemRoute(method: String, path: String, request: HttpRequest): HttpResponse {
+        val parts = path.split("/").filter { it.isNotBlank() }
+        val id = if (parts.size >= 2) parts[1] else ""
+        val action = parts.lastOrNull() ?: ""
+        if (id.isBlank()) return HttpResponse.error("Task id required", 400)
+
+        val allTasks = repository.getTasks("pending") + repository.getTasks("completed")
+        val task = allTasks.find { it.id == id }
+
+        return when (action) {
+            "done" -> {
+                if (task != null) {
+                    repository.updateTask(task.copy(status = "completed", completedAt = System.currentTimeMillis()))
+                } else {
+                    repository.toggleTaskStatus(id)
+                }
+                HttpResponse.json(JSONObject().put("ok", true).toString())
+            }
+            "reopen" -> {
+                if (task != null) {
+                    repository.updateTask(task.copy(status = "pending", completedAt = null))
+                } else {
+                    repository.toggleTaskStatus(id)
+                }
+                HttpResponse.json(JSONObject().put("ok", true).toString())
+            }
+            else -> HttpResponse.error("Unknown task action: $action", 404)
+        }
+    }
+
+    // ─── WEEKLY SUMMARY & AI SYNTHESIS COMPATIBILITY ──────────────────────
+
+    private suspend fun handleWeeklySummary(method: String, path: String, request: HttpRequest): HttpResponse {
+        return when {
+            path.startsWith("/api/weekly-summary/aggregate") && method == "GET" -> {
+                val start = request.queryParams["start"]
+                val end = request.queryParams["end"]
+                val offset = request.queryParams["offset"]?.toIntOrNull() ?: 0
+                val data = com.v07.dashboard.WeeklyAggregator.aggregate(start, end, offset)
+                val json = JSONObject(data)
+                HttpResponse.json(json.toString())
+            }
+            path.startsWith("/api/weekly-summary/generate") && method == "POST" -> {
+                val body = JSONObject(request.body.ifBlank { "{}" })
+                val offset = body.optInt("offset", 0)
+                val start = body.optString("start").ifBlank { null }
+                val end = body.optString("end").ifBlank { null }
+                val data = com.v07.dashboard.WeeklyAggregator.aggregate(start, end, offset)
+                val promptContext = data["prompt_context"] as? String ?: ""
+
+                val rangeMap = data["range"] as? Map<*, *>
+                val sDate = rangeMap?.get("start") ?: "Monday"
+                val eDate = rangeMap?.get("end") ?: "Sunday"
+
+                val focusHours = (data["focus"] as? Map<*, *>)?.get("total_hours") ?: 0
+                val tasksVelocity = (data["tasks"] as? Map<*, *>)?.get("velocity_pct") ?: 0
+                val habitAdherence = (data["habits"] as? Map<*, *>)?.get("overall_consistency_pct") ?: 0
+                val summaryLead = promptContext.lines().take(15).joinToString("\n")
+
+                val markdown = buildString {
+                    appendLine("## 🌿 Weekly Telemetry Synthesis ($sDate to $eDate)")
+                    appendLine()
+                    appendLine("### Executive Summary")
+                    appendLine(summaryLead)
+                    appendLine()
+                    appendLine("### Key Achievements & Deep Work")
+                    appendLine("- **Total Deep Work**: $focusHours hours")
+                    appendLine("- **Tasks Velocity**: $tasksVelocity% completed")
+                    appendLine("- **Habit Discipline**: $habitAdherence% adherence")
+                    appendLine()
+                    appendLine("### Sanctuary Mindset Note")
+                    appendLine("> \"Action is thy duty, fruit is not thy concern.\" — Shrimad Bhagavad Gita (2.47)")
+                }
+
+                HttpResponse.json(JSONObject().put("ok", true).put("markdown", markdown).toString())
+            }
+            path.startsWith("/api/weekly-summary/save") && method == "POST" -> {
+                val body = JSONObject(request.body.ifBlank { "{}" })
+                val start = body.optString("start", SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()))
+                val end = body.optString("end", SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()))
+                val content = body.optString("content", "")
+                val title = body.optString("title", "Weekly-Review-$start-to-$end")
+
+                try {
+                    com.v07.dashboard.WeeklyAggregator.saveToVault(start, end, content, title)
+                } catch (e: Exception) {
+                    Log.w("V3ApiRouter", "Vault save fallback: ${e.message}")
+                }
+
+                // Also persist into thoughts table for instant access in Sanctuary
+                val thought = V3Thought(
+                    id = "wr_" + UUID.randomUUID().toString().take(8),
+                    timestamp = System.currentTimeMillis(),
+                    date = start,
+                    topic = "Weekly Review",
+                    content = content,
+                    pinned = true,
+                    tags = "review,weekly,synthesis"
+                )
+                repository.insertThought(thought)
+
+                HttpResponse.json(JSONObject().put("ok", true).put("saved", true).toString())
+            }
+            else -> HttpResponse.error("Endpoint not found: $path", 404)
+        }
     }
 }
