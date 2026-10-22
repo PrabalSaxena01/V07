@@ -94,7 +94,7 @@
       }
     },
 
-    // UI & Shell Interactions
+    // Optional AI API Gateway (Opt-in only: requires 'ai' in manifest permissions)
     ai: {
       isAvailable: async function() {
         if (window.V07Platform && window.V07Platform.ai && typeof window.V07Platform.ai.isAvailable === 'function') {

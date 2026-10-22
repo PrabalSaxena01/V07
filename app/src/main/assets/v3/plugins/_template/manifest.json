@@ -1,10 +1,10 @@
-﻿{
+{
   "id": "com.v07.template",
   "name": "Plugin Template",
   "version": "1.0.0",
   "author": "Prabal",
   "description": "Base boilerplate template demonstrating the 5 Pillars of V07 Plugins.",
-  "permissions": ["events:read", "events:write", "server", "notification", "ai"],
+  "permissions": ["events:read", "events:write", "server", "notification"],
   "entry": "index.html",
   "settings": "settings.html",
   "widgets": [
