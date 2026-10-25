@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/v3_tasks_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/v3_widget_bg"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <!-- Top Bar: Title, Count Badge & Quick Actions -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingBottom="8dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-black"
+            android:letterSpacing="0.08"
+            android:text="TASKS"
+            android:textColor="#E2E8F0"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tv_v3_tasks_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/v3_widget_pill_amber"
+            android:fontFamily="monospace"
+            android:paddingStart="6dp"
+            android:paddingTop="1dp"
+            android:paddingEnd="6dp"
+            android:paddingBottom="1dp"
+            android:text="0"
+            android:textColor="#FBBF24"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <ImageButton
+            android:id="@+id/btn_v3_tasks_add"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:background="@drawable/v3_widget_btn_secondary"
+            android:contentDescription="Add Task"
+            android:src="@android:drawable/ic_input_add"
+            android:tint="#E2E8F0" />
+    </LinearLayout>
+
+    <!-- Tasks List View -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <ListView
+            android:id="@+id/lv_v3_tasks_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="4dp" />
+
+        <!-- Empty State -->
+        <LinearLayout
+            android:id="@+id/layout_v3_tasks_empty"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:text="✓ No pending tasks"
+                android:textColor="#10B981"
+                android:textSize="13sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:fontFamily="sans-serif"
+                android:text="Clear mind. Tap + to add."
+                android:textColor="#64748B"
+                android:textSize="11sp" />
+        </LinearLayout>
+    </FrameLayout>
+</LinearLayout>

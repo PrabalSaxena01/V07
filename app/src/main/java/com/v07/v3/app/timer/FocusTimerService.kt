@@ -48,10 +48,14 @@ class FocusTimerService : Service() {
             val intent = Intent(context, FocusTimerService::class.java).apply {
                 action = ACTION_START
             }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(intent)
-            } else {
-                context.startService(intent)
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    context.startForegroundService(intent)
+                } else {
+                    context.startService(intent)
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Cannot start foreground service from current state: ${e.message}")
             }
         }
 
@@ -135,11 +139,15 @@ class FocusTimerService : Service() {
     private fun startTicker() {
         tickerJob?.cancel()
         tickerJob = serviceScope.launch {
+            var tickCount = 0
             while (isActive) {
                 val state = timerManager.timerState.value
                 if (state.status == TimerStatus.IDLE) {
                     stopForegroundSafely()
                     stopSelf()
+                    try {
+                        com.v07.v3.app.widget.V3FocusWidget.updateAll(this@FocusTimerService)
+                    } catch (_: Exception) {}
                     break
                 }
 
@@ -150,12 +158,20 @@ class FocusTimerService : Service() {
                     notifySessionCompletion(state)
                     stopForegroundSafely()
                     stopSelf()
+                    try {
+                        com.v07.v3.app.widget.V3FocusWidget.updateAll(this@FocusTimerService)
+                    } catch (_: Exception) {}
                     break
                 }
 
                 if (state.status == TimerStatus.RUNNING) {
                     val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                     nm.notify(NOTIFICATION_ID, buildNotification(state))
+                    if (++tickCount % 5 == 0) {
+                        try {
+                            com.v07.v3.app.widget.V3FocusWidget.updateAll(this@FocusTimerService)
+                        } catch (_: Exception) {}
+                    }
                 }
                 delay(1000L)
             }

@@ -61,13 +61,13 @@ class EventRepository private constructor(private val appContext: Context) {
 
     // ─── CORE MODULE 2: TASKS DISCIPLINE ────────────────────────────────────
     fun getTasks(status: String? = null): List<V3Task> = tasks.getTasks(status)
-    fun insertTask(task: V3Task): Boolean = tasks.insertTask(task)
-    fun updateTask(task: V3Task): Boolean = tasks.updateTask(task)
+    fun insertTask(task: V3Task): Boolean = tasks.insertTask(task).also { if (it) notifyTasksWidget() }
+    fun updateTask(task: V3Task): Boolean = tasks.updateTask(task).also { if (it) notifyTasksWidget() }
     fun updateTaskDetails(id: String, title: String? = null, priority: String? = null, deadline: String? = null): Boolean =
-        tasks.updateTaskDetails(id, title, priority, deadline)
-    fun setTaskStatus(id: String, status: String): Boolean = tasks.setTaskStatus(id, status)
-    fun toggleTaskStatus(id: String): Boolean = tasks.toggleTaskStatus(id)
-    fun deleteTask(id: String): Boolean = tasks.deleteTask(id)
+        tasks.updateTaskDetails(id, title, priority, deadline).also { if (it) notifyTasksWidget() }
+    fun setTaskStatus(id: String, status: String): Boolean = tasks.setTaskStatus(id, status).also { if (it) notifyTasksWidget() }
+    fun toggleTaskStatus(id: String): Boolean = tasks.toggleTaskStatus(id).also { if (it) notifyTasksWidget() }
+    fun deleteTask(id: String): Boolean = tasks.deleteTask(id).also { if (it) notifyTasksWidget() }
 
     // ─── CORE MODULE 3: THOUGHTS & REFLECTIONS ──────────────────────────────
     fun insertThought(thought: V3Thought): Boolean = thoughts.insertThought(thought)
@@ -167,5 +167,21 @@ class EventRepository private constructor(private val appContext: Context) {
         query: String? = null,
         limit: Int = 200
     ): List<V3UnifiedEntry> = dataExplorer.queryUnifiedEntries(category, startDate, endDate, query, limit)
-    fun purgeAllData(keepPluginConfigs: Boolean = true): Boolean = dataExplorer.purgeAllData(keepPluginConfigs)
+    fun purgeAllData(keepPluginConfigs: Boolean = true): Boolean {
+        val ok = dataExplorer.purgeAllData(keepPluginConfigs)
+        if (ok) {
+            notifyTasksWidget()
+            try {
+                com.v07.v3.app.widget.V3FocusWidget.updateAll(appContext)
+                com.v07.v3.app.widget.V3GitaWidget.updateAll(appContext)
+            } catch (_: Exception) {}
+        }
+        return ok
+    }
+
+    private fun notifyTasksWidget() {
+        try {
+            com.v07.v3.app.widget.V3TasksWidget.updateAll(appContext)
+        } catch (_: Exception) {}
+    }
 }

@@ -517,6 +517,7 @@ class DataExplorerRepository(
             db.delete("recycle_bin", null, null)
             db.delete("deleted_tombstones", null, null)
             db.delete("events", null, null)
+            db.delete("plugin_events", null, null)
             if (!keepPluginConfigs) {
                 db.delete("plugin_storage", null, null)
             } else {

@@ -54,7 +54,7 @@
     return clean;
   }
 
-  var DEFAULT_HABITS = CANONICAL_HABITS;
+  var DEFAULT_HABITS = [];
 
   // ─── Date helpers ────────────────────────────────────────────────────────
   function pad(n) { return ('0' + n).slice(-2); }
@@ -151,15 +151,10 @@
     var deletedHabits = [];
     try { deletedHabits = JSON.parse(localStorage.getItem('v07_deleted_habits') || '[]'); } catch(e){}
 
-    var rawDefs = (def && Array.isArray(def.habits) && def.habits.length > 0) ? def.habits : CANONICAL_HABITS;
+    var rawDefs = (def && Array.isArray(def.habits) && def.habits.length > 0) ? def.habits : [];
 
-    // Deduplicate and canonicalize habits list
+    // Only load habits explicitly defined by the user
     var habitMap = new Map();
-    CANONICAL_HABITS.forEach(function(ch) {
-      if (deletedHabits.indexOf(ch.id) === -1) {
-        habitMap.set(ch.id, Object.assign({}, ch));
-      }
-    });
 
     rawDefs.forEach(function(h) {
       if (!h) return;

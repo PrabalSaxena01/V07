@@ -134,6 +134,7 @@ class TimerManager private constructor(
         _timerState.value = state
         persistState(state)
         FocusTimerService.start(context)
+        notifyFocusWidget()
         Log.i(TAG, "Started session: ${state.topic} (${state.mode})")
         return state
     }
@@ -155,6 +156,7 @@ class TimerManager private constructor(
         _timerState.value = updated
         persistState(updated)
         FocusTimerService.updateNotification(context)
+        notifyFocusWidget()
         Log.i(TAG, "Paused session: ${updated.topic}")
         return updated
     }
@@ -178,6 +180,7 @@ class TimerManager private constructor(
         _timerState.value = updated
         persistState(updated)
         FocusTimerService.updateNotification(context)
+        notifyFocusWidget()
         Log.i(TAG, "Resumed session: ${updated.topic}")
         return updated
     }
@@ -215,6 +218,7 @@ class TimerManager private constructor(
         _timerState.value = resetState
         clearPersistedState()
         FocusTimerService.stop(context)
+        notifyFocusWidget()
         return sessionRecord
     }
 
@@ -227,6 +231,7 @@ class TimerManager private constructor(
         _timerState.value = ActiveSessionState(status = TimerStatus.IDLE)
         clearPersistedState()
         FocusTimerService.stop(context)
+        notifyFocusWidget()
     }
 
     /**
@@ -245,6 +250,7 @@ class TimerManager private constructor(
         _timerState.value = updated
         persistState(updated)
         FocusTimerService.updateNotification(context)
+        notifyFocusWidget()
         Log.i(TAG, "Extended session duration by $deltaMinutes min")
         return updated
     }
@@ -312,5 +318,11 @@ class TimerManager private constructor(
 
     private fun clearPersistedState() {
         prefs.edit().clear().apply()
+    }
+
+    private fun notifyFocusWidget() {
+        try {
+            com.v07.v3.app.widget.V3FocusWidget.updateAll(context)
+        } catch (_: Exception) {}
     }
 }

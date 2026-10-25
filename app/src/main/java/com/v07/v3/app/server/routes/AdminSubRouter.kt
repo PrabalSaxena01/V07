@@ -127,6 +127,11 @@ class AdminSubRouter(
                 val ok: Boolean = databaseManager.vacuum()
                 HttpResponse.json(JSONObject().put("ok", ok).put("action", "vacuum").toString())
             }
+            path == "/api/v3/database/purge-all" && method == "POST" -> {
+                val ok: Boolean = repository.purgeAllData(keepPluginConfigs = false)
+                databaseManager.clearAppCache()
+                HttpResponse.json(JSONObject().put("ok", ok).put("action", "purged_all").toString())
+            }
             path == "/api/v3/database/backup" && method == "POST" -> {
                 val backupFile = databaseManager.createBackup()
                 if (backupFile != null) {

@@ -164,6 +164,61 @@
                 <action android:name="com.v07.v3.timer.ADD_5M" />
             </intent-filter>
         </receiver>
+        <!-- V3 Dedicated Homescreen Widgets -->
+        <receiver
+            android:name="com.v07.v3.app.widget.V3FocusWidget"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/v3_widget_focus_info" />
+        </receiver>
+
+        <receiver
+            android:name="com.v07.v3.app.widget.V3TasksWidget"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/v3_widget_tasks_info" />
+        </receiver>
+
+        <receiver
+            android:name="com.v07.v3.app.widget.V3GitaWidget"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/v3_widget_gita_info" />
+        </receiver>
+
+        <receiver
+            android:name="com.v07.v3.app.widget.V3WidgetActionReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.v07.v3.widget.ACTION_START_FOCUS_25" />
+                <action android:name="com.v07.v3.widget.ACTION_START_STOPWATCH" />
+                <action android:name="com.v07.v3.widget.ACTION_PAUSE_TIMER" />
+                <action android:name="com.v07.v3.widget.ACTION_RESUME_TIMER" />
+                <action android:name="com.v07.v3.widget.ACTION_STOP_TIMER" />
+                <action android:name="com.v07.v3.widget.ACTION_TOGGLE_TASK" />
+                <action android:name="com.v07.v3.widget.ACTION_NEXT_GITA_VERSE" />
+                <action android:name="com.v07.v3.widget.ACTION_MARK_GITA_READ" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name="com.v07.v3.app.widget.V3TasksWidgetService"
+            android:exported="false"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
+
+
 
         <service
             android:name=".ForegroundAppTracker"

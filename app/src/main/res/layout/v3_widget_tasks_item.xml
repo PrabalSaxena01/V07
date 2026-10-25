@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/v3_task_item_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/v3_widget_item_bg"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="10dp"
+    android:paddingTop="6dp"
+    android:paddingEnd="10dp"
+    android:paddingBottom="6dp">
+
+    <!-- Interactive Check Icon Button -->
+    <ImageButton
+        android:id="@+id/btn_v3_task_toggle"
+        android:layout_width="22dp"
+        android:layout_height="22dp"
+        android:background="@android:color/transparent"
+        android:contentDescription="Toggle Task"
+        android:src="@android:drawable/checkbox_off_background"
+        android:tint="#94A3B8" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_v3_task_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif-medium"
+            android:maxLines="1"
+            android:text="Task Title"
+            android:textColor="#F1F5F9"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/tv_v3_task_deadline"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:fontFamily="monospace"
+            android:maxLines="1"
+            android:text="Due Today"
+            android:textColor="#64748B"
+            android:textSize="9sp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tv_v3_task_priority"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="6dp"
+        android:fontFamily="monospace"
+        android:text="MED"
+        android:textColor="#38BDF8"
+        android:textSize="9sp"
+        android:textStyle="bold" />
+</LinearLayout>

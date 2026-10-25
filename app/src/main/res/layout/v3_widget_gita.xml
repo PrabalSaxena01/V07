@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/v3_gita_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/v3_widget_bg"
+    android:orientation="vertical"
+    android:padding="14dp">
+
+    <!-- Header: Title & Verse Reference -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-black"
+            android:letterSpacing="0.08"
+            android:text="ॐ BHAGAVAD GITA"
+            android:textColor="#FBBF24"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <TextView
+            android:id="@+id/tv_v3_gita_citation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/v3_widget_pill_amber"
+            android:fontFamily="monospace"
+            android:paddingStart="8dp"
+            android:paddingTop="2dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="2dp"
+            android:text="BG 2.47"
+            android:textColor="#FBBF24"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Verse Content Body -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:orientation="vertical"
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp">
+
+        <TextView
+            android:id="@+id/tv_v3_gita_sanskrit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:fontFamily="serif"
+            android:maxLines="2"
+            android:text="कर्मण्येवाधिकारस्ते मा फलेषु कदाचन..."
+            android:textColor="#E2E8F0"
+            android:textSize="12sp"
+            android:textStyle="italic" />
+
+        <TextView
+            android:id="@+id/tv_v3_gita_meaning"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif"
+            android:lineSpacingExtra="2dp"
+            android:maxLines="3"
+            android:text="You have a right to perform your prescribed duties, but you are not entitled to the fruits of your actions."
+            android:textColor="#94A3B8"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <!-- Footer Controls -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tv_v3_gita_progress"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="monospace"
+            android:text="Daily Wisdom"
+            android:textColor="#64748B"
+            android:textSize="10sp" />
+
+        <Button
+            android:id="@+id/btn_v3_gita_next"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:layout_marginEnd="6dp"
+            android:background="@drawable/v3_widget_btn_secondary"
+            android:minWidth="0dp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:text="Next"
+            android:textAllCaps="false"
+            android:textColor="#E2E8F0"
+            android:textSize="11sp" />
+
+        <Button
+            android:id="@+id/btn_v3_gita_read"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:background="@drawable/v3_widget_btn_secondary"
+            android:minWidth="0dp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:text="Read ✓"
+            android:textAllCaps="false"
+            android:textColor="#FBBF24"
+            android:textSize="11sp" />
+    </LinearLayout>
+</LinearLayout>
