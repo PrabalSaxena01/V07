@@ -10,7 +10,8 @@ import org.json.JSONObject
 class StatusSubRouter(
     private val timerManager: TimerManager,
     private val databaseManager: DatabaseManager,
-    private val screenTimeTracker: ScreenTimeTracker
+    private val screenTimeTracker: ScreenTimeTracker,
+    private val sessionToken: String
 ) : SubRouter {
 
     override fun matches(path: String): Boolean {
@@ -25,7 +26,7 @@ class StatusSubRouter(
             put("ok", true)
             put("platform", "V07 V3")
             put("version", "3.0.0")
-            // Security: session_token omitted from unauthenticated status
+            put("session_token", sessionToken)
             put("timer", JSONObject().apply {
                 put("status", timer.status.name)
                 put("topic", timer.topic)

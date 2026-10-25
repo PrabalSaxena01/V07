@@ -25,18 +25,71 @@ class CadenceSubRouter(
                 path.startsWith("/api/v3/timeline") ||
                 path.startsWith("/api/v3/daytracker") ||
                 path.startsWith("/daytracker") ||
-                path.startsWith("/day-tracker")
+                path.startsWith("/day-tracker") ||
+                path.startsWith("/day/") ||
+                path == "/day" ||
+                path == "/timeline" ||
+                path.startsWith("/timeline") ||
+                path.startsWith("/events") ||
+                path.startsWith("/event/") ||
+                path == "/database" ||
+                path.startsWith("/database?") ||
+                path.startsWith("/meta/") ||
+                path == "/client/log" ||
+                path.startsWith("/edit")
     }
 
     override suspend fun handle(method: String, path: String, request: HttpRequest): HttpResponse {
         return when {
             path.startsWith("/api/v3/cadence") -> handleCadence(method, path, request)
             path.startsWith("/api/v3/capture") -> handleCapture(method, request)
-            path.startsWith("/api/v3/entries") || path.startsWith("/api/v3/events") -> handleEntries(method, path, request)
-            path.startsWith("/api/v3/day") || path.startsWith("/api/v3/timeline") -> handleDayTimeline(method, path, request)
+            path.startsWith("/api/v3/entries") || path.startsWith("/api/v3/events") || path.startsWith("/events") || path.startsWith("/event/") ->
+                handleEntries(method, path, request)
+            path.startsWith("/api/v3/day") || path.startsWith("/day/") || path == "/day" || path.startsWith("/api/v3/timeline") || path.startsWith("/timeline") ->
+                handleDayTimeline(method, path, request)
             path.startsWith("/api/v3/daytracker") || path.startsWith("/daytracker") || path.startsWith("/day-tracker") ->
                 handleDayTracker(method, request)
+            path.startsWith("/database") -> handleDatabaseDump(request)
+            path.startsWith("/meta/") -> handleMeta(method, path)
+            path == "/client/log" || path.startsWith("/edit") -> HttpResponse.json(JSONObject().put("ok", true).toString())
             else -> HttpResponse.error("Endpoint not found: $path", 404)
+        }
+    }
+
+    private fun handleDatabaseDump(request: HttpRequest): HttpResponse {
+        val days = request.queryParams["days"]?.toIntOrNull() ?: 365
+        val list = repository.getEvents(limit = 1000)
+        val arr = JSONArray()
+        list.forEach { e ->
+            arr.put(JSONObject().apply {
+                put("id", e.id)
+                put("category", e.category)
+                put("date", e.date)
+                put("ts", e.ts)
+                put("title", e.title)
+                put("content", e.content)
+                put("score", e.score)
+                put("data", if (!e.metadataJson.isNullOrBlank()) try { JSONObject(e.metadataJson) } catch (_: Exception) { JSONObject() } else JSONObject())
+            })
+        }
+        return HttpResponse.json(JSONObject().put("ok", true).put("events", arr).toString())
+    }
+
+    private fun handleMeta(method: String, path: String): HttpResponse {
+        val clean = path.removePrefix("/meta/").removeSuffix("/")
+        return when {
+            clean == "activities" -> {
+                val acts = listOf("Work", "Deep Work", "Coding", "Reading", "Exercise", "Writing", "Meditation", "Planning", "Learning")
+                HttpResponse.json(JSONArray(acts).toString())
+            }
+            clean == "think-topics" -> {
+                val topics = listOf("General", "Life", "Strategy", "Ideas", "Philosophy", "Tech", "Learning", "Health")
+                HttpResponse.json(JSONArray(topics).toString())
+            }
+            clean == "theme" -> {
+                HttpResponse.json(JSONObject().put("ok", true).toString())
+            }
+            else -> HttpResponse.json(JSONObject().put("ok", true).toString())
         }
     }
 
@@ -46,8 +99,8 @@ class CadenceSubRouter(
         }
 
         val queryDate = request.queryParams["date"]
-        val pathSegments = path.trim('/').split('/')
-        val pathDate = if (pathSegments.size >= 4 && pathSegments[3].isNotBlank()) pathSegments[3] else null
+        val clean = path.removePrefix("/api/v3").trim('/')
+        val pathDate = clean.substringAfterLast("/").takeIf { it.matches(Regex("\\d{4}-\\d{2}-\\d{2}")) }
         val targetDate = queryDate ?: pathDate ?: SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
 
         val timeline = repository.getDayTimeline(targetDate)
@@ -355,7 +408,11 @@ class CadenceSubRouter(
     private fun handleEntries(method: String, path: String, request: HttpRequest): HttpResponse {
         when (method) {
             "GET" -> {
-                val cat = request.queryParams["category"]
+                val pathClean = path.removePrefix("/api/v3").trim('/')
+                val pathCat = if (pathClean.startsWith("events/")) {
+                    pathClean.removePrefix("events/").substringBefore('/').takeIf { it != "today" && it.isNotBlank() }
+                } else null
+                val cat = request.queryParams["category"] ?: pathCat
                 val start = request.queryParams["startDate"]
                 val end = request.queryParams["endDate"]
                 val q = request.queryParams["query"]
@@ -471,12 +528,13 @@ class CadenceSubRouter(
             "DELETE" -> {
                 val pathSegmentId = path.substringAfterLast('/').takeIf { it != "entries" && it != "events" && it.isNotBlank() }
                 val id = request.queryParams["id"] ?: pathSegmentId ?: return HttpResponse.error("Missing id parameter", 400)
+                repository.recycleItem(id, "events", "{}")
                 val ok = repository.deleteEvent(id)
                 repository.deleteThought(id)
                 repository.deleteTask(id)
                 repository.deleteSession(id)
                 syncManager.deleteRemoteEvent(id)
-                return HttpResponse.json(JSONObject().put("ok", ok).put("id", id).toString())
+                return HttpResponse.json(JSONObject().put("ok", ok).put("recycled", true).put("id", id).toString())
             }
             else -> return HttpResponse.error("Method $method not allowed for entries", 405)
         }

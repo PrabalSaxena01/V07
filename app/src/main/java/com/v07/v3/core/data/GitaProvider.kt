@@ -412,4 +412,50 @@ class GitaProvider private constructor(private val context: Context) {
         }
         return arr
     }
+
+    fun getTrackerData(): JSONObject {
+        ensureLoaded()
+        val all = verses ?: emptyList()
+        val readCount = readIds.size
+        val total = TOTAL_GITA_VERSES
+
+        val chapterMap = linkedMapOf<Int, MutableList<JSONObject>>()
+        for (v in all) {
+            val ch = v.optInt("chapter", 1)
+            chapterMap.getOrPut(ch) { mutableListOf() }.add(v)
+        }
+
+        val chaptersArr = JSONArray()
+        chapterMap.forEach { (chNum, chVerses) ->
+            var chRead = 0
+            val versesArr = JSONArray()
+            for (v in chVerses) {
+                val ch = v.optInt("chapter")
+                val vs = v.optInt("verse")
+                val vid = v.optString("id", "$ch.$vs")
+                val isRead = readIds.contains(vid) || readIds.contains("$ch.$vs")
+                if (isRead) chRead++
+                versesArr.put(JSONObject().apply {
+                    put("id", vid)
+                    put("read", isRead)
+                    put("shloka_preview", v.optString("meaning", v.optString("translation", v.optString("text", ""))))
+                })
+            }
+            val chObj = JSONObject().apply {
+                put("number", chNum)
+                put("name", "Chapter $chNum")
+                put("total", chVerses.size)
+                put("read", chRead)
+                put("verses", versesArr)
+            }
+            chaptersArr.put(chObj)
+        }
+
+        return JSONObject().apply {
+            put("ok", true)
+            put("total", total)
+            put("read_count", readCount)
+            put("chapters", chaptersArr)
+        }
+    }
 }

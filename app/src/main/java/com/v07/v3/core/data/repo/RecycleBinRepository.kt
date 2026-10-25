@@ -22,7 +22,7 @@ class RecycleBinRepository(dbHelper: V07Database) : BaseRepository(dbHelper) {
 
         db.beginTransaction()
         return try {
-            // 1. Snapshot existing SQLite record with 100% column fidelity
+            // 1. Snapshot existing SQLite record with complete column fidelity
             var capturedJson: String? = null
             var resolvedCategory = category
 

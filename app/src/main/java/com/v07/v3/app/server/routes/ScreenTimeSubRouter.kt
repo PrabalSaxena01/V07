@@ -20,14 +20,25 @@ class ScreenTimeSubRouter(
         return path.startsWith("/api/v3/screentime") ||
                 path.startsWith("/api/v3/apps/icon") ||
                 path.startsWith("/api/apps/icon") ||
-                path.startsWith("/api/v3/screentime/icon")
+                path.startsWith("/api/v3/screentime/icon") ||
+                path.startsWith("/app-limits") ||
+                path.startsWith("/app-usage")
     }
 
     override suspend fun handle(method: String, path: String, request: HttpRequest): HttpResponse {
         return when {
             path.startsWith("/api/v3/apps/icon") || path.startsWith("/api/apps/icon") || path.startsWith("/api/v3/screentime/icon") ->
                 handleAppIcon(method, path, request)
-            else -> handleScreenTime(method)
+            path.startsWith("/app-limits") -> handleAppLimits(method, request)
+            else -> handleScreenTime(method, path)
+        }
+    }
+
+    private fun handleAppLimits(method: String, request: HttpRequest): HttpResponse {
+        return when (method) {
+            "GET" -> HttpResponse.json(JSONObject().put("ok", true).put("limits", JSONArray()).toString())
+            "POST" -> HttpResponse.json(JSONObject().put("ok", true).toString())
+            else -> HttpResponse.error("Method $method not allowed for app-limits", 405)
         }
     }
 
@@ -73,10 +84,11 @@ class ScreenTimeSubRouter(
         }
     }
 
-    private suspend fun handleScreenTime(method: String): HttpResponse {
+    private suspend fun handleScreenTime(method: String, path: String): HttpResponse {
         if (!screenTimeTracker.hasUsageStatsPermission()) {
             return HttpResponse.json(JSONObject().apply {
                 put("ok", false)
+                put("exists", false)
                 put("permission_granted", false)
                 put("message", "PACKAGE_USAGE_STATS permission not granted. Please enable in Android Settings.")
             }.toString(), 403)
@@ -86,27 +98,43 @@ class ScreenTimeSubRouter(
             "GET" -> {
                 val summary = screenTimeTracker.collectNow()
                 val arr = JSONArray()
+                val usageArr = JSONArray()
                 summary.topApps.forEach { app ->
-                    arr.put(JSONObject().apply {
+                    val appObj = JSONObject().apply {
                         put("package_name", app.packageName)
                         put("app_name", app.appName)
                         put("duration_ms", app.durationMs)
                         put("duration_sec", app.durationMs / 1000)
+                        put("duration_formatted", formatSeconds(app.durationMs / 1000))
                         put("launch_count", app.launchCount)
                         put("category", app.category)
                         put("percentage", app.percentage)
                         put("icon_url", "/api/v3/apps/icon?package=" + app.packageName)
-                    })
+                    }
+                    arr.put(appObj)
+                    usageArr.put(appObj)
+                }
+
+                val formattedTotal = formatSeconds(summary.totalDurationMs / 1000)
+                val summaryObj = JSONObject().apply {
+                    put("total_screen_time_formatted", formattedTotal)
+                    put("total_duration_ms", summary.totalDurationMs)
+                    put("total_duration_sec", summary.totalDurationMs / 1000)
+                    put("app_count", summary.appCount)
                 }
 
                 HttpResponse.json(JSONObject().apply {
                     put("ok", true)
+                    put("exists", true)
                     put("date", summary.date)
                     put("total_duration_ms", summary.totalDurationMs)
                     put("total_duration_sec", summary.totalDurationMs / 1000)
-                    put("total_duration_formatted", formatSeconds(summary.totalDurationMs / 1000))
+                    put("total_duration_formatted", formattedTotal)
                     put("app_count", summary.appCount)
                     put("apps", arr)
+                    put("usage", usageArr)
+                    put("summary", summaryObj)
+                    put("hourly_usage", JSONArray())
                 }.toString())
             }
             "POST" -> {

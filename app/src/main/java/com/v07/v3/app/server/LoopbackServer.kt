@@ -153,7 +153,30 @@ class LoopbackServer(
             val isApi = request.path.startsWith("/api/") ||
                         request.path.startsWith("/events") ||
                         request.path.startsWith("/event") ||
-                        request.path.startsWith("/ai/")
+                        request.path.startsWith("/ai/") ||
+                        request.path.startsWith("/session") ||
+                        request.path.startsWith("/sessions") ||
+                        request.path.startsWith("/tasks") ||
+                        request.path.startsWith("/task") ||
+                        request.path.startsWith("/checklist") ||
+                        request.path.startsWith("/thoughts") ||
+                        request.path.startsWith("/thought") ||
+                        request.path.startsWith("/daytracker") ||
+                        request.path.startsWith("/day-tracker") ||
+                        request.path.startsWith("/day/") ||
+                        request.path == "/day" ||
+                        request.path == "/timeline" ||
+                        request.path.startsWith("/timeline") ||
+                        request.path.startsWith("/recycle-bin") ||
+                        request.path.startsWith("/recyclebin") ||
+                        request.path.startsWith("/database") ||
+                        request.path.startsWith("/plugins") ||
+                        request.path.startsWith("/app-limits") ||
+                        request.path.startsWith("/app-usage") ||
+                        request.path.startsWith("/gita") ||
+                        request.path.startsWith("/meta/") ||
+                        request.path == "/client/log" ||
+                        request.path.startsWith("/edit")
 
             val response = if (isApi) {
                 router.handle(request)

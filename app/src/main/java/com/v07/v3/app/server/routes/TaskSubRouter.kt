@@ -17,13 +17,13 @@ class TaskSubRouter(
     override fun matches(path: String): Boolean {
         return path.startsWith("/api/v3/tasks") ||
                 path == "/tasks" || path.startsWith("/tasks?") ||
-                path.startsWith("/task/") ||
+                path.startsWith("/task") ||
                 path.startsWith("/checklist")
     }
 
     override suspend fun handle(method: String, path: String, request: HttpRequest): HttpResponse {
         return when {
-            path.startsWith("/task/") -> handleTaskItemRoute(path)
+            path.startsWith("/task/") || path == "/task" -> handleTaskItemRoute(method, path, request)
             path.startsWith("/checklist") -> handleChecklistRoute(method, path, request)
             else -> handleTasks(method, request)
         }
@@ -113,10 +113,26 @@ class TaskSubRouter(
     }
 
     private fun handleChecklistRoute(method: String, path: String, request: HttpRequest): HttpResponse {
+        val parts = path.split("/").filter { it.isNotBlank() }
+        val id = if (parts.size >= 2 && parts[1] != "today" && parts[1] != "week") parts[1] else request.queryParams["id"] ?: ""
+
         return when {
+            method == "DELETE" -> {
+                if (id.isBlank()) return HttpResponse.error("Task id required", 400)
+                val recycled = repository.recycleItem(id, "tasks", "{}")
+                val deleted = repository.deleteTask(id)
+                val ok = recycled || deleted
+                syncManager.deleteRemoteEvent(id)
+                HttpResponse.json(JSONObject().put("ok", ok).put("recycled", recycled).toString())
+            }
+            path.contains("/edit") && method == "POST" -> {
+                if (id.isBlank()) return HttpResponse.error("Task id required", 400)
+                val body = JSONObject(request.body.ifBlank { "{}" })
+                val label = body.optString("label", body.optString("title")).trim()
+                val ok = repository.updateTaskDetails(id, title = label)
+                HttpResponse.json(JSONObject().put("ok", ok).put("id", id).toString())
+            }
             path.contains("/toggle") && method == "POST" -> {
-                val parts = path.split("/").filter { it.isNotBlank() }
-                val id = if (parts.size >= 3) parts[1] else parts.lastOrNull { it != "toggle" && it != "checklist" } ?: ""
                 if (id.isBlank()) return HttpResponse.error("Task id required", 400)
                 val ok = repository.toggleTaskStatus(id)
                 HttpResponse.json(JSONObject().put("ok", ok).put("id", id).toString())
@@ -160,11 +176,19 @@ class TaskSubRouter(
         }
     }
 
-    private fun handleTaskItemRoute(path: String): HttpResponse {
+    private fun handleTaskItemRoute(method: String, path: String, request: HttpRequest): HttpResponse {
         val parts = path.split("/").filter { it.isNotBlank() }
-        val id = if (parts.size >= 2) parts[1] else ""
-        val action = parts.lastOrNull() ?: ""
+        val id = if (parts.size >= 2) parts[1] else request.queryParams["id"] ?: ""
+        val action = if (parts.size >= 3) parts[2] else ""
         if (id.isBlank()) return HttpResponse.error("Task id required", 400)
+
+        if (method == "DELETE") {
+            val recycled = repository.recycleItem(id, "tasks", "{}")
+            val deleted = repository.deleteTask(id)
+            val ok = recycled || deleted
+            syncManager.deleteRemoteEvent(id)
+            return HttpResponse.json(JSONObject().put("ok", ok).put("recycled", recycled).toString())
+        }
 
         val allTasks = repository.getTasks("pending") + repository.getTasks("completed")
         val task = allTasks.find { it.id == id }

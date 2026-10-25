@@ -20,6 +20,7 @@ class PluginSubRouter(
 
     override fun matches(path: String): Boolean {
         return path.startsWith("/api/v3/plugins") ||
+                path.startsWith("/plugins") ||
                 path.startsWith("/events") ||
                 path.startsWith("/event")
     }
@@ -33,7 +34,7 @@ class PluginSubRouter(
 
     private fun handlePluginStorage(method: String, path: String, request: HttpRequest): HttpResponse {
         val cleanPath = path.removeSuffix("/")
-        if (cleanPath == "/api/v3/plugins" || cleanPath == "/api/v3/plugins/refresh") {
+        if (cleanPath == "/api/v3/plugins" || cleanPath == "/plugins/registry" || cleanPath == "/api/v3/plugins/refresh") {
             if (cleanPath == "/api/v3/plugins/refresh" && (method == "POST" || method == "GET")) {
                 pluginRegistry.discoverAll()
             }
@@ -73,6 +74,11 @@ class PluginSubRouter(
                 }
                 return HttpResponse.json(JSONObject().put("ok", true).put("plugins", list).toString())
             }
+        }
+
+        if (cleanPath.startsWith("/plugins/") && cleanPath.endsWith("/feature") && method == "POST") {
+            val pluginId = cleanPath.removePrefix("/plugins/").removeSuffix("/feature")
+            return HttpResponse.json(JSONObject().put("ok", true).put("pluginId", pluginId).toString())
         }
 
         if (cleanPath == "/api/v3/plugins/toggle" && method == "POST") {

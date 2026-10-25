@@ -31,12 +31,13 @@ class ApiRouter(
     }
 
     private val subRouters: List<SubRouter> = listOf(
-        StatusSubRouter(timerManager, databaseManager, screenTimeTracker),
+        StatusSubRouter(timerManager, databaseManager, screenTimeTracker, sessionToken),
         SessionSubRouter(repository, timerManager, syncManager),
         TaskSubRouter(repository, syncManager),
         ThoughtSubRouter(repository, syncManager),
         ScreenTimeSubRouter(context, screenTimeTracker),
         CadenceSubRouter(repository, syncManager),
+        GitaSubRouter(context, repository),
         PluginSubRouter(repository, pluginRegistry),
         AdminSubRouter(context, repository, databaseManager, syncManager),
         AiSubRouter(context, repository)
@@ -55,10 +56,18 @@ class ApiRouter(
         val isExempt = (path == "/api/v3/status" && method == "GET") ||
                 path.startsWith("/ai") ||
                 path.startsWith("/events") || path.startsWith("/event") ||
+                path.startsWith("/session") || path.startsWith("/sessions") ||
                 path.startsWith("/daytracker") || path.startsWith("/day-tracker") ||
-                path.startsWith("/checklist") || path.startsWith("/tasks") ||
-                path.startsWith("/task/") ||
-                path.startsWith("/api/weekly-summary")
+                path.startsWith("/day/") || path == "/day" || path == "/timeline" || path.startsWith("/timeline") ||
+                path.startsWith("/checklist") || path.startsWith("/tasks") || path.startsWith("/task") ||
+                path.startsWith("/thoughts") || path.startsWith("/thought") ||
+                path.startsWith("/recycle-bin") || path.startsWith("/recyclebin") ||
+                path.startsWith("/plugins") || path.startsWith("/app-limits") || path.startsWith("/app-usage") ||
+                path.startsWith("/gita") || path.startsWith("/database") || path.startsWith("/meta/") ||
+                path == "/client/log" || path.startsWith("/edit") ||
+                path.startsWith("/api/weekly-summary") ||
+                path.startsWith("/api/v3/screentime") ||
+                path.startsWith("/api/v3/screentime/icon") || path.startsWith("/api/apps/icon") || path.startsWith("/api/v3/apps/icon")
         if (!isExempt) {
             val tokenHeader = request.getHeader("X-V07-Token") ?: request.queryParams["token"]
             if (tokenHeader != sessionToken) {

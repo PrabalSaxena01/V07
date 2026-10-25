@@ -20,6 +20,8 @@ class AdminSubRouter(
     override fun matches(path: String): Boolean {
         return path.startsWith("/api/v3/admin") ||
                 path.startsWith("/api/v3/recyclebin") ||
+                path.startsWith("/recycle-bin") ||
+                path.startsWith("/recyclebin") ||
                 path.startsWith("/api/v3/database") ||
                 path.startsWith("/api/v3/companion")
     }
@@ -27,32 +29,54 @@ class AdminSubRouter(
     override suspend fun handle(method: String, path: String, request: HttpRequest): HttpResponse {
         return when {
             path.startsWith("/api/v3/admin") -> handleAdmin(method, path, request)
-            path.startsWith("/api/v3/recyclebin") -> handleRecycleBin(method, request)
+            path.startsWith("/api/v3/recyclebin") || path.startsWith("/recycle-bin") || path.startsWith("/recyclebin") ->
+                handleRecycleBin(method, path, request)
             path.startsWith("/api/v3/database") -> handleDatabase(method, path, request)
             path.startsWith("/api/v3/companion") -> handleCompanion(method, path, request)
             else -> HttpResponse.error("Endpoint not found: $path", 404)
         }
     }
 
-    private fun handleRecycleBin(method: String, request: HttpRequest): HttpResponse {
+    private fun handleRecycleBin(method: String, path: String, request: HttpRequest): HttpResponse {
         when (method) {
             "GET" -> {
-                val items = repository.getRecycleBinItems()
+                val category = request.queryParams["category"]
+                val items = repository.getRecycleBinItems(200)
                 val arr = JSONArray()
+                val isoFmt = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US)
                 items.forEach { r ->
-                    arr.put(JSONObject().apply {
-                        put("recycle_id", r.recycleId)
-                        put("original_id", r.originalId)
-                        put("category", r.category)
-                        put("data_json", r.dataJson)
-                        put("deleted_at", r.deletedAt)
-                    })
+                    if (category.isNullOrBlank() || r.category.equals(category, ignoreCase = true)) {
+                        val parsedData = try { JSONObject(r.dataJson) } catch (_: Exception) { JSONObject() }
+                        val iso = try { isoFmt.format(java.util.Date(r.deletedAt)) } catch (_: Exception) { r.deletedAt.toString() }
+                        arr.put(JSONObject().apply {
+                            put("recycle_id", r.recycleId)
+                            put("original_id", r.originalId)
+                            put("category", r.category)
+                            put("data_json", r.dataJson)
+                            put("data", parsedData)
+                            put("deleted_at", iso)
+                            put("deleted_timestamp", r.deletedAt)
+                        })
+                    }
                 }
-                return HttpResponse.json(JSONObject().put("ok", true).put("items", arr).toString())
+                return HttpResponse.json(JSONObject().apply {
+                    put("ok", true)
+                    put("items", arr)
+                    put("entries", arr)
+                }.toString())
             }
             "POST" -> {
+                if (path == "/recycle-bin/clear" || path == "/recyclebin/clear") {
+                    val purged = repository.emptyRecycleBin()
+                    purged.forEach { syncManager.deleteRemoteEvent(it) }
+                    return HttpResponse.json(JSONObject().put("ok", true).put("cleared_count", purged.size).toString())
+                }
+
                 val body = JSONObject(request.body.ifBlank { "{}" })
-                val recycleId = body.optString("recycle_id").trim()
+                val pathId = if (path.contains("/restore")) {
+                    path.removePrefix("/recycle-bin/").removePrefix("/recyclebin/").removeSuffix("/restore").trim('/')
+                } else null
+                val recycleId = body.optString("recycle_id", pathId ?: "").trim()
                 if (recycleId.isBlank()) return HttpResponse.error("recycle_id cannot be blank", 400)
 
                 val restored = repository.restoreRecycleItem(recycleId)
@@ -60,13 +84,15 @@ class AdminSubRouter(
                 return HttpResponse.json(JSONObject().put("ok", ok).put("restored", recycleId).toString())
             }
             "DELETE" -> {
-                val recycleId = request.queryParams["recycle_id"]
-                val ok: Boolean = if (recycleId.isNullOrBlank()) {
+                val pathSegment = path.removePrefix("/recycle-bin/").removePrefix("/recyclebin/").removePrefix("/api/v3/recyclebin/").trim('/')
+                val isClearAll = path.endsWith("/clear") || (request.queryParams["recycle_id"].isNullOrBlank() && (pathSegment.isBlank() || pathSegment == "clear"))
+                val ok: Boolean = if (isClearAll) {
                     val purged = repository.emptyRecycleBin()
                     purged.forEach { syncManager.deleteRemoteEvent(it) }
                     true
                 } else {
-                    val purgedId = repository.purgeRecycleItem(recycleId)
+                    val targetId = request.queryParams["recycle_id"] ?: pathSegment
+                    val purgedId = repository.purgeRecycleItem(targetId)
                     if (purgedId != null) {
                         syncManager.deleteRemoteEvent(purgedId)
                         true
