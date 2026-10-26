@@ -40,6 +40,8 @@ class TelemetryOverlayBridgeHandler(
                 method.startsWith("reminders:") ||
                 method == "tasks:cancelReminder" ||
                 method == "tasks:scheduleReminder" ||
+                method == "scheduleReminder" ||
+                method == "cancelReminder" ||
                 method == "ui:toast"
     }
 
@@ -284,16 +286,29 @@ class TelemetryOverlayBridgeHandler(
                 )
                 bridgeSuccess(JSONObject().put("success", notifId != -1).put("notifId", notifId))
             }
-            "alarms:schedule", "reminders:schedule", "tasks:scheduleReminder" -> {
+            "alarms:schedule", "reminders:schedule", "tasks:scheduleReminder", "scheduleReminder" -> {
                 com.v07.dashboard.PluginReminderReceiver.ensureNotificationChannel(context)
                 val id = params.optString("id", UUID.randomUUID().toString())
                 val title = params.optString("title", "Task Reminder").ifBlank { "Task Reminder" }
                 val body = params.optString("body", params.optString("message", "Upcoming task deadline in 1 hour"))
-                val triggerAtMs = params.optLong("triggerAtMs", 0L)
+                val delayMs = params.optLong("delayMs", -1L)
+                var triggerAtMs = params.optLong("triggerAtMs", 0L)
+                if (triggerAtMs <= 0L && delayMs > 0L) {
+                    triggerAtMs = System.currentTimeMillis() + delayMs
+                }
                 val pId = params.optString("pluginId", "tasks")
                 val isAlarm = params.optBoolean("isAlarm", id.endsWith("_due") || pId == "tasks")
 
-                if (triggerAtMs > System.currentTimeMillis()) {
+                if (delayMs == 0L) {
+                    val notifId = com.v07.dashboard.PluginReminderReceiver.postCustomNotification(
+                        context,
+                        pId,
+                        id,
+                        title,
+                        body
+                    )
+                    bridgeSuccess(JSONObject().put("scheduled", true).put("notifId", notifId))
+                } else if (triggerAtMs > System.currentTimeMillis()) {
                     val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? android.app.AlarmManager
                     val notifId = (pId + id).hashCode() and 0x7FFFFFFF
                     val intent = Intent(context, com.v07.dashboard.PluginReminderReceiver::class.java).apply {
@@ -331,7 +346,7 @@ class TelemetryOverlayBridgeHandler(
                     bridgeSuccess(JSONObject().put("scheduled", false).put("reason", "time_in_past"))
                 }
             }
-            "alarms:cancel", "reminders:cancel", "tasks:cancelReminder" -> {
+            "alarms:cancel", "reminders:cancel", "tasks:cancelReminder", "cancelReminder" -> {
                 val id = params.optString("id", "")
                 val pId = params.optString("pluginId", "tasks")
                 if (id.isNotBlank()) {
@@ -351,7 +366,7 @@ class TelemetryOverlayBridgeHandler(
                         pendingIntent.cancel()
                     }
                 }
-                bridgeSuccess(JSONObject().put("cancelled", true))
+                bridgeSuccess(JSONObject().put("cancelled", true).put("id", id))
             }
             "ui:toast" -> {
                 val msg = params.optString("message", "")

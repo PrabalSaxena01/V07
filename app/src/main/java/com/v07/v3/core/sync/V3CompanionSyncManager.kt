@@ -89,6 +89,39 @@ class V3CompanionSyncManager private constructor(
     private val syncScope = CoroutineScope(Dispatchers.IO)
     private val realtimeRegistrations = mutableListOf<ListenerRegistration>()
     private var heartbeatJob: kotlinx.coroutines.Job? = null
+    private val dataChangeListeners = java.util.concurrent.CopyOnWriteArrayList<() -> Unit>()
+
+    fun addDataChangeListener(listener: () -> Unit) {
+        dataChangeListeners.add(listener)
+    }
+
+    fun removeDataChangeListener(listener: () -> Unit) {
+        dataChangeListeners.remove(listener)
+    }
+
+    fun notifyDataChanged() {
+        for (l in dataChangeListeners) {
+            try { l.invoke() } catch (_: Exception) {}
+        }
+    }
+
+    init {
+        ensureFirebaseInitialized()
+        try {
+            FirebaseAuth.getInstance().addAuthStateListener { auth ->
+                val user = auth.currentUser
+                if (user != null) {
+                    prefs.edit().putString("custom_companion_uid", user.uid).apply()
+                    startRealtimeSync()
+                    syncNow { _, _ -> }
+                } else {
+                    stopRealtimeSync()
+                }
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to register AuthStateListener: ${e.message}")
+        }
+    }
 
     fun isCloudSyncEnabled(): Boolean {
         return getSafeAuth()?.currentUser != null
@@ -195,7 +228,7 @@ class V3CompanionSyncManager private constructor(
     }
 
     fun switchProfile(profileId: String): Boolean {
-        // Enforce strictly single-profile sovereign vault
+        // Enforce strictly single-profile vault
         return true
     }
 
@@ -560,6 +593,7 @@ class V3CompanionSyncManager private constructor(
                                 )
                             }
                         }
+                        notifyDataChanged()
                     }
                 }
             )
@@ -590,6 +624,7 @@ class V3CompanionSyncManager private constructor(
                                 )
                             }
                         }
+                        notifyDataChanged()
                     }
                 }
             )
@@ -620,6 +655,7 @@ class V3CompanionSyncManager private constructor(
                                 )
                             }
                         }
+                        notifyDataChanged()
                     }
                 }
             )
@@ -650,6 +686,7 @@ class V3CompanionSyncManager private constructor(
                                 )
                             }
                         }
+                        notifyDataChanged()
                     }
                 }
             )
@@ -682,6 +719,7 @@ class V3CompanionSyncManager private constructor(
                                 )
                             }
                         }
+                        notifyDataChanged()
                     }
                 }
             )
@@ -695,6 +733,7 @@ class V3CompanionSyncManager private constructor(
                             val doc = change.document
                             repository.deleteEntityEverywhere(doc.id)
                         }
+                        notifyDataChanged()
                     }
                 }
             )
@@ -722,6 +761,7 @@ class V3CompanionSyncManager private constructor(
                                 }
                             }
                         } catch (_: Exception) {}
+                        notifyDataChanged()
                     }
                 }
             )
@@ -741,12 +781,33 @@ class V3CompanionSyncManager private constructor(
                                 reconcileHabitDoc(doc.id, d)
                             }
                         }
+                        notifyDataChanged()
+                    }
+                }
+            )
+
+            // Legacy Companion Events collection
+            realtimeRegistrations.add(
+                userDoc.collection("events").addSnapshotListener { snapshots, e ->
+                    if (handleListenerError(e) || snapshots == null) return@addSnapshotListener
+                    syncScope.launch {
+                        for (change in snapshots.documentChanges) {
+                            val doc = change.document
+                            if (change.type == com.google.firebase.firestore.DocumentChange.Type.REMOVED) {
+                                repository.deleteEntityEverywhere(doc.id)
+                            } else {
+                                if (repository.isDeletedOrTombstoned(doc.id)) continue
+                                val d = doc.data ?: continue
+                                migrateSingleEvent(doc.id, d)
+                            }
+                        }
+                        notifyDataChanged()
                     }
                 }
             )
 
             // Other Known Plugins Subcollections
-            val otherPlugins = listOf("com.v07.vitals", "com.v07.fitness", "com.v07.gita", "com.v07.reader", "com.v07.tasks", "com.v07.timetracker")
+            val otherPlugins = listOf("com.v07.vitals", "com.v07.fitness", "com.v07.gita", "com.v07.reader", "com.v07.tasks", "com.v07.timetracker", "com.v07.gamify", "com.v07.chronosynth", "com.v07.running")
             for (pid in otherPlugins) {
                 realtimeRegistrations.add(
                     userDoc.collection("plugins").document(pid).collection("events").addSnapshotListener { snapshots, e ->
@@ -774,6 +835,7 @@ class V3CompanionSyncManager private constructor(
                                     )
                                 }
                             }
+                            notifyDataChanged()
                         }
                     }
                 )
@@ -1515,6 +1577,7 @@ class V3CompanionSyncManager private constructor(
                 val tombstonesCol = userDoc.collection("tombstones")
 
                 val now = System.currentTimeMillis()
+                val pushTasks = mutableListOf<com.google.android.gms.tasks.Task<*>>()
 
                 // ─── 1. PUSH SESSIONS ──────────────────────────────────────────
                 val sessions = repository.getRecentSessions(100)
@@ -1533,7 +1596,7 @@ class V3CompanionSyncManager private constructor(
                     map["date"] = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date(s.startTime))
                     map["updated_at"] = now
                     map["_syncedAt"] = Timestamp.now()
-                    sessionsCol.document(s.id).set(map, SetOptions.merge())
+                    pushTasks.add(sessionsCol.document(s.id).set(map, SetOptions.merge()))
                 }
 
                 // ─── 2. PUSH TASKS ─────────────────────────────────────────────
@@ -1549,7 +1612,7 @@ class V3CompanionSyncManager private constructor(
                     t.deadline?.let { map["deadline"] = it }
                     map["updated_at"] = now
                     map["_syncedAt"] = Timestamp.now()
-                    tasksCol.document(t.id).set(map, SetOptions.merge())
+                    pushTasks.add(tasksCol.document(t.id).set(map, SetOptions.merge()))
                 }
 
                 // ─── 3. PUSH THOUGHTS ──────────────────────────────────────────
@@ -1566,7 +1629,7 @@ class V3CompanionSyncManager private constructor(
                     th.tags?.let { map["tags"] = it }
                     map["updated_at"] = now
                     map["_syncedAt"] = Timestamp.now()
-                    thoughtsCol.document(th.id).set(map, SetOptions.merge())
+                    pushTasks.add(thoughtsCol.document(th.id).set(map, SetOptions.merge()))
                 }
 
                 // ─── 4. PUSH DAY TRACKER ───────────────────────────────────────
@@ -1582,7 +1645,7 @@ class V3CompanionSyncManager private constructor(
                     map["createdAt"] = dt.createdAt
                     map["updated_at"] = now
                     map["_syncedAt"] = Timestamp.now()
-                    daytrackerCol.document(dt.id).set(map, SetOptions.merge())
+                    pushTasks.add(daytrackerCol.document(dt.id).set(map, SetOptions.merge()))
                 }
 
                 // ─── 5. PUSH HABITS FROM PLUGIN STORAGE ─────────────────────
@@ -1611,7 +1674,7 @@ class V3CompanionSyncManager private constructor(
                                         "updated_at" to now,
                                         "_syncedAt" to Timestamp.now()
                                     )
-                                    habitsCol.document(docId).set(map, SetOptions.merge())
+                                    pushTasks.add(habitsCol.document(docId).set(map, SetOptions.merge()))
                                 }
                             }
                         }
@@ -1643,7 +1706,7 @@ class V3CompanionSyncManager private constructor(
                             }
                         }
                     } catch (_: Exception) {}
-                    userDoc.collection("plugins").document(pe.pluginId).collection("events").document(pe.id).set(map, SetOptions.merge())
+                    pushTasks.add(userDoc.collection("plugins").document(pe.pluginId).collection("events").document(pe.id).set(map, SetOptions.merge()))
                 }
 
                 // ─── 5b. PUSH PLUGIN REGISTRY & STATES ──────────────────────
@@ -1664,14 +1727,14 @@ class V3CompanionSyncManager private constructor(
                             "updated_at" to now
                         )
                     }
-                    userDoc.collection("system").document("plugins").set(
+                    pushTasks.add(userDoc.collection("system").document("plugins").set(
                         mapOf(
                             "plugins" to pluginsList,
                             "updated_at" to now,
                             "_syncedAt" to Timestamp.now()
                         ),
                         SetOptions.merge()
-                    )
+                    ))
                 } catch (e: Exception) {
                     Log.w(TAG, "Failed to push plugin catalog to Firestore: ${e.message}")
                 }
@@ -1704,7 +1767,7 @@ class V3CompanionSyncManager private constructor(
                             }
                         } catch (_: Exception) {}
                     }
-                    ledgerCol.document(e.id).set(map, SetOptions.merge())
+                    pushTasks.add(ledgerCol.document(e.id).set(map, SetOptions.merge()))
                 }
 
                 // ─── 7. PUSH TOMBSTONES ─────────────────────────────────────────
@@ -1713,7 +1776,7 @@ class V3CompanionSyncManager private constructor(
                     val map = HashMap<String, Any>()
                     map["id"] = tId
                     map["deleted_at"] = now
-                    tombstonesCol.document(tId).set(map, SetOptions.merge())
+                    pushTasks.add(tombstonesCol.document(tId).set(map, SetOptions.merge()))
                 }
 
                 // ─── 8. PUSH SCREEN TIME ───────────────────────────────────────
@@ -1750,7 +1813,16 @@ class V3CompanionSyncManager private constructor(
                     usageDoc["usage"] = usageList
                     usageDoc["_syncedAt"] = Timestamp.now()
                     usageDoc["updated_at"] = now
-                    usageCol.document(summary.date).set(usageDoc, SetOptions.merge())
+                    pushTasks.add(usageCol.document(summary.date).set(usageDoc, SetOptions.merge()))
+                }
+
+                // Await all pushed mutations so data is persisted on Firestore before reading/finishing
+                if (pushTasks.isNotEmpty()) {
+                    try {
+                        Tasks.await(Tasks.whenAll(pushTasks))
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Some push operations failed: ${e.message}")
+                    }
                 }
 
                 // ─── 9. PULL REMOTE TOMBSTONES ──────────────────────────────────
@@ -1950,6 +2022,7 @@ class V3CompanionSyncManager private constructor(
                 prefs.edit().putLong(KEY_LAST_SYNCED, now).apply()
                 isSyncing.set(false)
                 Log.i(TAG, "V3 Companion bidirectional cloud sync completed successfully.")
+                notifyDataChanged()
                 onComplete(true, null)
             } catch (e: Exception) {
                 isSyncing.set(false)

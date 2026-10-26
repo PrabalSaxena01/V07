@@ -11,15 +11,15 @@
     android:paddingEnd="10dp"
     android:paddingBottom="6dp">
 
-    <!-- Interactive Check Icon Button -->
-    <ImageButton
+    <!-- Interactive Check Button -->
+    <TextView
         android:id="@+id/btn_v3_task_toggle"
-        android:layout_width="22dp"
-        android:layout_height="22dp"
-        android:background="@android:color/transparent"
-        android:contentDescription="Toggle Task"
-        android:src="@android:drawable/checkbox_off_background"
-        android:tint="#94A3B8" />
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:gravity="center"
+        android:text="○"
+        android:textColor="#94A3B8"
+        android:textSize="15sp" />
 
     <LinearLayout
         android:layout_width="0dp"

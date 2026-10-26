@@ -41,19 +41,21 @@
             android:textSize="10sp"
             android:textStyle="bold" />
 
-        <View
+        <FrameLayout
             android:layout_width="0dp"
             android:layout_height="1dp"
             android:layout_weight="1" />
 
-        <ImageButton
+        <TextView
             android:id="@+id/btn_v3_tasks_add"
             android:layout_width="28dp"
             android:layout_height="28dp"
             android:background="@drawable/v3_widget_btn_secondary"
-            android:contentDescription="Add Task"
-            android:src="@android:drawable/ic_input_add"
-            android:tint="#E2E8F0" />
+            android:gravity="center"
+            android:text="+"
+            android:textColor="#E2E8F0"
+            android:textSize="18sp"
+            android:textStyle="bold" />
     </LinearLayout>
 
     <!-- Tasks List View -->

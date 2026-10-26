@@ -237,9 +237,11 @@ fun PluginHostScreen(
                             s.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
                         }
 
-                        // Attach V3 Native Bridge RPC
+                        // Attach V3 Native Bridge RPC & aliases
                         if (V3PlatformHost.isInitialized) {
                             addJavascriptInterface(V3PlatformHost.platformJsBridge, "V3NativeBridge")
+                            addJavascriptInterface(V3PlatformHost.platformJsBridge, "AndroidV07")
+                            addJavascriptInterface(V3PlatformHost.platformJsBridge, "AndroidBridge")
                         }
 
                         // Attach theme bridge
@@ -323,6 +325,9 @@ fun PluginHostScreen(
                             override fun onPageFinished(view: WebView?, url: String?) {
                                 isLoading = false
                                 applyTheme(pluginIsLight)
+                                val token = V3PlatformHost.sessionToken
+                                val compatJs = com.v07.v3.core.plugin.PlatformJsBridge.generatePluginCompatibilityScript(pluginId, V3PlatformHost.baseUrl, token)
+                                view?.evaluateJavascript(compatJs, null)
                                 val insetsJs = """
                                     (function() {
                                         try {

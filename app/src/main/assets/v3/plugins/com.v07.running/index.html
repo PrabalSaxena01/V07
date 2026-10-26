@@ -208,9 +208,10 @@
     try {
       var eventsList = null;
 
-      // Tier 1: query via window.parent.nativeInvoke
-      if (window.parent && window.parent.nativeInvoke && window.parent !== window) {
-        var res = await window.parent.nativeInvoke('com.v07.running', 'events:query', { category: 'running' });
+      // Tier 1: query via nativeInvoke
+      var invoker = window.nativeInvoke || (window.parent && window.parent.nativeInvoke);
+      if (invoker) {
+        var res = await invoker('com.v07.running', 'events:query', { category: 'running' });
         if (res && res.events && Array.isArray(res.events) && res.events.length > 0) {
           eventsList = res.events;
         }
@@ -307,8 +308,9 @@
 
     // Push to host platform
     try {
-      if (window.parent && window.parent.nativeInvoke) {
-        window.parent.nativeInvoke('events:insert', {
+      var invoker = window.nativeInvoke || (window.parent && window.parent.nativeInvoke);
+      if (invoker) {
+        invoker('events:insert', {
           id: id,
           category: 'running',
           date: dateStr,

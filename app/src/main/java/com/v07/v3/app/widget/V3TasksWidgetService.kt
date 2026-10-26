@@ -46,6 +46,9 @@ class V3TasksRemoteViewsFactory(private val context: Context) : RemoteViewsServi
         val task = tasks[position]
 
         val views = RemoteViews(context.packageName, R.layout.v3_widget_tasks_item)
+        val isDone = task.status.equals("completed", ignoreCase = true)
+        views.setTextViewText(R.id.btn_v3_task_toggle, if (isDone) "✓" else "○")
+        views.setTextColor(R.id.btn_v3_task_toggle, if (isDone) Color.parseColor("#10B981") else Color.parseColor("#94A3B8"))
         views.setTextViewText(R.id.tv_v3_task_title, task.title)
 
         if (!task.deadline.isNullOrBlank()) {

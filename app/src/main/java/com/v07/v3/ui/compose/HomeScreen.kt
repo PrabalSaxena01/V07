@@ -315,6 +315,24 @@ fun HomeScreen(
         }
     }
 
+    DisposableEffect(Unit) {
+        val syncManager = com.v07.v3.core.sync.V3CompanionSyncManager.getInstance(
+            context,
+            repository,
+            screenTimeTracker
+        )
+        val dataListener = {
+            coroutineScope.launch {
+                refreshData()
+            }
+            Unit
+        }
+        syncManager.addDataChangeListener(dataListener)
+        onDispose {
+            syncManager.removeDataChangeListener(dataListener)
+        }
+    }
+
     LaunchedEffect(Unit) {
         refreshData()
         try {
@@ -325,7 +343,13 @@ fun HomeScreen(
             )
             if (syncManager.isCloudSyncEnabled()) {
                 syncManager.startRealtimeSync()
-                syncManager.syncNow { _, _ -> }
+                syncManager.syncNow { success, _ ->
+                    if (success) {
+                        coroutineScope.launch {
+                            refreshData()
+                        }
+                    }
+                }
             }
         } catch (_: Exception) {}
     }

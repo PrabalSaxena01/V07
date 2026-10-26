@@ -87,6 +87,34 @@ class PlatformJsBridge(
         }
     }
 
+    @JavascriptInterface
+    fun call(method: String, paramsJson: String): String {
+        val pid = try {
+            JSONObject(paramsJson).optString("pluginId", "com.v07.core").ifBlank { "com.v07.core" }
+        } catch (_: Exception) { "com.v07.core" }
+        return invoke(pid, method, paramsJson)
+    }
+
+    @JavascriptInterface
+    fun nativeInvoke(pluginId: String, method: String, paramsJson: String): String {
+        return invoke(pluginId, method, paramsJson)
+    }
+
+    @JavascriptInterface
+    fun nativeInvoke(method: String, paramsJson: String): String {
+        val pid = try {
+            JSONObject(paramsJson).optString("pluginId", "com.v07.core").ifBlank { "com.v07.core" }
+        } catch (_: Exception) { "com.v07.core" }
+        return invoke(pid, method, paramsJson)
+    }
+
+    @JavascriptInterface
+    fun toast(message: String) {
+        mainHandler.post {
+            android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private fun successJson(data: JSONObject): String {
         return JSONObject().apply {
             put("ok", true)
@@ -331,6 +359,135 @@ class PlatformJsBridge(
             return """
             $v3Script
             (function() {
+                var pid = '$pluginId';
+                var baseUrl = '$baseUrl';
+                var token = '$token';
+
+                function nativeInvoke(arg1, arg2, arg3) {
+                    var pId = pid;
+                    var method = arg1;
+                    var params = arg2 || {};
+                    if (typeof arg2 === 'string') {
+                        pId = arg1;
+                        method = arg2;
+                        params = arg3 || {};
+                    }
+                    return new Promise(function(resolve, reject) {
+                        try {
+                            var paramsStr = typeof params === 'string' ? params : JSON.stringify(params);
+                            if (window.V3NativeBridge && window.V3NativeBridge.invoke) {
+                                var resStr = window.V3NativeBridge.invoke(pId, method, paramsStr);
+                                var res = JSON.parse(resStr);
+                                if (res.ok) resolve(res.result !== undefined ? res.result : (res.data !== undefined ? res.data : res));
+                                else reject(new Error(res.error || res.message || 'Bridge invocation failed'));
+                            } else {
+                                fetch(baseUrl + '/api/v3/plugins/' + pId + '/data?method=' + encodeURIComponent(method), {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json', 'X-V07-Token': token },
+                                    body: paramsStr
+                                }).then(function(r) { return r.json(); }).then(resolve).catch(reject);
+                            }
+                        } catch(e) {
+                            reject(e);
+                        }
+                    });
+                }
+                window.nativeInvoke = nativeInvoke;
+                window.callNative = nativeInvoke;
+                try {
+                    if (window.parent) {
+                        window.parent.nativeInvoke = nativeInvoke;
+                        window.parent.callNative = nativeInvoke;
+                        if (window.V3NativeBridge) window.parent.V3NativeBridge = window.V3NativeBridge;
+                    }
+                } catch(e){}
+
+                if (window.V07Platform) {
+                    window.V07Platform.callBridge = nativeInvoke;
+                    window.V07Platform.invoke = nativeInvoke;
+                }
+                try {
+                    if (window.parent && window.parent.V07Platform) {
+                        window.parent.V07Platform.callBridge = nativeInvoke;
+                        window.parent.V07Platform.invoke = nativeInvoke;
+                    }
+                } catch(e){}
+
+                if (!window.AndroidV07) {
+                    window.AndroidV07 = {
+                        call: function(method, paramsJson) {
+                            try {
+                                if (window.V3NativeBridge && typeof window.V3NativeBridge.call === 'function') {
+                                    return window.V3NativeBridge.call(method, paramsJson);
+                                }
+                                var p = typeof paramsJson === 'string' ? JSON.parse(paramsJson) : (paramsJson || {});
+                                var targetPid = p.pluginId || pid;
+                                if (window.V3NativeBridge && window.V3NativeBridge.invoke) {
+                                    return window.V3NativeBridge.invoke(targetPid, method, typeof paramsJson === 'string' ? paramsJson : JSON.stringify(paramsJson));
+                                }
+                            } catch(e) {
+                                return JSON.stringify({ ok: false, error: e.message });
+                            }
+                            return JSON.stringify({ ok: true });
+                        },
+                        toast: function(msg) {
+                            try {
+                                if (window.V3NativeBridge && window.V3NativeBridge.toast) {
+                                    window.V3NativeBridge.toast(msg);
+                                } else if (window.V07 && window.V07.toast) {
+                                    window.V07.toast(msg);
+                                }
+                            } catch(e){}
+                        }
+                    };
+                }
+                try { if (window.parent) window.parent.AndroidV07 = window.AndroidV07; } catch(e){}
+
+                if (!window.V07StorageEngine) {
+                    window.V07StorageEngine = {
+                        _eventsCache: [],
+                        _sessionsCache: [],
+                        _tasksCache: [],
+                        _pluginEventsCache: {},
+                        setPluginStorage: function(pId, key, val) {
+                            try {
+                                localStorage.setItem('v07_plugin_' + pId + '_' + key, JSON.stringify(val));
+                                nativeInvoke(pId, 'storage:set', { key: key, value: JSON.stringify(val) });
+                            } catch(e){}
+                        },
+                        getPluginStorage: function(pId, key) {
+                            try {
+                                var v = localStorage.getItem('v07_plugin_' + pId + '_' + key);
+                                return v ? JSON.parse(v) : null;
+                            } catch(e) { return null; }
+                        }
+                    };
+                }
+                try { if (window.parent) window.parent.V07StorageEngine = window.V07StorageEngine; } catch(e){}
+
+                window.openPluginPage = function(p) {
+                    window.location.href = baseUrl + '/plugins/' + p + '/index.html?token=' + token;
+                };
+                window.showToast = function(msg) {
+                    try {
+                        if (window.V3NativeBridge && window.V3NativeBridge.toast) {
+                            window.V3NativeBridge.toast(msg);
+                        } else if (window.V07 && window.V07.toast) {
+                            window.V07.toast(msg);
+                        }
+                    } catch(e){}
+                };
+                window.toast = window.showToast;
+                window.closeCustomModal = function() { try { window.history.back(); } catch(e){} };
+                try {
+                    if (window.parent) {
+                        window.parent.openPluginPage = window.openPluginPage;
+                        window.parent.showToast = window.showToast;
+                        window.parent.toast = window.toast;
+                        window.parent.closeCustomModal = window.closeCustomModal;
+                    }
+                } catch(e){}
+
                 function detectTheme() {
                     try {
                         var params = new URLSearchParams(window.location.search);
@@ -400,21 +557,50 @@ class PlatformJsBridge(
                     pluginId: pid,
                     features: { notifications: true, ai: true },
                     readEventsAll: function(cat) {
+                        if (window.V3NativeBridge && window.V3NativeBridge.invoke) {
+                            try {
+                                var s = window.V3NativeBridge.invoke(pid, 'events:query', JSON.stringify({ category: cat }));
+                                var parsed = JSON.parse(s);
+                                if (parsed && parsed.ok && parsed.result && Array.isArray(parsed.result.events)) {
+                                    return { ok: true, events: parsed.result.events };
+                                }
+                            } catch(e){}
+                        }
                         return { ok: true, events: getLocal(cat) };
                     },
                     readEvents: function(cat, date) {
+                        if (window.V3NativeBridge && window.V3NativeBridge.invoke) {
+                            try {
+                                var s = window.V3NativeBridge.invoke(pid, 'events:query', JSON.stringify({ category: cat, date: date || '' }));
+                                var parsed = JSON.parse(s);
+                                if (parsed && parsed.ok && parsed.result && Array.isArray(parsed.result.events)) {
+                                    return { ok: true, events: parsed.result.events };
+                                }
+                            } catch(e){}
+                        }
                         var all = getLocal(cat);
                         var filtered = date ? all.filter(function(e) { return e.date === date; }) : all;
                         return { ok: true, events: filtered };
                     },
                     writeEvent: function(cat, data) {
-                        var all = getLocal(cat);
                         var now = new Date();
                         var ev = Object.assign({
                             id: 'ev_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 4),
                             date: now.toISOString().slice(0, 10),
                             ts: now.toISOString()
                         }, data || {});
+                        if (window.V3NativeBridge && window.V3NativeBridge.invoke) {
+                            try {
+                                window.V3NativeBridge.invoke(pid, 'events:insert', JSON.stringify({
+                                    id: ev.id,
+                                    category: cat,
+                                    date: ev.date,
+                                    timestamp: now.getTime(),
+                                    payloadJson: JSON.stringify(ev)
+                                }));
+                            } catch(e){}
+                        }
+                        var all = getLocal(cat);
                         all.push(ev);
                         setLocal(cat, all);
                         return { ok: true, event: ev };
@@ -459,6 +645,11 @@ class PlatformJsBridge(
                         }).then(function(r) { return r.json(); });
                     }
                 };
+                try {
+                    if (window.parent) {
+                        window.parent.V07 = window.V07;
+                    }
+                } catch(e){}
             })();
             """.trimIndent()
         }
